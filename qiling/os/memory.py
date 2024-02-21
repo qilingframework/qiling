@@ -313,13 +313,14 @@ class QlMemoryManager:
 
         return self.ql.uc.mem_read(addr, size)
 
-    def read_ptr(self, addr: int, size: int = 0) -> int:
+    def read_ptr(self, addr: int, size: int = 0, *, signed = False) -> int:
         """Read an integer value from a memory address.
         Bytes read will be unpacked using emulated architecture properties.
 
         Args:
             addr: memory address to read
             size: pointer size (in bytes): either 1, 2, 4, 8, or 0 for arch native size
+            signed: interpret value as a signed integer (default: False)
 
         Returns: integer value stored at the specified memory address
         """
@@ -327,12 +328,17 @@ class QlMemoryManager:
         if not size:
             size = self.ql.arch.pointersize
 
-        __unpack = {
+        __unpack = ({
+            1: self.ql.unpack8s,
+            2: self.ql.unpack16s,
+            4: self.ql.unpack32s,
+            8: self.ql.unpack64s
+        } if signed else {
             1: self.ql.unpack8,
             2: self.ql.unpack16,
             4: self.ql.unpack32,
             8: self.ql.unpack64
-        }.get(size)
+        }).get(size)
 
         if __unpack is None:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
@@ -349,7 +355,7 @@ class QlMemoryManager:
 
         self.ql.uc.mem_write(addr, data)
 
-    def write_ptr(self, addr: int, value: int, size: int = 0) -> None:
+    def write_ptr(self, addr: int, value: int, size: int = 0, *, signed = False) -> None:
         """Write an integer value to a memory address.
         Bytes written will be packed using emulated architecture properties.
 
@@ -357,17 +363,23 @@ class QlMemoryManager:
             addr: target memory address
             value: integer value to write
             size: pointer size (in bytes): either 1, 2, 4, 8, or 0 for arch native size
+            signed: interpret value as a signed integer (default: False)
         """
 
         if not size:
             size = self.ql.arch.pointersize
 
-        __pack = {
+        __pack = ({
+            1: self.ql.pack8s,
+            2: self.ql.pack16s,
+            4: self.ql.pack32s,
+            8: self.ql.pack64s
+        } if signed else {
             1: self.ql.pack8,
             2: self.ql.pack16,
             4: self.ql.pack32,
             8: self.ql.pack64
-        }.get(size)
+        }).get(size)
 
         if __pack is None:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")

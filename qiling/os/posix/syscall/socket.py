@@ -325,7 +325,7 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
 
     ql.log.debug(f'Converted emulated socket option {vsock_opt} to host socket option {hsock_opt}')
 
-    optlen = min(ql.unpack32s(ql.mem.read(optlen_addr, 4)), 1024)
+    optlen = min(ql.mem.read_ptr(optlen_addr, 4, signed=True), 1024)
 
     if optlen < 0:
         return -EINVAL
