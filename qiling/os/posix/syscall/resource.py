@@ -28,9 +28,8 @@ def __getrlimit_common(ql: Qiling, res: int, rlim: int) -> int:
     else:
         rlimit = resource.getrlimit(res)
 
-    # FIXME: not sure whether these should be pointersize values or always 32 bits
-    ql.mem.write_ptr(rlim + 0 * 4, rlimit[0], 4, signed=True)
-    ql.mem.write_ptr(rlim + 1 * 4, rlimit[1], 4, signed=True)
+    ql.mem.write_ptr(rlim + 0 * ql.arch.pointersize, rlimit[0], signed=True)
+    ql.mem.write_ptr(rlim + 1 * ql.arch.pointersize, rlimit[1], signed=True)
 
     return 0
 
@@ -57,9 +56,8 @@ def ql_syscall_prlimit64(ql: Qiling, pid: int, res: int, new_limit: int, old_lim
         try:
             rlim = resource.getrlimit(res)
 
-            # FIXME: not sure whether these should be pointersize values or always 32 bits
-            ql.mem.write_ptr(old_limit + 0 * 4, rlim[0], 4, signed=True)
-            ql.mem.write_ptr(old_limit + 1 * 4, rlim[1], 4, signed=True)
+            ql.mem.write_ptr(old_limit + 0 * ql.arch.pointersize, rlim[0], signed=True)
+            ql.mem.write_ptr(old_limit + 1 * ql.arch.pointersize, rlim[1], signed=True)
 
             return 0
         except:
