@@ -61,7 +61,7 @@ class QlOs:
             # such as fileno(). here we use this to determine how we are going to use
             # the environment standard streams
             sys.stdin.fileno()
-        except UnsupportedOperation:
+        except (UnsupportedOperation, AttributeError):
             # Qiling is used on an interactive shell or embedded python interpreter.
             # if the internal stream buffer is accessible, we should use it
             self._stdin  = getattr(sys.stdin,  'buffer', sys.stdin)
