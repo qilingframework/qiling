@@ -58,7 +58,14 @@ from keystone import *
 
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+# logging.basicConfig(level=ida_logger.info, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+
+ida_logger = logging.getLogger('ida')
+ida_logger.setLevel(ida_logger.info)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+handler.setFormatter(formatter)
+ida_logger.addHandler(handler)
 
 class Colors(Enum):
     Blue = 0xE8864A
@@ -433,7 +440,7 @@ class IDA:
         fl = ida_hexrays.hexrays_failure_t()
         mba = ida_hexrays.gen_microcode(mbrgs, fl, None, decomp_flags, maturity)
         if mba is None:
-            logging.error(f"Fail to get mba because: {fl}")
+            ida_logger.error(f"Fail to get mba because: {fl}")
         return mba
 
     @staticmethod
@@ -933,7 +940,7 @@ class QlEmuQiling:
         savepath = savedlg.path_name.value
 
         self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
-        logging.info('Save to ' + savepath)
+        ida_logger.info('Save to ' + savepath)
         return True
 
     def load(self):
@@ -946,7 +953,7 @@ class QlEmuQiling:
         loadname = loaddlg.file_name.value
 
         self.ql.restore(snapshot=loadname)
-        logging.info('Restore from ' + loadname)
+        ida_logger.info('Restore from ' + loadname)
         return True
 
     def remove_ql(self):
@@ -999,22 +1006,22 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def init(self):
         # init data
-        logging.info('---------------------------------------------------------------------------------------')
-        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
-        logging.info('Based on Qiling v{0}'.format(QLVERSION))
-        logging.info('Find more information about Qiling at https://qiling.io')
-        logging.info('---------------------------------------------------------------------------------------')
+        ida_logger.info('---------------------------------------------------------------------------------------')
+        ida_logger.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
+        ida_logger.info('Based on Qiling v{0}'.format(QLVERSION))
+        ida_logger.info('Find more information about Qiling at https://qiling.io')
+        ida_logger.info('---------------------------------------------------------------------------------------')
         self.qlemu = QlEmuQiling()
         self.ql_hook_ui_actions()
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
-        logging.info(f"Registering actions.")
+        ida_logger.info(f"Registering actions.")
         self.ql_register_menu_actions()
         self.ql_attach_main_menu_actions()
 
     def ready_to_run(self):
-        logging.info(f"UI is ready, register our menu actions.")
+        ida_logger.info(f"UI is ready, register our menu actions.")
         self.run()
 
     def term(self):
@@ -1029,9 +1036,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlemu is None:
             self.qlemu = QlEmuQiling()
         if self.ql_set_rootfs():
-            logging.info(f'Rootfs: {self.qlemu.rootfs}')
-            logging.info(f"Custom user script: {self.customscriptpath}")
-            logging.info(f"Custom env: {self.qlemu.env}")
+            ida_logger.info(f'Rootfs: {self.qlemu.rootfs}')
+            ida_logger.info(f"Custom user script: {self.customscriptpath}")
+            ida_logger.info(f"Custom env: {self.qlemu.env}")
             show_wait_box("Qiling is processing ...")
             try:
                 self.qlemu.start()
@@ -1039,7 +1046,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.lastaddr = None
             finally:
                 hide_wait_box()
-                logging.info("Qiling is initialized successfully.")
+                ida_logger.info("Qiling is initialized successfully.")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
             self.userobj.custom_prepare(self.qlemu.ql)
@@ -1050,13 +1057,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_reload_user_script(self):
         if self.qlinit:
             self.ql_get_user_script(is_reload=True)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_continue(self):
         if self.qlinit:
@@ -1083,7 +1090,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def _color_path(self, color):
         def _cb(ql, addr, size):
@@ -1111,17 +1118,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_set_pc(self):
         if self.qlinit:
             ea = IDA.get_current_address()
             self.qlemu.ql.arch.regs.arch_pc = ea
-            logging.info(f"QIling PC set to {hex(ea)}")
+            ida_logger.info(f"QIling PC set to {hex(ea)}")
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_run_to_here(self):
         if self.qlinit:
@@ -1146,7 +1153,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_step(self):
         if self.qlinit:
@@ -1162,21 +1169,21 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_save(self):
         if self.qlinit:
             if self.qlemu.save() != True:
-                logging.error('Fail to save the snapshot.')
+                ida_logger.error('Fail to save the snapshot.')
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_load(self):
         if self.qlinit:
             if self.qlemu.load() != True:
-                logging.error('Fail to load the snapshot.')
+                ida_logger.error('Fail to load the snapshot.')
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_chang_reg(self):
         if self.qlinit:
@@ -1184,7 +1191,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_update_views(self.qlemu.ql.arch.regs.arch_pc, self.qlemu.ql)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_reset(self):
         if self.qlinit:
@@ -1192,7 +1199,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QlEmuQiling()
             self.ql_start()
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_close(self):
         if self.qlinit:
@@ -1203,9 +1210,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             del self.qlemu
             self.qlemu = None
             self.qlinit = False
-            logging.info('Qiling is deleted.')
+            ida_logger.info('Qiling is deleted.')
         else:
-            logging.error('Qiling is not started.')
+            ida_logger.error('Qiling is not started.')
 
     def ql_show_reg_view(self):
         if self.qlinit:
@@ -1217,7 +1224,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_show_stack_view(self):
         if self.qlinit:
@@ -1228,7 +1235,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemustackview.Show()
                 self.qlemustackview.Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_show_mem_view(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
@@ -1262,7 +1269,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemumemview[mem_addr].Show()
                 self.qlemumemview[mem_addr].Refresh()
         else:
-            logging.error('Qiling should be setup firstly.')
+            ida_logger.error('Qiling should be setup firstly.')
 
     def ql_unload_plugin(self):
         heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
@@ -1271,7 +1278,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.ql_close()
         self.ql_detach_main_menu_actions()
         self.ql_unregister_menu_actions()
-        logging.info('Unload plugin successfully!')
+        ida_logger.info('Unload plugin successfully!')
 
     def ql_menu_null(self):
         pass
@@ -1289,7 +1296,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 version_stable = re.findall(r"\"([\d\.]+)\"", content)[0]
             except (TypeError, IndexError):
                 warning("ERROR: Failed to find the Qiling version string from response.")
-                logging.warning("Failed to find the Qiling version string from response.")
+                ida_logger.warning("Failed to find the Qiling version string from response.")
 
             # compare with the current version
             if version_stable == QLVERSION:
@@ -1303,7 +1310,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         else:
             # fail to download
             warning("ERROR: Failed to connect to Github. Try again later.")
-            logging.warning("Failed to connect to Github when checking for the latest update. Try again later.")
+            ida_logger.warning("Failed to connect to Github when checking for the latest update. Try again later.")
 
     def _remove_from_bb_lists(self, bbid):
         if bbid in self.real_blocks:
@@ -1315,7 +1322,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_mark_real(self):
         if len(self.bb_mapping) == 0:
-            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            ida_logger.error(f"Please perform auto analysis before marking blocks manually!")
             return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
@@ -1325,7 +1332,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_mark_fake(self):
         if len(self.bb_mapping) == 0:
-            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            ida_logger.error(f"Please perform auto analysis before marking blocks manually!")
             return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
@@ -1335,7 +1342,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_mark_retn(self):
         if len(self.bb_mapping) == 0:
-            logging.error(f"Please perform auto analysis before marking blocks manually!")
+            ida_logger.error(f"Please perform auto analysis before marking blocks manually!")
             return
         cur_addr = IDA.get_current_address()
         cur_block = IDA.get_block(cur_addr)
@@ -1354,14 +1361,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def __is_jmp_mbb(self, mbb):
         ins_list = list(IDA.micro_code_from_mbb(mbb))
         if len(ins_list) == 0:
-            logging.warning(f"Get an empty mbb at {hex(mbb.start)}?!")
+            ida_logger.warning(f"Get an empty mbb at {hex(mbb.start)}?!")
             return False
         last_ins = ins_list[-1]
         if last_ins.opcode != ida_hexrays.m_goto:
-            logging.warning(f"jmp_mbb at {hex(mbb.start)} the opcode of last instruction {last_ins._print()} isn't goto")
+            ida_logger.warning(f"jmp_mbb at {hex(mbb.start)} the opcode of last instruction {last_ins._print()} isn't goto")
             return False
         if last_ins.l.t != ida_hexrays.mop_b:
-            logging.warning(f"jmp_mbb at {hex(mbb.start)} the l of last instruction {last_ins._print()} doesn't have a microcode block reference")
+            ida_logger.warning(f"jmp_mbb at {hex(mbb.start)} the l of last instruction {last_ins._print()} doesn't have a microcode block reference")
             return False
         goto_mbb = self.mbbs[last_ins.l.b]
         mbb_start = goto_mbb.start
@@ -1369,7 +1376,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         pre_dispatcher_bb = self.bb_mapping[self.pre_dispatcher]
         if self.__in_bb(mbb_start, dispatcher_bb) or self.__in_bb(mbb_start, pre_dispatcher_bb):
             return True
-        logging.warning(f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!")
+        ida_logger.warning(f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!")
         return False
 
     # Identify if the given microcode block is a next_mbb.
@@ -1378,20 +1385,20 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def __is_next_mbb(self, mbb):
         ins_list = list(IDA.micro_code_from_mbb(mbb))
         if len(ins_list) == 0:
-            logging.warning(f"Get an empty mbb at {hex(mbb.start)}?!")
+            ida_logger.warning(f"Get an empty mbb at {hex(mbb.start)}?!")
             return False
         first_ins = ins_list[0]
         if first_ins.opcode != ida_hexrays.m_mov:
-            logging.warning(f"next_mbb at {hex(mbb.start)} the opcode of first instruction {first_ins._print()} isn't mov")
+            ida_logger.warning(f"next_mbb at {hex(mbb.start)} the opcode of first instruction {first_ins._print()} isn't mov")
             return False
         if first_ins.l.t != ida_hexrays.mop_n:
-            logging.warning(f"next_mbb at {hex(mbb.start)} the l of first instruction {first_ins._print()} isn't an immediate number")
+            ida_logger.warning(f"next_mbb at {hex(mbb.start)} the l of first instruction {first_ins._print()} isn't an immediate number")
             return False
         if first_ins.d.t != ida_hexrays.mop_r:
-            logging.warning(f"next_mbb at {hex(mbb.start)} the d of first instruction {first_ins._print()} isn't a reg")
+            ida_logger.warning(f"next_mbb at {hex(mbb.start)} the d of first instruction {first_ins._print()} isn't a reg")
             return False
         if len(ins_list) == 1:
-            logging.info(f"A block with only one instruction which is `mov #imm, reg` at {hex(mbb.start)}.")
+            ida_logger.info(f"A block with only one instruction which is `mov #imm, reg` at {hex(mbb.start)}.")
         return True
 
     def _get_jmp_ins(self, ida_addr, insns):
@@ -1405,9 +1412,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             if ida_hexrays.is_mcode_jcond(ins.opcode):
                 result.append((bbid, ins))
         if len(result) > 1:
-            logging.warning(f"More than one conditional jmp detected at {hex(ida_addr)}!")
+            ida_logger.warning(f"More than one conditional jmp detected at {hex(ida_addr)}!")
         elif len(result) == 0:
-            logging.warning(f"No conditional jmp found at {hex(ida_addr)}!")
+            ida_logger.warning(f"No conditional jmp found at {hex(ida_addr)}!")
             return (None, None)
         return result[0]
 
@@ -1425,22 +1432,22 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # According to comments in hexrays.hpp, it may be a mop_v. I guess that shouldn't exist
         # so we add a sanity check here.
         if ins.d.t != ida_hexrays.mop_b:
-            logging.warning(f"Sanity check: microcode {ins._print()} doesn't refer a block!")
+            ida_logger.warning(f"Sanity check: microcode {ins._print()} doesn't refer a block!")
         jmp_mbb = mbbs[ins.d.b]
         next_mbb = mbbs[bbid].nextb
         if not (self.__is_next_mbb(next_mbb) and self.__is_jmp_mbb(jmp_mbb)):
             # Switch the branch and try again?
-            logging.info("Switch the jmp_bb and next_bb and try again...")
+            ida_logger.info("Switch the jmp_bb and next_bb and try again...")
             if self.__is_jmp_mbb(next_mbb) and self.__is_next_mbb(jmp_mbb):
                 jmp_mbb, next_mbb = next_mbb, jmp_mbb
             else:
-                logging.error(f"Fail to identify microcode blocks at {hex(ida_addr)}")
+                ida_logger.error(f"Fail to identify microcode blocks at {hex(ida_addr)}")
                 return False
         ins_list = list(IDA.micro_code_from_mbb(next_mbb))
         first_ins = ins_list[0]
         imm = first_ins.l.nnn.value
         reg_name = ida_hexrays.get_mreg_name(first_ins.d.r, ql.arch.pointersize)
-        logging.info(f"Froce set {reg_name} to {hex(imm)}")
+        ida_logger.info(f"Froce set {reg_name} to {hex(imm)}")
         ql.arch.regs.__setattr__(reg_name, imm)
         return True
 
@@ -1468,12 +1475,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             reg1 = IDA.print_operand(ida_addr, 0).lower()
             reg2 = IDA.print_operand(ida_addr, 1).lower()
             reg2_val = ql.arch.regs.__getattr__(reg2)
-            logging.info(f"Force set {reg1} to {hex(reg2_val)}")
+            ida_logger.info(f"Force set {reg1} to {hex(reg2_val)}")
             ql.arch.regs.__setattr__(reg1, reg2_val)
             return True
         elif "arm" in IDA.get_ql_arch_string():
             instr = IDA.get_instruction(ida_addr).lower()
-            logging.info(f"Going to force execute: {instr}")
+            ida_logger.info(f"Going to force execute: {instr}")
             if instr.startswith("it"): # itt eq\n moveqw low\n movteq high\n
                 ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
                 low = IDA.get_operand(ida_addr, 1)
@@ -1481,14 +1488,14 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 high = IDA.get_operand(ida_addr, 1)
                 reg = IDA.print_operand(ida_addr, 0).lower()
                 val = (high << 16) + low
-                logging.info(f"Force set {reg} to {hex(val)}")
+                ida_logger.info(f"Force set {reg} to {hex(val)}")
                 ql.arch.regs.__setattr__(reg, val)
                 return True
             elif "csel" in instr: # csel dst, src1, src2, cond
                 dst = IDA.print_operand(ida_addr, 0).lower()
                 src = IDA.print_operand(ida_addr, 2).lower()
                 src_val = ql.arch.regs.__getattr__(src)
-                logging.info(f"Force set {dst} to {hex(src_val)}")
+                ida_logger.info(f"Force set {dst} to {hex(src_val)}")
                 ql.arch.regs.__setattr__(dst, src_val)
                 return True
         return False
@@ -1507,20 +1514,20 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
         func = self.hook_data['func']
         if ida_addr < func.start_ea or ida_addr >= func.end_ea:
-            logging.error(f"Address {hex(ida_addr)} out of function boundaries!")
+            ida_logger.error(f"Address {hex(ida_addr)} out of function boundaries!")
             ql.emu_stop()
             self.hook_data['result'] = False
             return
         cur_bb = IDA.get_block(ida_addr)
         if "force" in self.hook_data and ida_addr in self.hook_data['force']:
             if self.hook_data['force'][ida_addr]:
-                logging.info(f"Force execution at {hex(ida_addr)}")
+                ida_logger.info(f"Force execution at {hex(ida_addr)}")
                 result = self._force_execution_with_microcode(ql, ida_addr)
                 if not result:
-                    logging.warning(f"Fail to force execution by microcode at {hex(ida_addr)}, trying legacy approach")
+                    ida_logger.warning(f"Fail to force execution by microcode at {hex(ida_addr)}, trying legacy approach")
                     result = self._force_execution_by_parsing_assembly(ql, ida_addr)
                     if not result:
-                        logging.error(f"Fail to force execution by legacy approach at {hex(ida_addr)}, stop now...")
+                        ida_logger.error(f"Fail to force execution by legacy approach at {hex(ida_addr)}, stop now...")
                         self.hook_data['result'] = False
                         ql.emu_stop()
                         return
@@ -1531,7 +1538,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 next_ida_addr = self._ida_address_after_branch(ida_addr)
             else:
                 next_ida_addr = ida_addr + IDA.get_instruction_size(ida_addr)
-            logging.info(f"Goto {hex(next_ida_addr)} after branch...")
+            ida_logger.info(f"Goto {hex(next_ida_addr)} after branch...")
             ql.arch.regs.arch_pc = self.deflatqlemu.ql_addr_from_ida(next_ida_addr) + self.append
             ida_addr = next_ida_addr
         # TODO: Maybe we can detect whether the program will access unmapped
@@ -1551,7 +1558,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         map_size = ql.mem.align_up(size)
 
         if not ql.mem.is_mapped(map_addr, map_size):
-            logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
+            ida_logger.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
 
             ql.mem.map(map_addr, map_size)
             ql.mem.write(map_addr, b'\x00' * map_size)
@@ -1582,24 +1589,24 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _log_paths_str(self):
         for bbid, succs in self.paths.items():
             if len(succs) == 1:
-                logging.info(f"{self._block_str(bbid)} -> {self._block_str(succs[0])}")
+                ida_logger.info(f"{self._block_str(bbid)} -> {self._block_str(succs[0])}")
             elif len(succs) == 2:
-                logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
-                logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
+                ida_logger.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
+                ida_logger.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
             elif len(succs) > 2:
-                logging.warning(f"succs: {succs} found from {self._block_str(bbid)}!")
+                ida_logger.warning(f"succs: {succs} found from {self._block_str(bbid)}!")
 
     # Is this correct?
     def _thumb_detect(self, ida_addr):
         return IDA.get_instruction_size(ida_addr) == 2
 
     def _log_verbose(self, ql, addr, size):
-        logging.debug(f"addr: {hex(addr)} ida_addr: {hex(self.deflatqlemu.ida_addr_from_ql_addr(addr))}")
+        ida_logger.debug(f"addr: {hex(addr)} ida_addr: {hex(self.deflatqlemu.ida_addr_from_ql_addr(addr))}")
         registers = [ k for k in ql.arch.regs.register_mapping.keys() if type(k) is str ]
         for idx in range(0, len(registers), 3):
             regs = registers[idx:idx+3]
             s = "\t".join(map(lambda v: f"{v:4}: {ql.arch.regs.__getattr__(v):016x}", regs))
-            logging.debug(s)
+            ida_logger.debug(s)
 
     # Q: Why we need emulation to help us find real control flow considering there are some
     #    switch-case patterns in mircocode which can be analysed statically?
@@ -1617,7 +1624,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         first_block = self.bb_mapping[self.first_block]
         if IDA.get_ql_arch_string() == "arm32":
             if self._thumb_detect(first_block.start_ea):
-                logging.info(f"Thumb detected, enable it.")
+                ida_logger.info(f"Thumb detected, enable it.")
                 self.deflatqlemu.start(archtype=QL_ARCH.ARM, thumb=True)
                 self.deflatqlemu.ql.arch.regs.cpsr |= 0x20
                 self.append = 1
@@ -1625,7 +1632,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.deflatqlemu.start()
             self.append = 0
         ql = self.deflatqlemu.ql
-        if logging.root.level <= logging.DEBUG:
+        if ida_logger.level <= ida_logger.debug:
             ql.hook_code(self._log_verbose)
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
@@ -1636,7 +1643,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # okay, we can set up our core hook now.
         ql.hook_code(self._guide_hook)
         for bbid in reals:
-            logging.debug(f"Search control flow for block: {self._block_str(bbid)}")
+            ida_logger.debug(f"Search control flow for block: {self._block_str(bbid)}")
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             self.hook_data = {
@@ -1679,7 +1686,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return self.ks.asm(*args, **kwargs)
 
     def _assemble(self, instr, addr):
-        logging.debug(f"Keystone: Assemble {instr} at {hex(addr)}")
+        ida_logger.debug(f"Keystone: Assemble {instr} at {hex(addr)}")
         bs, count = self._asm(instr, addr)
         IDA.patch_bytes(addr, bytes(bs))
         IDA.perform_analysis(addr, addr + len(bs))
@@ -1720,7 +1727,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             if instr.startswith("it"): # itt eq
                 tks = instr.split(" ")
                 if len(tks) != 2:
-                    logging.error(f"Can't get condition from {instr}")
+                    ida_logger.error(f"Can't get condition from {instr}")
                     return None
                 return tks[-1]
             elif "csel" in instr:
@@ -1752,23 +1759,23 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         cond = self._arch_parse_cond_from_addr(braddr)
         buffer = [0] * (bb.end_ea - braddr)
         instr_to_assemble = self._arch_cond_jmp_instruction(cond, f"{hex(force_addr)}h")
-        logging.info(f"Assemble {instr_to_assemble} at {hex(force_addr)}")
+        ida_logger.info(f"Assemble {instr_to_assemble} at {hex(force_addr)}")
         bs1, _ = self._asm(instr_to_assemble, braddr)
         buffer[:len(bs1)] = bs1
         next_instr_address = braddr + len(bs1)
         instr_to_assemble = self._arch_jmp_instruction(f"{hex(normal_addr)}h")
-        logging.info(f"Assemble {instr_to_assemble} at {hex(normal_addr)}")
+        ida_logger.info(f"Assemble {instr_to_assemble} at {hex(normal_addr)}")
         bs2, _ = self._asm(instr_to_assemble, next_instr_address)
         buffer[len(bs1):len(bs1) + len(bs2)] = bs2
-        logging.info(f"Patch real block with branch from {hex(braddr)} to {hex(bb.end_ea)}")
+        ida_logger.info(f"Patch real block with branch from {hex(braddr)} to {hex(bb.end_ea)}")
         self._patch_bytes_with_force_analysis(braddr, bytes(buffer))
 
 
     def _patch_codes(self):
         if len(self.paths[self.first_block]) != 1:
-            logging.error(f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
+            ida_logger.error(f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
             return
-        logging.info("NOP dispatcher block")
+        ida_logger.info("NOP dispatcher block")
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         # Some notes:
         #    Patching b'\x00' instead of 'nop' can help IDA decompile a better result. Don't know why...
@@ -1776,37 +1783,37 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         buffer = [0] * (dispatcher_bb.end_ea - dispatcher_bb.start_ea)
         first_jmp_addr = dispatcher_bb.start_ea
         instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[self.first_block][0]].start_ea)}h")
-        logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
+        ida_logger.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
         bs, _ = self._asm(instr_to_assemble, first_jmp_addr)
         buffer[:len(bs)] = bs
-        logging.info(f"Patch first jump at {hex(first_jmp_addr)}")
+        ida_logger.info(f"Patch first jump at {hex(first_jmp_addr)}")
         self._patch_bytes_with_force_analysis(first_jmp_addr, bytes(buffer))
         for bbid in self.real_blocks:
-            logging.debug(f"Patching real block: {self._block_str(bbid)}")
+            ida_logger.debug(f"Patching real block: {self._block_str(bbid)}")
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             if braddr is None:
                 last_instr_address = IDA.get_prev_head(bb.end_ea)
                 buffer = [0x90] * (bb.end_ea - last_instr_address)
                 if len(self.paths[bbid]) != 1:
-                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
+                    ida_logger.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
                     continue
                 instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[bbid][0]].start_ea)}h")
-                logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
+                ida_logger.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
                 bs, _ = self._asm(instr_to_assemble, last_instr_address)
                 buffer[:len(bs)] = bs
-                logging.info(f"Patch real block from {hex(last_instr_address)} to {hex(bb.end_ea)}")
+                ida_logger.info(f"Patch real block from {hex(last_instr_address)} to {hex(bb.end_ea)}")
                 self._patch_bytes_with_force_analysis(last_instr_address, bytes(buffer))
             else:
                 if len(self.paths[bbid]) != 2:
-                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
+                    ida_logger.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
                     continue
                 self._arch_branch_patch(braddr, bbid)
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
-            logging.info(f"Patch NOP for block: {self._block_str(bb)}")
+            ida_logger.info(f"Patch NOP for block: {self._block_str(bb)}")
             self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
-        logging.info(f"Patch NOP for pre_dispatcher.")
+        ida_logger.info(f"Patch NOP for pre_dispatcher.")
         bb = self.bb_mapping[self.pre_dispatcher]
         self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
 
@@ -1814,7 +1821,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         target_function = IDA.get_function(dispatcher_bb.start_ea)
         # Reduce optimization to make pattern more stable.
-        logging.info(f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}")
+        ida_logger.info(f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}")
         mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, decomp_flags, maturity)
         insns = {}
         mbbs = {}
@@ -1834,16 +1841,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if len(self.bb_mapping) == 0:
             self.ql_parse_blocks_for_deobf()
         if not self.qlinit:
-            logging.info("Qiling should be setup firstly!")
+            ida_logger.info("Qiling should be setup firstly!")
             return
         self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
-        logging.debug("Microcode generation done. Going to search path.")
+        ida_logger.debug("Microcode generation done. Going to search path.")
         if not self._search_path():
-            logging.info(f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!")
+            ida_logger.info(f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!")
             return
-        logging.debug("Real control flows search done. Going to patch codes.")
+        ida_logger.debug("Real control flows search done. Going to patch codes.")
         self._patch_codes()
-        logging.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
+        ida_logger.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
         IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
         del self.deflatqlemu
         self.deflatqlemu = None
@@ -1861,7 +1868,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.bb_mapping = {bb.id:bb for bb in flowchart}
         if flowchart is None:
             return
-        bb_count = {}
+        bb_count = {}       # count the reference of each basic block
         for bb in flowchart:
             for succ in bb.succs():
                 if succ.id not in bb_count:
@@ -1878,7 +1885,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.dispatcher = list(self.bb_mapping[self.pre_dispatcher].succs())[0].id
             self.first_block = flowchart[0].id
         except IndexError:
-            logging.error("Fail to get dispatcher and first_block.")
+            ida_logger.error("Fail to get dispatcher and first_block.")
             return
         self.real_blocks = []
         self.fake_blocks = []
@@ -1899,17 +1906,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         IDA.color_block(self.bb_mapping[self.dispatcher], Colors.Blue.value)
         IDA.color_block(self.bb_mapping[self.pre_dispatcher], Colors.Blue.value)
         IDA.color_block(self.bb_mapping[self.first_block], Colors.Beige.value)
-        logging.info(f"First block: {self._block_str(self.first_block)}")
-        logging.info(f"Dispatcher: {self._block_str(self.dispatcher)}")
-        logging.info(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
-        logging.info(f"Real blocks:")
-        for s in map(self._block_str, self.real_blocks): logging.info(s)
-        logging.info(f"Fake blocks:")
-        for s in map(self._block_str, self.fake_blocks): logging.info(s)
-        logging.info(f"Return blocks:")
-        for s in map(self._block_str, self.retn_blocks): logging.info(s)
-        logging.info(f"Auto analysis finished, please check whether the result is correct.")
-        logging.info(f"You may change the property of each block manually if necessary.")
+        ida_logger.info(f"First block: {self._block_str(self.first_block)}")
+        ida_logger.info(f"Dispatcher: {self._block_str(self.dispatcher)}")
+        ida_logger.info(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
+        ida_logger.info(f"Real blocks:")
+        for s in map(self._block_str, self.real_blocks): ida_logger.info(s)
+        ida_logger.info(f"Fake blocks:")
+        for s in map(self._block_str, self.fake_blocks): ida_logger.info(s)
+        ida_logger.info(f"Return blocks:")
+        for s in map(self._block_str, self.retn_blocks): ida_logger.info(s)
+        ida_logger.info(f"Auto analysis finished, please check whether the result is correct.")
+        ida_logger.info(f"You may change the property of each block manually if necessary.")
 
     # jb addr
     # jnb addr
@@ -1927,7 +1934,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             patterns.append( re.compile(re.escape(bytes([r_opc])) + rb'.' + re.escape(bytes([opc])) + rb'.') )
 
         for pattern in patterns:
-            logging.debug(f"Start with pattern: {pattern}")
+            ida_logger.debug(f"Start with pattern: {pattern}")
             tmpbs = bs
             result = re.search(pattern, tmpbs)
             while result is not None:
@@ -1938,21 +1945,21 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 tmpbs = tmpbs[r:]
                 result = re.search(pattern, tmpbs)
                 if l_offset == r_offset + 2:
-                    logging.info(f"Get a junk jcc at [{hex(start+l)}, {hex(start+r)}] with offset {hex(l_offset)}.")
+                    ida_logger.info(f"Get a junk jcc at [{hex(start+l)}, {hex(start+r)}] with offset {hex(l_offset)}.")
                     # If it jumps down, check if we can fill the codes with nops safely.
                     if l_offset <= 0x7F:
                         can_fill_with_nops = True
                         for addr in range(start+l, start + l +  2 + l_offset):
                             if len(IDA.get_xrefsto(addr, flags=ida_xref.XREF_FAR)) != 0:
-                                logging.info(f"Find multiple Xrefs at {hex(addr)}, patch a jmp...")
+                                ida_logger.info(f"Find multiple Xrefs at {hex(addr)}, patch a jmp...")
                                 can_fill_with_nops = False
                                 break
                         if can_fill_with_nops:
-                            logging.info(f"Fill NOPs from {hex(start+l)} to {hex(start + l + 2 + l_offset)}.")
+                            ida_logger.info(f"Fill NOPs from {hex(start+l)} to {hex(start + l + 2 + l_offset)}.")
                             IDA.fill_bytes(start+l, start + l + 2 + l_offset)
                             continue
                     # Or we simply patch a jmp.
-                    logging.info(f"Patch a jmp at {start+l:x}.")
+                    ida_logger.info(f"Patch a jmp at {start+l:x}.")
                     IDA.fill_bytes(start+l, start+r)
                     IDA.patch_bytes(start+l, b"\xeb" + bytes([l_offset]))
 
@@ -1970,7 +1977,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         cur_start, cur_end = IDA.get_item(start)
         while cur_start < end:
             if not IDA.is_colored_item(cur_start):
-                logging.info(f"Item at [{hex(cur_start)}, {hex(cur_end)}) doesn't have a color, nop it.")
+                ida_logger.info(f"Item at [{hex(cur_start)}, {hex(cur_end)}) doesn't have a color, nop it.")
                 IDA.fill_bytes(cur_start, cur_end)
             cur_start, cur_end = IDA.get_item(cur_end)
 
@@ -2019,10 +2026,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 import importlib
 
                 modulepath,filename = os.path.split(scriptpath)
-                logging.info(modulepath)
-                logging.info(filename)
+                ida_logger.info(modulepath)
+                ida_logger.info(filename)
                 scriptname,_ = os.path.splitext(filename)
-                logging.info(scriptname)
+                ida_logger.info(scriptname)
                 sys.path.append(modulepath)
                 module = importlib.import_module(scriptname)
 
@@ -2032,17 +2039,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 cls = getattr(module, classname)
                 return cls()
             except Exception as e:
-                logging.exception("")
+                ida_logger.exception("")
                 return None
 
         self.userobj = get_user_scripts_obj(self.customscriptpath, 'QILING_IDA', is_reload)
         if self.userobj is not None:
             if is_reload and not is_start:
-                logging.info('Custom user script is reloaded.')
+                ida_logger.info('Custom user script is reloaded.')
             else:
-                logging.info('Custom user script is loaded successfully.')
+                ida_logger.info('Custom user script is loaded successfully.')
         else:
-            logging.info('Custom user script not found.')
+            ida_logger.info('Custom user script not found.')
 
     ### Dialog
 
@@ -2063,7 +2070,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
         para_array = shlex.split(parameter)
         self.qlemu.path = [get_input_file_path()] + para_array
-        logging.info(self.qlemu.path)
+        ida_logger.info(self.qlemu.path)
 
         if env != '':
             try:
@@ -2071,8 +2078,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.env = load(env_f)
                 env_f.close()
             except Exception as e:
-                logging.error("Error parsing the env file!!")
-                logging.error(e.message)
+                ida_logger.error("Error parsing the env file!!")
+                ida_logger.error(e.message)
                 return False
 
         if self.qlemu is not None:
