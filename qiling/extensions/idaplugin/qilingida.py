@@ -1632,7 +1632,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.deflatqlemu.start()
             self.append = 0
         ql = self.deflatqlemu.ql
-        if ida_logger.level <= ida_logger.debug:
+        if ida_logger.level <= logging.DEBUG:
             ql.hook_code(self._log_verbose)
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
