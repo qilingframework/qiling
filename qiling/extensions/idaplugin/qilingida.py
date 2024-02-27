@@ -61,7 +61,7 @@ QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qili
 # logging.basicConfig(level=ida_logger.info, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
 
 ida_logger = logging.getLogger('ida')
-ida_logger.setLevel(ida_logger.info)
+ida_logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
 handler.setFormatter(formatter)
