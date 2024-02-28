@@ -237,7 +237,7 @@ class QlCoreHooks:
 
         return True
 
-    def _hook_insn_invalid_cb(self, uc: Uc, pack_data) -> None:
+    def _hook_insn_invalid_cb(self, uc: Uc, pack_data) -> bool:
         """Invalid instruction hooks dispatcher.
         """
 
@@ -256,6 +256,8 @@ class QlCoreHooks:
 
         if not handled:
             raise QlErrorCoreHook("_hook_insn_invalid_cb : not handled")
+
+        return True
 
     def _hook_addr_cb(self, uc: Uc, addr: int, size: int, pack_data):
         """Address hooks dispatcher.
