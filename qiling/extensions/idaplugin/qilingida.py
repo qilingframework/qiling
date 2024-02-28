@@ -62,10 +62,12 @@ QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qili
 
 ida_logger = logging.getLogger('ida')
 ida_logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
-handler.setFormatter(formatter)
-ida_logger.addHandler(handler)
+# Check if handler already exists
+if not ida_logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
+    handler.setFormatter(formatter)
+    ida_logger.addHandler(handler)
 
 class Colors(Enum):
     Blue = 0xE8864A
@@ -1509,10 +1511,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 return True
         return False
 
-    def _guide_hook(self, ql, addr, size):
+    def _guide_hook(self, ql: Qiling, addr, size):
         start_bb_id = self.hook_data['startbb']
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
         func = self.hook_data['func']
+        # if current address is in other function, do nothing
+        if IDA.get_function(ida_addr).start_ea != func.start_ea:
+            return
+        # maybe we should skip all other function except some special ones?
+        # because most of functions will not influent the result of deflat?
+
         if ida_addr < func.start_ea or ida_addr >= func.end_ea:
             ida_logger.error(f"Address {hex(ida_addr)} out of function boundaries!")
             ql.emu_stop()
@@ -1823,8 +1831,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         # Reduce optimization to make pattern more stable.
         ida_logger.info(f"Generate microcode from {hex(target_function.start_ea)} to {hex(target_function.end_ea)}")
         mba = IDA.get_micro_code_mba(target_function.start_ea, target_function.end_ea, decomp_flags, maturity)
-        insns = {}
-        mbbs = {}
+        insns = {}      # dict[insn_ea] = [(mblock_id, insn)]
+        mbbs = {}       # dict[mblock_id] = mblock
         for i in range(mba.qty):
             mbb = mba.get_mblock(i)
             mbbs[i] = mbb
