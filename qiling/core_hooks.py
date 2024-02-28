@@ -11,8 +11,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import Any, Callable, MutableMapping, MutableSequence, Protocol
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Protocol
 
 from unicorn.unicorn_const import (
     UC_HOOK_INTR,
@@ -152,14 +151,14 @@ class QlCoreHooks:
     def __init__(self, uc: Uc):
         self._h_uc = uc
 
-        self._hook: MutableMapping[int, MutableSequence[Hook]] = {}
-        self._hook_fuc: MutableMapping[int, int] = {}
+        self._hook: Dict[int, List[Hook]] = {}
+        self._hook_fuc: Dict[int, int] = {}
 
-        self._insn_hook: MutableMapping[int, MutableSequence[Hook]] = {}
-        self._insn_hook_fuc: MutableMapping[int, int] = {}
+        self._insn_hook: Dict[int, List[Hook]] = {}
+        self._insn_hook_fuc: Dict[int, int] = {}
 
-        self._addr_hook: MutableMapping[int, MutableSequence[HookAddr]] = {}
-        self._addr_hook_fuc: MutableMapping[int, int] = {}
+        self._addr_hook: Dict[int, List[HookAddr]] = {}
+        self._addr_hook_fuc: Dict[int, int] = {}
 
     ########################
     # Callback definitions #
@@ -229,7 +228,7 @@ class QlCoreHooks:
                     if type(ret) is int and ret & QL_HOOK_BLOCK:
                         break
 
-    def _hook_mem_cb(self, uc: Uc, access: int, addr: int, size: int, value: int, pack_data):
+    def _hook_mem_cb(self, uc: Uc, access: int, addr: int, size: int, value: int, pack_data) -> bool:
         """Memory access hooks dispatcher.
         """
 
@@ -751,11 +750,11 @@ class QlCoreHooks:
         self.clear_ql_hooks()
 
     def clear_ql_hooks(self):
-        self._hook = {}
-        self._hook_fuc = {}
+        self._hook.clear()
+        self._hook_fuc.clear()
 
-        self._insn_hook = {}
-        self._insn_hook_fuc = {}
+        self._insn_hook.clear()
+        self._insn_hook_fuc.clear()
 
-        self._addr_hook = {}
-        self._addr_hook_fuc = {}
+        self._addr_hook.clear()
+        self._addr_hook_fuc.clear()
