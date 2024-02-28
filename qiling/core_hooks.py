@@ -120,6 +120,21 @@ class InterruptHookCallback(Protocol):
         pass
 
 
+class InvalidInsnHookCallback(Protocol):
+    def __call__(self, __ql: Qiling, *__context: Any) -> Any:
+        """Invalid instruction hook callback.
+
+        Args:
+            __ql      : the associated qiling instance
+            __context : additional context passed on hook creation. if no context was passed, this argument should be omitted
+
+        Returns:
+            an integer with `QL_HOOK_BLOCK` mask set to block execution of remaining hooks
+            (if any) or `None`
+        """
+        pass
+
+
 def hookcallback(ql: Qiling, callback: Callable):
     @wraps(callback)
     def wrapper(*args, **kwargs):
@@ -649,6 +664,25 @@ class QlCoreHooks:
         """
 
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, insn_type)
+
+    def hook_insn_invalid(self, callback: InvalidInsnHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
+        """Intercept cases in which Unicorn reaches opcodes it does not recognize or support.
+
+        Args:
+            callback  : a method to call upon interception
+            user_data : an additional context to pass to callback (default: `None`)
+            begin     : start of memory range to watch
+            end       : end of memory range to watch
+
+        Notes:
+            - The callback is responsible to advance the pc register, if needed.
+            - If `begin` and `end` are not specified, the entire memory space will be watched.
+
+        Returns:
+            Hook handle
+        """
+
+        return self.ql_hook(UC_HOOK_INSN_INVALID, callback, user_data, begin, end)
 
     def hook_del(self, hret: HookRet) -> None:
         """Unregister an existing hook and release its resources.
