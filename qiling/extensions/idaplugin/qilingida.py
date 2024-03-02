@@ -13,6 +13,7 @@ import shlex
 from enum import Enum
 from elftools.elf.elffile import ELFFile
 from json import load
+import queue
 
 # IDA Python SDK
 from idaapi import *
@@ -64,7 +65,10 @@ ida_logger = logging.getLogger('ida')
 ida_logger.setLevel(logging.INFO)
 # Check if handler already exists
 if not ida_logger.handlers:
-    handler = logging.StreamHandler()
+    if ida_logger.level <= logging.DEBUG: 
+        handler = logging.FileHandler('./qiling_debug.log')
+    else:
+        handler = logging.StreamHandler()
     formatter = logging.Formatter('[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
     handler.setFormatter(formatter)
     ida_logger.addHandler(handler)
@@ -805,6 +809,22 @@ class QlEmuRegDialog(Choose):
     def OnClose(self):
         pass
 
+class QlDeflatEmuDialog(Form):
+    def __init__(self):
+        Form.__init__(self, r"""STARTITEM {id:init_addr}
+BUTTON YES* Add
+BUTTON CANCEL Cancel
+Deflat Info
+Please offer some special info for deflat.
+<#Run to where before deflat?\n 0 means dont run or restore before init.#Run to before\::{init_addr}> 
+<#Which functions(start addr) do you never want to skip them?\nSpilt them with whitespace. -1 means no functions.#Never skip\::{never_skip}>
+<#Which functions(start addr) do you want to nop them?\nSpilt them with whitespace. -1 means no functions.#Nop funcs\::{nop_funcs}>
+""", {
+        'init_addr': Form.NumericInput(swidth=20, tp=Form.FT_HEX),
+        'never_skip': Form.StringInput(swidth=40),
+        'nop_funcs': Form.StringInput(swidth=40)
+    })
+
 ### Misc
 class QlEmuMisc:
     MenuItem = collections.namedtuple("MenuItem", ["action", "handler", "title", "tooltip", "shortcut", "popup"])
@@ -895,6 +915,17 @@ class QlEmuQiling:
         self.env = {}
 
     def start(self, *args, **kwargs):
+        # Issue #1201: https://cloud.tencent.com/developer/article/2144036 & https://github.com/qilingframework/qiling/issues/1201
+        def bypass_isa_check(ql: Qiling) -> None:
+            print("by_pass_isa_check():")
+            ql.arch.regs.rip += 0x15
+            pass
+
+        ld_so_base = 0x7ffff7dd5000
+
+        def null_rseq_impl(ql: Qiling, abi: int, length: int, flags: int, sig: int):
+            return 0
+
         self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
 
         if sys.platform != 'win32':
@@ -914,6 +945,8 @@ class QlEmuQiling:
                     self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
                 elif self.ql.arch.bits == 64:
                     self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
+            self.ql.hook_address(bypass_isa_check, ld_so_base+0x2387F)
+            self.ql.os.set_syscall('rseq', null_rseq_impl, QL_INTERCEPT.CALL)
         else:
             self.baseaddr = 0x0
 
@@ -1003,6 +1036,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.customscriptpath = None
         self.bb_mapping = {}
         self.ks = None
+        # use for deflat init
+        self.deflat_init_ctx = None
+        self.deflat_prev_init_addr = 0
 
     ### Main Framework
 
@@ -1110,7 +1146,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             colorhook = self.qlemu.ql.hook_code(self._color_path(Colors.Pink.value))
             show_wait_box("Qiling is processing ...")
             try:
-                self.qlemu.run(begin=start, end=end)
+                self.qlemu.run(begin=self.qlemu.ql_addr_from_ida(start), end=self.qlemu.ql_addr_from_ida(end))
             finally:
                 hide_wait_box()
             self.qlemu.ql.hook_del(colorhook)
@@ -1125,6 +1161,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def ql_set_pc(self):
         if self.qlinit:
             ea = IDA.get_current_address()
+            ea = self.qlemu.ql_addr_from_ida(ea)
             self.qlemu.ql.arch.regs.arch_pc = ea
             ida_logger.info(f"QIling PC set to {hex(ea)}")
             self.qlemu.status = self.qlemu.ql.save()
@@ -1372,12 +1409,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if last_ins.l.t != ida_hexrays.mop_b:
             ida_logger.warning(f"jmp_mbb at {hex(mbb.start)} the l of last instruction {last_ins._print()} doesn't have a microcode block reference")
             return False
+        # last_ins.l.b is the mbb which maturity=7, but original self.mbbs are the mbbs which maturity=3, 
+        # their id is not the same. So we need to modify it.
         goto_mbb = self.mbbs[last_ins.l.b]
         mbb_start = goto_mbb.start
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         pre_dispatcher_bb = self.bb_mapping[self.pre_dispatcher]
         if self.__in_bb(mbb_start, dispatcher_bb) or self.__in_bb(mbb_start, pre_dispatcher_bb):
             return True
+        ida_logger.warning(f"goto_mbb: {last_ins.l.b}, mbb_start: {hex(mbb_start)}, mbb_end: {hex(goto_mbb.end)}, dispatcher_bb: ({self.dispatcher}, {hex(dispatcher_bb.start_ea)}, {hex(dispatcher_bb.end_ea)}), pre_dispatcher_bb: ({self.pre_dispatcher}, {hex(pre_dispatcher_bb.start_ea)}, {hex(pre_dispatcher_bb.end_ea)})")
         ida_logger.warning(f"The address {hex(mbb_start)} where jmp_mbb goes isn't pre_dispatcher or dispatcher block!")
         return False
 
@@ -1439,12 +1479,16 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         next_mbb = mbbs[bbid].nextb
         if not (self.__is_next_mbb(next_mbb) and self.__is_jmp_mbb(jmp_mbb)):
             # Switch the branch and try again?
-            ida_logger.info("Switch the jmp_bb and next_bb and try again...")
+            ida_logger.info(f"Switch the jmp_bb and next_bb and try again...")
             if self.__is_jmp_mbb(next_mbb) and self.__is_next_mbb(jmp_mbb):
                 jmp_mbb, next_mbb = next_mbb, jmp_mbb
             else:
                 ida_logger.error(f"Fail to identify microcode blocks at {hex(ida_addr)}")
                 return False
+        # Enforce set the state value
+        # TODO: In some variants of control-flow flattening, it is possible that simply assigning 
+        # values to state variables based on branches is not a complete substitute for actual branching, 
+        # and the implementation may change in the future based on new variants.
         ins_list = list(IDA.micro_code_from_mbb(next_mbb))
         first_ins = ins_list[0]
         imm = first_ins.l.nnn.value
@@ -1515,11 +1559,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         start_bb_id = self.hook_data['startbb']
         ida_addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
         func = self.hook_data['func']
-        # if current address is in other function, do nothing
-        if IDA.get_function(ida_addr).start_ea != func.start_ea:
+        # if current address is in other segment or function, do nothing
+        ida_logger.debug(f"Current address: {hex(ida_addr)}")
+        code_segm = [".text", "code", "CODE", ]
+        if get_segm_name(ida_addr) not in code_segm or IDA.get_function(ida_addr).start_ea != func.start_ea:
             return
-        # maybe we should skip all other function except some special ones?
-        # because most of functions will not influent the result of deflat?
 
         if ida_addr < func.start_ea or ida_addr >= func.end_ea:
             ida_logger.error(f"Address {hex(ida_addr)} out of function boundaries!")
@@ -1528,6 +1572,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return
         cur_bb = IDA.get_block(ida_addr)
         if "force" in self.hook_data and ida_addr in self.hook_data['force']:
+            # ida_logger.debug(f"force: {hex(ida_addr)} {self.hook_data['force'][ida_addr]}")
             if self.hook_data['force'][ida_addr]:
                 ida_logger.info(f"Force execution at {hex(ida_addr)}")
                 result = self._force_execution_with_microcode(ql, ida_addr)
@@ -1551,11 +1596,34 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             ida_addr = next_ida_addr
         # TODO: Maybe we can detect whether the program will access unmapped
         #       here so that we won't map the memory.
-        if self._has_call_insn(ida_addr):
-            ql.arch.regs.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
+        # Maybe we should skip all other function except some special ones?
+        # Because most of functions will not influent the result of deflat?
+        # TODO: modify judge logic into microcode (_has_call_insn needs maturity=3, because function returns may merge with other instructions)
+        insn = insn_t()
+        addr = -1
+        if decode_insn(insn, ida_addr) == 0:
+            ida_logger.error(f"Fail to decode instruction at {hex(ida_addr)}")
+            ql.emu_stop()
+            self.hook_data['result'] = False
             return
-        if start_bb_id == cur_bb.id:
+        if is_call_insn(insn):
+            if insn.Op1.type == o_reg:
+                addr = ql.arch.regs.__getattr__(get_reg_name(insn.Op1.reg, ql.arch.pointersize))
+                addr = self.deflatqlemu.ida_addr_from_ql_addr(addr)
+            else:
+                try:
+                    addr = get_operand_value(ida_addr, 0)
+                except:
+                    addr = -1
+            ida_logger.debug(f"Call detected at {hex(ida_addr)}: {hex(addr)}")
+            if addr == -1 or addr not in self.hook_data['never_skip']:
+                ida_logger.debug(f"Call detected at {hex(ida_addr)}: {hex(addr)}, skip it.")
+                ql.arch.regs.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
+                return
+        # Issue: maybe a block will self loop?
+        if start_bb_id == cur_bb.id and not self.hook_data['see_other_block']:
             return
+        self.hook_data['see_other_block'] = True
         if cur_bb.id in self.real_blocks or cur_bb.id in self.retn_blocks:
             if cur_bb.id not in self.paths[start_bb_id]:
                 self.paths[start_bb_id].append(cur_bb.id)
@@ -1626,6 +1694,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def _search_path(self):
         self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
         reals = [self.first_block, *self.real_blocks]
+        self.is_visited = {bb: False for bb in reals}
         self.deflatqlemu = QlEmuQiling()
         self.deflatqlemu.path = self.qlemu.path
         self.deflatqlemu.rootfs = self.qlemu.rootfs
@@ -1640,44 +1709,132 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.deflatqlemu.start()
             self.append = 0
         ql = self.deflatqlemu.ql
-        if ida_logger.level <= logging.DEBUG:
-            ql.hook_code(self._log_verbose)
+        # if ida_logger.level <= logging.DEBUG:
+        #     ql.hook_code(self._log_verbose)
         self.hook_data = None
         ql.hook_mem_read_invalid(self._skip_unmapped_rw)
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
+        # ql should firstly run some funcs to defeat the Global Encryption and load ld.so.
+        if self.init_addr > 0:
+            if self.init_addr != self.deflat_prev_init_addr:
+                try:
+                    ql.run(end=self.deflatqlemu.ql_addr_from_ida(self.init_addr))
+                except:
+                    self.deflat_prev_init_addr = self.init_addr
+                    self.deflat_init_ctx = ql.save(reg=False)
+                    return False
+                self.deflat_prev_init_addr = self.init_addr
+                self.deflat_init_ctx = ql.save(reg=False)
+            else:
+                ql.restore(self.deflat_init_ctx)
+        else:
+            if self.deflat_init_ctx is not None:
+                ql.restore(self.deflat_init_ctx)
         # set up stack before we really run.
-        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea), count=0xFFF)
+        # ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=self.deflatqlemu.ql_addr_from_ida(first_block.end_ea), count=0xFFF)
         # okay, we can set up our core hook now.
         ql.hook_code(self._guide_hook)
-        for bbid in reals:
-            ida_logger.debug(f"Search control flow for block: {self._block_str(bbid)}")
+        # In order to defeat Control Flow Flattening Enhanced, we need use self.paths to BFS
+        # instead of just simply run all real blocks.
+        ctx_queue = queue.Queue()
+        bbid_queue = queue.Queue()
+        # First block not contain conditional jump, so we just go to find its succ.
+        ida_logger.debug(f"Search control flow for block: {self._block_str(self.first_block)}")
+        self.hook_data = {
+                "startbb": self.first_block,
+                "func": IDA.get_function(first_block.start_ea),
+                "result": True,
+                "force_legacy": False,
+                "never_skip": self.deflat_never_skip_funcs,
+                "see_other_block": False,
+            }
+        ql.run(begin=self.deflatqlemu.ql_addr_from_ida(first_block.start_ea) + self.append, end=0, count=0xFFF)
+        # if last block is real block, we should continue search path
+        if self.paths[self.first_block][0] in self.real_blocks:
+            ctx_queue.put(ql.save())
+            bbid_queue.put(self.paths[self.first_block][0])
+        self.is_visited[self.first_block] = True
+        while not ctx_queue.empty():
+            ql.restore(ctx_queue.get())
+            bbid = bbid_queue.get()
+            ida_logger.debug(f"Search control flow for block: {self._block_str(bbid)} begin from {hex(self.deflatqlemu.ida_addr_from_ql_addr(ql.arch.regs.arch_pc - self.append))}")
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
+            if braddr is not None:
+                ida_logger.debug(f"Find branch at {hex(braddr)}")
             self.hook_data = {
                 "startbb": bbid,
                 "func": IDA.get_function(first_block.start_ea),
                 "result": True,
-                "force_legacy": False
+                "force_legacy": False,
+                "never_skip": self.deflat_never_skip_funcs,
+                "see_other_block": False,
             }
             ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
-            ctx = ql.save()
-            # Skip force execution in the first block.
             # `end=0` is a workaround for ql remembering last exit_point.
-            if braddr is None or bb.id == self.first_block:
+            if braddr is None:
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
-            else:
-                self.hook_data['force'] = {braddr: True}
-                ctx2 = ql.save()
-                ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
-                ql.restore(ctx2)
                 if not self.hook_data['result']:
                     return False
-                self.hook_data['force'] = {braddr: False}
+                # only real_blocks have succs, every block just need to search once
+                tmp_bbid = self.paths[bbid][-1]
+                if tmp_bbid in self.real_blocks and tmp_bbid != bbid and not self.is_visited[tmp_bbid] and tmp_bbid not in bbid_queue.queue:
+                    ctx_queue.put(ql.save())
+                    bbid_queue.put(tmp_bbid)
+            else:
+                self.hook_data['force'] = {braddr: True}
+                ctx = ql.save()
                 ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
-            ql.restore(ctx)
-            if not self.hook_data['result']:
-                return False
+                if not self.hook_data['result']:
+                    return False
+                tmp_bbid = self.paths[bbid][0]
+                if tmp_bbid in self.real_blocks and tmp_bbid != bbid and not self.is_visited[tmp_bbid] and tmp_bbid not in bbid_queue.queue:
+                    ctx_queue.put(ql.save())
+                    bbid_queue.put(tmp_bbid)
+                ql.restore(ctx)
+                self.hook_data['force'] = {braddr: False}
+                self.hook_data['see_other_block'] = False
+                ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
+                if not self.hook_data['result']:
+                    return False
+                # judge two block is the same?
+                tmp_bbid = self.paths[bbid][-1]
+                if tmp_bbid in self.real_blocks and tmp_bbid != bbid and not self.is_visited[tmp_bbid] and tmp_bbid not in bbid_queue.queue:
+                    ctx_queue.put(ql.save())
+                    bbid_queue.put(tmp_bbid)
+            self.is_visited[bbid] = True
+            
+            
+        # for bbid in reals:
+        #     ida_logger.debug(f"Search control flow for block: {self._block_str(bbid)}")
+        #     bb = self.bb_mapping[bbid]
+        #     braddr = self._find_branch_in_real_block(bb)
+        #     self.hook_data = {
+        #         "startbb": bbid,
+        #         "func": IDA.get_function(first_block.start_ea),
+        #         "result": True,
+        #         "force_legacy": False,
+        #         "never_skip": self.deflat_never_skip_funcs,
+        #     }
+        #     ql_bb_start_ea = self.deflatqlemu.ql_addr_from_ida(bb.start_ea) + self.append
+        #     ctx = ql.save()
+        #     # Skip force execution in the first block.
+        #     # `end=0` is a workaround for ql remembering last exit_point.
+        #     if braddr is None or bb.id == self.first_block:
+        #         ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
+        #     else:
+        #         self.hook_data['force'] = {braddr: True}
+        #         ctx2 = ql.save()
+        #         ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
+        #         ql.restore(ctx2)
+        #         if not self.hook_data['result']:
+        #             return False
+        #         self.hook_data['force'] = {braddr: False}
+        #         ql.run(begin=ql_bb_start_ea, end=0, count=0xFFF)
+        #     ql.restore(ctx)
+        #     if not self.hook_data['result']:
+        #         return False
         self._log_paths_str()
         return True
 
@@ -1851,18 +2008,30 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if not self.qlinit:
             ida_logger.info("Qiling should be setup firstly!")
             return
-        self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=3)
-        ida_logger.debug("Microcode generation done. Going to search path.")
-        if not self._search_path():
-            ida_logger.info(f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!")
-            return
-        ida_logger.debug("Real control flows search done. Going to patch codes.")
-        self._patch_codes()
-        ida_logger.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
-        IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
-        del self.deflatqlemu
-        self.deflatqlemu = None
-        self.ks = None
+        deflatdlg = QlDeflatEmuDialog()
+        deflatdlg.Compile()
+        self.init_addr = 0
+        self.deflat_never_skip_funcs = []
+        self.deflat_need_patch_funcs = []
+        if deflatdlg.Execute() == 1:
+            self.init_addr = deflatdlg.init_addr.value
+            # Let user slecet which functions should be visited when seraching path.
+            self.deflat_never_skip_funcs = [int(x, 0) for x in deflatdlg.never_skip.value.split(" ")]
+            # Let user slecet which functions should be patched(usually the funcs which will modify state value) when patching codes.
+            self.deflat_need_patch_funcs = [int(x, 0) for x in deflatdlg.nop_funcs.value.split(" ")]
+            # old maturity is 3, but in _serach_path, we need maturity=7
+            self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=7)
+            ida_logger.debug("Microcode generation done. Going to search path.")
+            if not self._search_path():
+                ida_logger.info(f"Fail to search path. Please fire an issue to us at https://github.com/qilingframework/qiling with relevant logs!")
+                return
+            ida_logger.debug("Real control flows search done. Going to patch codes.")
+            self._patch_codes()
+            ida_logger.debug("Codes patched. Let's tell IDA to analyse the whole function again.")
+            IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
+            del self.deflatqlemu
+            self.deflatqlemu = None
+            self.ks = None
 
     def _block_str(self, bb):
         if type(bb) is int:
