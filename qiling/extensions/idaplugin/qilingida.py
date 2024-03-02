@@ -816,9 +816,9 @@ BUTTON YES* Add
 BUTTON CANCEL Cancel
 Deflat Info
 Please offer some special info for deflat.
-<#Run to where before deflat?\n 0 means dont run or restore before init.#Run to before\::{init_addr}> 
-<#Which functions(start addr) do you never want to skip them?\nSpilt them with whitespace. -1 means no functions.#Never skip\::{never_skip}>
-<#Which functions(start addr) do you want to nop them?\nSpilt them with whitespace. -1 means no functions.#Nop funcs\::{nop_funcs}>
+<#Run to where before deflat? 0 means dont run or restore before init.#Run to before\::{init_addr}> 
+<#Which functions(start addr) do you never want to skip them? Spilt them with whitespace. -1 means no functions.#Never skip\::{never_skip}>
+<#Which functions(start addr) do you want to nop them? Spilt them with whitespace. -1 means no functions. Now just support x86 to use this.#Nop funcs\::{nop_funcs}>
 """, {
         'init_addr': Form.NumericInput(swidth=20, tp=Form.FT_HEX),
         'never_skip': Form.StringInput(swidth=40),
@@ -1551,9 +1551,18 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return False
         ins_list = self.insns[ida_addr]
         for _, ins in ins_list:
-            if ida_hexrays.is_mcode_call(ins.opcode):
+            if ida_hexrays.is_mcode_call(ins.opcode) or (ins.d.is_insn() and is_call_insn(ins.d.opcode)):
                 return True
         return False
+    
+    def _get_call_minsn(self, ida_addr):
+        if ida_addr not in self.insns:
+            return None
+        ins_list = self.insns[ida_addr]
+        for _, ins in ins_list:
+            if ida_hexrays.is_mcode_call(ins.opcode) or (ins.d.is_insn() and is_call_insn(ins.d.opcode)):
+                return ins
+        return None
 
     def _guide_hook(self, ql: Qiling, addr, size):
         start_bb_id = self.hook_data['startbb']
@@ -1616,6 +1625,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 except:
                     addr = -1
             ida_logger.debug(f"Call detected at {hex(ida_addr)}: {hex(addr)}")
+            if addr in self.deflat_need_patch_funcs:
+                tmp_addr = ida_addr
+                while tmp_addr not in self.insns:
+                    tmp_addr = next_head(tmp_addr)
+                if minsn := self._get_call_minsn(tmp_addr):
+                    self.deflat_patch_ranges.append((next_head(minsn.prev.ea), next_head(minsn.ea)))
             if addr == -1 or addr not in self.hook_data['never_skip']:
                 ida_logger.debug(f"Call detected at {hex(ida_addr)}: {hex(addr)}, skip it.")
                 ql.arch.regs.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
@@ -1940,12 +1955,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if len(self.paths[self.first_block]) != 1:
             ida_logger.error(f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
             return
+        # TODO: add other archs nop, now only support x86
+        if "x86" in IDA.get_ql_arch_string():
+            ida_logger.info(f"Patch user specified function {len(self.deflat_patch_ranges)} calls")
+            for rg in self.deflat_patch_ranges:
+                self._patch_bytes_with_force_analysis(rg[0], b"\x90"*(rg[1]-rg[0]))
         ida_logger.info("NOP dispatcher block")
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         # Some notes:
         #    Patching b'\x00' instead of 'nop' can help IDA decompile a better result. Don't know why...
         #    Besides
-        buffer = [0] * (dispatcher_bb.end_ea - dispatcher_bb.start_ea)
+        buffer = [0x90] * (dispatcher_bb.end_ea - dispatcher_bb.start_ea)
         first_jmp_addr = dispatcher_bb.start_ea
         instr_to_assemble = self._arch_jmp_instruction(f"{hex(self.bb_mapping[self.paths[self.first_block][0]].start_ea)}h")
         ida_logger.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
@@ -1977,10 +1997,10 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
             ida_logger.info(f"Patch NOP for block: {self._block_str(bb)}")
-            self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
+            self._patch_bytes_with_force_analysis(bb.start_ea, b"\x90"*(bb.end_ea-bb.start_ea))
         ida_logger.info(f"Patch NOP for pre_dispatcher.")
         bb = self.bb_mapping[self.pre_dispatcher]
-        self._patch_bytes_with_force_analysis(bb.start_ea, b"\x00"*(bb.end_ea-bb.start_ea))
+        self._patch_bytes_with_force_analysis(bb.start_ea, b"\x90"*(bb.end_ea-bb.start_ea))
 
     def _prepare_microcodes(self, decomp_flags=ida_hexrays.DECOMP_WARNINGS | ida_hexrays.DECOMP_NO_WAIT, maturity=7):
         dispatcher_bb = self.bb_mapping[self.dispatcher]
@@ -2013,12 +2033,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.init_addr = 0
         self.deflat_never_skip_funcs = []
         self.deflat_need_patch_funcs = []
+        self.deflat_patch_ranges = []
         if deflatdlg.Execute() == 1:
             self.init_addr = deflatdlg.init_addr.value
             # Let user slecet which functions should be visited when seraching path.
-            self.deflat_never_skip_funcs = [int(x, 0) for x in deflatdlg.never_skip.value.split(" ")]
+            self.deflat_never_skip_funcs = [int(x, 0) for x in deflatdlg.never_skip.value.split(" ") if not x.startswith("-")]
             # Let user slecet which functions should be patched(usually the funcs which will modify state value) when patching codes.
-            self.deflat_need_patch_funcs = [int(x, 0) for x in deflatdlg.nop_funcs.value.split(" ")]
+            self.deflat_need_patch_funcs = [int(x, 0) for x in deflatdlg.nop_funcs.value.split(" ") if not x.startswith("-")]
             # old maturity is 3, but in _serach_path, we need maturity=7
             self.mba, self.insns, self.mbbs = self._prepare_microcodes(maturity=7)
             ida_logger.debug("Microcode generation done. Going to search path.")
