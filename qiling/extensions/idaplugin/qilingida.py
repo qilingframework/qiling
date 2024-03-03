@@ -817,8 +817,8 @@ BUTTON CANCEL Cancel
 Deflat Info
 Please offer some special info for deflat.
 <#Run to where before deflat? 0 means dont run or restore before init.#Run to before\::{init_addr}> 
-<#Which functions(start addr) do you never want to skip them? Spilt them with whitespace. -1 means no functions.#Never skip\::{never_skip}>
-<#Which functions(start addr) do you want to nop them? Spilt them with whitespace. -1 means no functions. Now just support x86 to use this.#Nop funcs\::{nop_funcs}>
+<#Which functions(start addr) do you never want to skip them? Split them with whitespace. -1 means no functions.#Never skip\::{never_skip}>
+<#Which functions(start addr) do you want to nop them? Split them with whitespace. -1 means no functions. Now just support x86 to use this.#Nop funcs\::{nop_funcs}>
 """, {
         'init_addr': Form.NumericInput(swidth=20, tp=Form.FT_HEX),
         'never_skip': Form.StringInput(swidth=40),
@@ -1551,6 +1551,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return False
         ins_list = self.insns[ida_addr]
         for _, ins in ins_list:
+            # non-returned function or returned function
             if ida_hexrays.is_mcode_call(ins.opcode) or (ins.d.is_insn() and is_call_insn(ins.d.opcode)):
                 return True
         return False
@@ -1560,6 +1561,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return None
         ins_list = self.insns[ida_addr]
         for _, ins in ins_list:
+            # non-returned function or returned function
             if ida_hexrays.is_mcode_call(ins.opcode) or (ins.d.is_insn() and is_call_insn(ins.d.opcode)):
                 return ins
         return None
@@ -1731,15 +1733,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         ql.hook_mem_write_invalid(self._skip_unmapped_rw)
         ql.hook_mem_unmapped(self._skip_unmapped_rw)
         # ql should firstly run some funcs to defeat the Global Encryption and load ld.so.
-        if self.init_addr > 0:
-            if self.init_addr != self.deflat_prev_init_addr:
+        if self.deflat_init_addr > 0:
+            if self.deflat_init_addr != self.deflat_prev_init_addr:
                 try:
-                    ql.run(end=self.deflatqlemu.ql_addr_from_ida(self.init_addr))
+                    ql.run(end=self.deflatqlemu.ql_addr_from_ida(self.deflat_init_addr))
                 except:
-                    self.deflat_prev_init_addr = self.init_addr
+                    self.deflat_prev_init_addr = self.deflat_init_addr
                     self.deflat_init_ctx = ql.save(reg=False)
                     return False
-                self.deflat_prev_init_addr = self.init_addr
+                self.deflat_prev_init_addr = self.deflat_init_addr
                 self.deflat_init_ctx = ql.save(reg=False)
             else:
                 ql.restore(self.deflat_init_ctx)
@@ -2030,12 +2032,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             return
         deflatdlg = QlDeflatEmuDialog()
         deflatdlg.Compile()
-        self.init_addr = 0
+        self.deflat_init_addr = 0
         self.deflat_never_skip_funcs = []
         self.deflat_need_patch_funcs = []
         self.deflat_patch_ranges = []
         if deflatdlg.Execute() == 1:
-            self.init_addr = deflatdlg.init_addr.value
+            self.deflat_init_addr = deflatdlg.init_addr.value
             # Let user slecet which functions should be visited when seraching path.
             self.deflat_never_skip_funcs = [int(x, 0) for x in deflatdlg.never_skip.value.split(" ") if not x.startswith("-")]
             # Let user slecet which functions should be patched(usually the funcs which will modify state value) when patching codes.
