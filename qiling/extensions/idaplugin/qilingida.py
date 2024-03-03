@@ -1558,13 +1558,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     
     def _get_call_minsn(self, ida_addr):
         if ida_addr not in self.insns:
-            return None
+            return None, None
         ins_list = self.insns[ida_addr]
-        for _, ins in ins_list:
+        for i, ins in ins_list:
             # non-returned function or returned function
             if ida_hexrays.is_mcode_call(ins.opcode) or (ins.d.is_insn() and is_call_insn(ins.d.opcode)):
-                return ins
-        return None
+                return self.mbbs[i], ins
+        return None, None
 
     def _guide_hook(self, ql: Qiling, addr, size):
         start_bb_id = self.hook_data['startbb']
@@ -1631,12 +1631,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 tmp_addr = ida_addr
                 while tmp_addr not in self.insns:
                     tmp_addr = next_head(tmp_addr)
-                if minsn := self._get_call_minsn(tmp_addr):
+                mbb, minsn = self._get_call_minsn(tmp_addr)
+                if minsn is not None:
                     try:
                         self.deflat_patch_ranges.append((next_head(minsn.prev.ea), next_head(minsn.ea)))
                     except:
-                        # TODO: judge minsn is the mbb head?
-                        ida_logger.error(f"Fail to get the range of the function {hex(minsn.ea)}")
+                        if mbb is not None and mbb.head.ea == minsn.ea:
+                            self.deflat_patch_ranges.append((mbb.start, next_head(minsn.ea)))
+                        else:
+                            ida_logger.error(f"Fail to get the range of the function {hex(minsn.ea)}")
             if addr == -1 or addr not in self.hook_data['never_skip']:
                 ida_logger.debug(f"Call detected at {hex(ida_addr)}: {hex(addr)}, skip it.")
                 ql.arch.regs.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
