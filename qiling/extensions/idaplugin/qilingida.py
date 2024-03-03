@@ -1632,7 +1632,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 while tmp_addr not in self.insns:
                     tmp_addr = next_head(tmp_addr)
                 if minsn := self._get_call_minsn(tmp_addr):
-                    self.deflat_patch_ranges.append((next_head(minsn.prev.ea), next_head(minsn.ea)))
+                    try:
+                        self.deflat_patch_ranges.append((next_head(minsn.prev.ea), next_head(minsn.ea)))
+                    except:
+                        # TODO: judge minsn is the mbb head?
+                        ida_logger.error(f"Fail to get the range of the function {hex(minsn.ea)}")
             if addr == -1 or addr not in self.hook_data['never_skip']:
                 ida_logger.debug(f"Call detected at {hex(ida_addr)}: {hex(addr)}, skip it.")
                 ql.arch.regs.arch_pc += IDA.get_instruction_size(ida_addr) + self.append
