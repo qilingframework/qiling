@@ -4,9 +4,11 @@
 #
 
 import os
+import sys
 import pickle
+
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, AnyStr, Collection, IO, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 if TYPE_CHECKING:
@@ -43,7 +45,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
             profile: Optional[Union[str, Mapping]] = None,
             console: bool = True,
-            log_file: Optional[str] = None,
+            log_devices: Optional[Collection[Union[IO, str]]] = None,
             log_override: Optional['Logger'] = None,
             log_plain: bool = False,
             multithread: bool = False,
@@ -161,7 +163,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##########
         # Logger #
         ##########
-        self._log_file_fd = setup_logger(self, log_file, console, log_override, log_plain)
+        if log_devices is None:
+            log_devices = [sys.stderr]
+
+        self._log_file_fd = setup_logger(self, log_devices, log_plain, log_override)
 
         self.filter = filter
         self.verbose = verbose
