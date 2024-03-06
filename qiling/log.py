@@ -9,9 +9,10 @@ import copy
 import logging
 import os
 import re
+import sys
 import weakref
 
-from typing import TYPE_CHECKING, Optional, TextIO
+from typing import TYPE_CHECKING, Collection, IO, Optional, Protocol, Union, runtime_checkable
 from logging import Filter, Formatter, LogRecord, Logger, NullHandler, StreamHandler, FileHandler
 
 from qiling.const import QL_VERBOSE
@@ -63,7 +64,7 @@ class QlBaseFormatter(Formatter):
         try:
             cur_thread = self.ql.os.thread_management.cur_thread
         except AttributeError:
-            tid = f''
+            tid = ''
         else:
             tid = self.get_thread_tag(str(cur_thread))
 
@@ -87,8 +88,8 @@ class QlColoredFormatter(QlBaseFormatter):
 
         return f'{self.__level_color[level]}{s}{COLOR.DEFAULT}'
 
-    def get_thread_tag(self, tid: str) -> str:
-        s = super().get_thread_tag(tid)
+    def get_thread_tag(self, thread: str) -> str:
+        s = super().get_thread_tag(thread)
 
         return f'{COLOR.GREEN}{s}{COLOR.DEFAULT}'
 
@@ -114,8 +115,8 @@ def resolve_logger_level(verbose: QL_VERBOSE) -> int:
     }[verbose]
 
 
-def __is_color_terminal(stream: TextIO) -> bool:
-    """Determine whether standard output is attached to a color terminal.
+def __is_color_terminal(stream: IO) -> bool:
+    """Determine whether a given device is attached to a color terminal.
 
     see: https://stackoverflow.com/questions/53574442/how-to-reliably-test-color-capability-of-an-output-terminal-in-python3
     """
@@ -152,49 +153,56 @@ def __is_color_terminal(stream: TextIO) -> bool:
 
     handler = handlers.get(os.name, __default)
 
-    return handler(stream.fileno())
+    return stream.isatty() and handler(stream.fileno())
 
 
-def setup_logger(ql: Qiling, log_file: Optional[str], console: bool, log_override: Optional[Logger], log_plain: bool):
-    global QL_INSTANCE_ID
+@runtime_checkable
+class FileLike(Protocol):
+    def isatty(self) -> bool: ...
+    def fileno(self) -> int: ...
 
-    # If there is an override for our logger, then use it.
-    if log_override is not None:
-        log = log_override
+
+def setup_logger(ql: Qiling, logdevs: Collection[Union[IO, str]], plain: bool, override: Optional[Logger]):
+    # if there is an override logger, use it as-is
+    if override:
+        log = override
+
     else:
-        # We should leave the root logger untouched.
+        global QL_INSTANCE_ID
+
+        # get our own logger and leave the root logger intact
         log = logging.getLogger(f'qiling{QL_INSTANCE_ID}')
         QL_INSTANCE_ID += 1
 
-        # Disable propagation to avoid duplicate output.
+        # disable propagation to avoid duplicated output
         log.propagate = False
 
-        # Clear all handlers and filters.
+        # clear all existing handlers and filters, if any
         log.handlers.clear()
         log.filters.clear()
 
-        # Do we have console output?
-        if console:
-            handler = StreamHandler()
+        if logdevs == []:
+            handler = NullHandler()
+            log.addHandler(handler)
 
-            # adhere to the NO_COLOR convention (see: https://no-color.org/)
-            no_color = os.getenv('NO_COLOR', False)
+        # adhere to the NO_COLOR convention (see: https://no-color.org/)
+        no_color = os.getenv('NO_COLOR') or plain
 
-            if no_color or log_plain or not __is_color_terminal(handler.stream):
+        for dev in logdevs:
+            if isinstance(dev, FileLike):
+                handler = StreamHandler(dev)
+
+            elif isinstance(dev, str):
+                handler = FileHandler(dev)
+
+            else:
+                raise TypeError(f'unexpected logging device type: {type(dev).__name__}')
+
+            if no_color or not __is_color_terminal(handler.stream):
                 formatter = QlBaseFormatter(ql, FMT_STR)
             else:
                 formatter = QlColoredFormatter(ql, FMT_STR)
 
-            handler.setFormatter(formatter)
-            log.addHandler(handler)
-        else:
-            handler = NullHandler()
-            log.addHandler(handler)
-
-        # Do we have to write log to a file?
-        if log_file is not None:
-            handler = FileHandler(log_file)
-            formatter = QlBaseFormatter(ql, FMT_STR)
             handler.setFormatter(formatter)
             log.addHandler(handler)
 
@@ -204,7 +212,8 @@ def setup_logger(ql: Qiling, log_file: Optional[str], console: bool, log_overrid
         logging.logProcesses = False
         logging.logMultiprocessing = False
 
-    log.setLevel(logging.INFO)
+    loglvl = resolve_logger_level(QL_VERBOSE.DEFAULT)
+    log.setLevel(loglvl)
 
     return log
 
