@@ -11,8 +11,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import Any, Callable, MutableMapping, MutableSequence, Protocol
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Protocol
 
 from unicorn.unicorn_const import (
     UC_HOOK_INTR,
@@ -120,6 +119,21 @@ class InterruptHookCallback(Protocol):
         pass
 
 
+class InvalidInsnHookCallback(Protocol):
+    def __call__(self, __ql: Qiling, *__context: Any) -> Any:
+        """Invalid instruction hook callback.
+
+        Args:
+            __ql      : the associated qiling instance
+            __context : additional context passed on hook creation. if no context was passed, this argument should be omitted
+
+        Returns:
+            an integer with `QL_HOOK_BLOCK` mask set to block execution of remaining hooks
+            (if any) or `None`
+        """
+        pass
+
+
 def hookcallback(ql: Qiling, callback: Callable):
     @wraps(callback)
     def wrapper(*args, **kwargs):
@@ -137,14 +151,14 @@ class QlCoreHooks:
     def __init__(self, uc: Uc):
         self._h_uc = uc
 
-        self._hook: MutableMapping[int, MutableSequence[Hook]] = {}
-        self._hook_fuc: MutableMapping[int, int] = {}
+        self._hook: Dict[int, List[Hook]] = {}
+        self._hook_fuc: Dict[int, int] = {}
 
-        self._insn_hook: MutableMapping[int, MutableSequence[Hook]] = {}
-        self._insn_hook_fuc: MutableMapping[int, int] = {}
+        self._insn_hook: Dict[int, List[Hook]] = {}
+        self._insn_hook_fuc: Dict[int, int] = {}
 
-        self._addr_hook: MutableMapping[int, MutableSequence[HookAddr]] = {}
-        self._addr_hook_fuc: MutableMapping[int, int] = {}
+        self._addr_hook: Dict[int, List[HookAddr]] = {}
+        self._addr_hook_fuc: Dict[int, int] = {}
 
     ########################
     # Callback definitions #
@@ -214,7 +228,7 @@ class QlCoreHooks:
                     if type(ret) is int and ret & QL_HOOK_BLOCK:
                         break
 
-    def _hook_mem_cb(self, uc: Uc, access: int, addr: int, size: int, value: int, pack_data):
+    def _hook_mem_cb(self, uc: Uc, access: int, addr: int, size: int, value: int, pack_data) -> bool:
         """Memory access hooks dispatcher.
         """
 
@@ -237,7 +251,7 @@ class QlCoreHooks:
 
         return True
 
-    def _hook_insn_invalid_cb(self, uc: Uc, pack_data) -> None:
+    def _hook_insn_invalid_cb(self, uc: Uc, pack_data) -> bool:
         """Invalid instruction hooks dispatcher.
         """
 
@@ -256,6 +270,8 @@ class QlCoreHooks:
 
         if not handled:
             raise QlErrorCoreHook("_hook_insn_invalid_cb : not handled")
+
+        return True
 
     def _hook_addr_cb(self, uc: Uc, addr: int, size: int, pack_data):
         """Address hooks dispatcher.
@@ -648,6 +664,25 @@ class QlCoreHooks:
 
         return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, insn_type)
 
+    def hook_insn_invalid(self, callback: InvalidInsnHookCallback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
+        """Intercept cases in which Unicorn reaches opcodes it does not recognize or support.
+
+        Args:
+            callback  : a method to call upon interception
+            user_data : an additional context to pass to callback (default: `None`)
+            begin     : start of memory range to watch
+            end       : end of memory range to watch
+
+        Notes:
+            - The callback is responsible to advance the pc register, if needed.
+            - If `begin` and `end` are not specified, the entire memory space will be watched.
+
+        Returns:
+            Hook handle
+        """
+
+        return self.ql_hook(UC_HOOK_INSN_INVALID, callback, user_data, begin, end)
+
     def hook_del(self, hret: HookRet) -> None:
         """Unregister an existing hook and release its resources.
 
@@ -715,11 +750,11 @@ class QlCoreHooks:
         self.clear_ql_hooks()
 
     def clear_ql_hooks(self):
-        self._hook = {}
-        self._hook_fuc = {}
+        self._hook.clear()
+        self._hook_fuc.clear()
 
-        self._insn_hook = {}
-        self._insn_hook_fuc = {}
+        self._insn_hook.clear()
+        self._insn_hook_fuc.clear()
 
-        self._addr_hook = {}
-        self._addr_hook_fuc = {}
+        self._addr_hook.clear()
+        self._addr_hook_fuc.clear()
