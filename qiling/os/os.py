@@ -60,6 +60,8 @@ class QlOs:
             # for the standard streams which usually do not support certain operations,
             # such as fileno(). here we use this to determine how we are going to use
             # the environment standard streams
+            if not hasattr(sys.stdin, "fileno"):
+                raise UnsupportedOperation
             sys.stdin.fileno()
         except UnsupportedOperation:
             # Qiling is used on an interactive shell or embedded python interpreter.
