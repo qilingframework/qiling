@@ -247,7 +247,7 @@ def get_aligned_union(archbits: int):
     """Provide an aligned union class based on the emulated architecture
     properties. This class does not inherit the special BaseStruct methods.
 
-    FIXME: ctypes.Union endianess cannot be set arbitrarily, rather it depends
+    FIXME: ctypes.Union endianness cannot be set arbitrarily, rather it depends
     on the hosting system. ctypes.LittleEndianUnion and ctypes.BigEndianUnion
     are available only starting from Python 3.11
 
