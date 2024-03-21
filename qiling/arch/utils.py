@@ -100,12 +100,12 @@ class QlArchUtils:
 
 # used by qltool prior to ql instantiation. to get an assembler object
 # after ql instantiation, use the appropriate ql.arch method
-def assembler(arch: QL_ARCH, endianess: QL_ENDIAN, is_thumb: bool) -> Ks:
+def assembler(arch: QL_ARCH, endianness: QL_ENDIAN, is_thumb: bool) -> Ks:
     """Instantiate an assembler object for a specified architecture.
 
     Args:
         arch: architecture type
-        endianess: architecture endianess
+        endianness: architecture endianness
         is_thumb: thumb mode for ARM (ignored otherwise)
 
     Returns: an assembler object
@@ -114,7 +114,7 @@ def assembler(arch: QL_ARCH, endianess: QL_ENDIAN, is_thumb: bool) -> Ks:
     endian = {
         QL_ENDIAN.EL: KS_MODE_LITTLE_ENDIAN,
         QL_ENDIAN.EB: KS_MODE_BIG_ENDIAN
-    }[endianess]
+    }[endianness]
 
     thumb = KS_MODE_THUMB if is_thumb else 0
 

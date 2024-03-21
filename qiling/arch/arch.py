@@ -131,7 +131,7 @@ class QlArch(ABC):
     @property
     @abstractmethod
     def endian(self) -> QL_ENDIAN:
-        """Get processor endianess.
+        """Get processor endianness.
         """
 
         pass

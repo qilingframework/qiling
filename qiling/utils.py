@@ -131,7 +131,7 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     EM_RISCV   = 243
     EM_PPC     = 20
 
-    endianess = {
+    endianness = {
         ELFDATA2LSB: (QL_ENDIAN.EL, 'little'),
         ELFDATA2MSB: (QL_ENDIAN.EB, 'big')
     }
@@ -181,14 +181,14 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
 
     if e_ident[:4] == b'\x7fELF':
         ei_class = e_ident[4]   # arch bits
-        ei_data  = e_ident[5]   # arch endianess
+        ei_data  = e_ident[5]   # arch endianness
         ei_osabi = e_ident[7]
 
         if ei_class in classes:
             machines = classes[ei_class]
 
-            if ei_data in endianess:
-                archendian, endian = endianess[ei_data]
+            if ei_data in endianness:
+                archendian, endian = endianness[ei_data]
 
                 machine = int.from_bytes(e_machine, endian)
 
@@ -375,12 +375,12 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
 def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
     kwargs = {'cputype': cputype}
 
-    # set endianess and thumb mode for arm-based archs
+    # set endianness and thumb mode for arm-based archs
     if archtype is QL_ARCH.ARM:
         kwargs['endian'] = endian
         kwargs['thumb'] = thumb
 
-    # set endianess for mips arch
+    # set endianness for mips arch
     elif archtype is QL_ARCH.MIPS:
         kwargs['endian'] = endian
 
