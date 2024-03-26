@@ -5,6 +5,7 @@
 
 from qiling import Qiling
 from qiling.arch.x86_const import IA32_FS_BASE_MSR, IA32_GS_BASE_MSR
+from qiling.os.posix.const import EINVAL
 
 
 def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
@@ -29,7 +30,7 @@ def ql_syscall_arch_prctl(ql: Qiling, code: int, addr: int):
     if code not in handlers:
         ql.log.debug(f'prctl code {code:#x} not implemented')
 
-        return -1   # EINVAL
+        return -EINVAL
 
     handlers[code]()
 

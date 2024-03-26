@@ -10,7 +10,7 @@ from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import NR_OPEN, EBADF, ENOENT, AT_FDCWD, AT_EMPTY_PATH
+from qiling.os.posix.const import EIO, NR_OPEN, EBADF, AT_FDCWD, AT_EMPTY_PATH
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -1138,7 +1138,7 @@ def get_stat_struct(ql: Qiling):
                 return LinuxARM64EBStat()
         elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
             return LinuxRISCVStat()
-        elif ql.archtype == QL_ARCH.PPC:
+        elif ql.arch.type == QL_ARCH.PPC:
             return LinuxPPCStat()
     elif ql.os.type == QL_OS.QNX:
         if ql.arch.type == QL_ARCH.ARM64:
@@ -1233,97 +1233,95 @@ def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
 
     try:
         os.chmod(hpath, mode)
-    except OSError:
-        regreturn = -1
+    except OSError as ex:
+        ret = -ex.errno
     else:
-        regreturn = 0
+        ret = 0
 
-    ql.log.debug(f'chmod("{vpath}", 0{mode:o}) = {regreturn}')
+    ql.log.debug(f'chmod("{vpath}", 0{mode:o}) = {ret}')
 
-    return regreturn
+    return ret
 
 
 def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
     if fd not in range(NR_OPEN):
-        return -1
+        return -EBADF
 
     f = ql.os.fd[fd]
 
     if f is None:
-        return -1
+        return -EBADF
 
     try:
         os.fchmod(f.fileno(), mode)
-    except OSError:
-        regreturn = -1
+    except OSError as ex:
+        ret = -ex.errno
     else:
-        regreturn = 0
+        ret = 0
 
-    ql.log.debug(f'fchmod({fd}, 0{mode:o}) = {regreturn}')
+    ql.log.debug(f'fchmod({fd}, 0{mode:o}) = {ret}')
 
-    return regreturn
+    return ret
 
 
 def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
     dirfd, real_path = transform_path(ql, dirfd, path, flags)
 
     try:
-        buf = pack_stat64_struct(ql, Stat(real_path, dirfd))
+        stat = Stat(real_path, dirfd)
+    except OSError as ex:
+        ret = -ex.errno
+    else:
+        buf = pack_stat64_struct(ql, stat)
         ql.mem.write(buf_ptr, buf)
 
-        regreturn = 0
-    except:
-        regreturn = -1
+        ret = 0
 
-    return regreturn
+    return ret
 
-def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags: int):
+def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf: int, flags: int):
     dirfd, real_path = transform_path(ql, dirfd, path, flags)
 
     try:
-        buf = pack_stat_struct(ql, Stat(real_path, dirfd))
-        ql.mem.write(buf_ptr, buf)
+        stat = Stat(real_path, dirfd)
+    except OSError as ex:
+        ret = -ex.errno
+    else:
+        data = pack_stat_struct(ql, stat)
+        ql.mem.write(buf, data)
 
-        regreturn = 0
-    except:
-        regreturn = -1
+        ret = 0
 
-    return regreturn
+    return ret
 
-def ql_syscall_fstat64(ql: Qiling, fd: int, buf_ptr: int):
+
+def __do_fstat(ql: Qiling, fd: int, buf: int, method: Callable) -> int:
     if fd not in range(NR_OPEN):
-        return -1
+        return -EBADF
 
     f = ql.os.fd[fd]
 
     if f is None or not hasattr(f, "fstat"):
-        return -1
+        return -EBADF
 
-    fstat = f.fstat()
+    try:
+        fstat = f.fstat()
+    except OSError:
+        return -EIO
 
     if fstat != -1:
-        buf = pack_stat64_struct(ql, fstat)
-        ql.mem.write(buf_ptr, buf)
+        data = method(ql, fstat)
+        ql.mem.write(buf, data)
 
     return 0
 
 
-def ql_syscall_fstat(ql: Qiling, fd: int, buf_ptr: int):
-    if fd not in range(NR_OPEN):
-        return -1
+def ql_syscall_fstat64(ql: Qiling, fd: int, buf: int):
+    return __do_fstat(ql, fd, buf, pack_stat64_struct)
 
-    f = ql.os.fd[fd]
 
-    if f is None or not hasattr(f, "fstat"):
-        return -1
-
-    fstat = f.fstat()
-
-    if fstat != -1:
-        buf = pack_stat_struct(ql, fstat)
-        ql.mem.write(buf_ptr, buf)
-
-    return 0
+def ql_syscall_fstat(ql: Qiling, fd: int, buf: int):
+    return __do_fstat(ql, fd, buf, pack_stat_struct)
 
 
 # int stat(const char *path, struct stat *buf);
@@ -1485,12 +1483,14 @@ def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
 
     try:
         os.mknod(real_path, mode, dev, dir_fd=dirfd)
-        regreturn = 0
-    except:
-        regreturn = -1
+    except OSError as ex:
+        ret = -ex.errno
+    else:
+        ret = 0
 
-    ql.log.debug("mknodat(%d, %s, 0%o, %d) = %d" % (dirfd, real_path, mode, dev, regreturn))
-    return regreturn
+    ql.log.debug(f'mknodat({dirfd}, "{real_path}", 0{mode:o}, {dev}) = {ret}')
+
+    return ret
 
 
 def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
@@ -1501,16 +1501,15 @@ def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
         raise PermissionError(f'unsafe path: {hpath}')
 
     try:
-        if not os.path.exists(hpath):
-            os.mkdir(hpath, mode)
-    except OSError:
-        regreturn = -1
+        os.mkdir(hpath, mode)
+    except OSError as ex:
+        ret = -ex.errno
     else:
-        regreturn = 0
+        ret = 0
 
-    ql.log.debug(f'mkdir("{vpath}", 0{mode:o}) = {regreturn}')
+    ql.log.debug(f'mkdir("{vpath}", 0{mode:o}) = {ret}')
 
-    return regreturn
+    return ret
 
 
 def ql_syscall_rmdir(ql: Qiling, pathname: int):
@@ -1521,16 +1520,15 @@ def ql_syscall_rmdir(ql: Qiling, pathname: int):
         raise PermissionError(f'unsafe path: {hpath}')
 
     try:
-        if os.path.exists(hpath):
-            os.rmdir(hpath)
-    except OSError:
-        regreturn = -1
+        os.rmdir(hpath)
+    except OSError as ex:
+        ret = -ex.errno
     else:
-        regreturn = 0
+        ret = 0
 
-    ql.log.debug(f'rmdir("{vpath}") = {regreturn}')
+    ql.log.debug(f'rmdir("{vpath}") = {ret}')
 
-    return regreturn
+    return ret
 
 
 def ql_syscall_fstatfs(ql: Qiling, fd: int, buf: int):
@@ -1541,10 +1539,6 @@ def ql_syscall_fstatfs(ql: Qiling, fd: int, buf: int):
         ql.mem.write(buf, data)
     except:
         regreturn = -1
-
-    if data:
-        ql.log.debug("fstatfs() CONTENT:")
-        ql.log.debug(str(data))
 
     return regreturn
 
@@ -1561,5 +1555,7 @@ def ql_syscall_statfs(ql: Qiling, path: int, buf: int):
 
 def ql_syscall_umask(ql: Qiling, mode: int):
     oldmask = os.umask(mode)
+
+    ql.log.debug(f'umask(0{mode:o}) = 0{oldmask:o}')
 
     return oldmask

@@ -10,7 +10,8 @@ from qiling import Qiling
 from qiling.os.qnx.const import IO_FLAG_MASK, PAGESIZE, S_IFMT
 from qiling.os.qnx.helpers import get_message_body
 from qiling.os.qnx.types import file_access, file_stats, file_types, file_open_flags, file_sharing_modes, io_connect_eflag, io_connect_ioflag, io_connect_subtypes, lseek_whence, mem_ctrl_subtypes, mmap_flags, pathconf_names, sysconf_conditions, sysconf_consts, sysconf_names, sysconf_subtypes
-from qiling.os.posix.const_mapping import _flags_mapping, mmap_prot_mapping
+from qiling.os.posix.const import qnx_mmap_prot_flags
+from qiling.os.posix.const_mapping import flags_mapping
 from qiling.os.posix.syscall import ql_syscall_close, ql_syscall_fstat, ql_syscall_lseek, ql_syscall_mmap, ql_syscall_open, ql_syscall_read, ql_syscall_write
 
 # TODO: move this to qiling.os.qnx.const?
@@ -56,7 +57,7 @@ def ql_qnx_msg_io_connect(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, *
     ioflag_hi = ioflag & (~IO_FLAG_MASK)
     real_mode = mode & (~S_IFMT)
     # ql.log.debug(f'msg_io_connect(subtype = {subtype}, file_type = {file_type}, ioflag = 0x{ioflag:x}, mode = 0x{mode:x}, sflag = 0x{sflag:x}, access = {access}, extra_len = {extra_len})')
-    ql.log.debug(f'msg_io_connect(subtype = {io_connect_subtypes[subtype]}, file_type = {file_types[file_type]}, ioflag = {_flags_mapping(ioflag_lo, io_connect_ioflag) + _flags_mapping(ioflag_hi, file_open_flags)}, mode = 0x{real_mode:x}, type = {_flags_mapping((mode & S_IFMT), file_stats)}, sflag = {file_sharing_modes[sflag]})')
+    ql.log.debug(f'msg_io_connect(subtype = {io_connect_subtypes[subtype]}, file_type = {file_types[file_type]}, ioflag = {flags_mapping(ioflag_lo, io_connect_ioflag) + flags_mapping(ioflag_hi, file_open_flags)}, mode = 0x{real_mode:x}, type = {flags_mapping((mode & S_IFMT), file_stats)}, sflag = {file_sharing_modes[sflag]})')
     # convert _IO_FLAG_? to O_? flag and then to O_? flags of host system
     ioflag -= 1
     #ioflag = ql_open_flag_mapping(ql, ioflag)
@@ -216,7 +217,7 @@ def ql_qnx_msg_mem_map(ql: Qiling, coid, smsg, sparts, rmsg, rparts, *args, **kw
     if fd > 0:
         fd = ql.os.connections[fd].fd
 
-    ql.log.debug(f'mem_map(addr = 0x{addr:x}, len = 0x{len:x}, prot = {mmap_prot_mapping(prot)}, flags = {_flags_mapping(flags, mmap_flags)}, fd = {fd}, preload = 0x{preload:x}, align = 0x{align:x}, offset = 0x{offset:x})')
+    ql.log.debug(f'mem_map(addr = 0x{addr:x}, len = 0x{len:x}, prot = {qnx_mmap_prot_flags(prot)}, flags = {flags_mapping(flags, mmap_flags)}, fd = {fd}, preload = 0x{preload:x}, align = 0x{align:x}, offset = 0x{offset:x})')
     # map memory
     ret = ql_syscall_mmap(ql, addr, len, prot, flags, fd, offset)
     # struct _mem_map_replay in services/system/public/sys/memmsg.h

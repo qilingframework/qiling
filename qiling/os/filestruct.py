@@ -30,10 +30,7 @@ class ql_file:
     def open(cls, path: AnyStr, flags: int, mode: int, dir_fd: Optional[int] = None):
         mode &= 0x7fffffff
 
-        try:
-            fd = os.open(path, flags, mode, dir_fd=dir_fd)
-        except OSError as e:
-            raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
+        fd = os.open(path, flags, mode, dir_fd=dir_fd)
 
         return cls(path, fd)
 

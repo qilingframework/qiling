@@ -64,8 +64,8 @@ class ELFTest(unittest.TestCase):
         os.remove(filename)
 
         self.assertGreaterEqual(len(contents), 4)
-        self.assertIn('Operation not permitted', contents[-2])
-        self.assertIn('Operation not permitted', contents[-1])
+        self.assertIn('Bad file descriptor', contents[-2])
+        self.assertIn('Bad file descriptor', contents[-1])
 
     def test_multithread_elf_linux_x86(self):
         logged: List[str] = []

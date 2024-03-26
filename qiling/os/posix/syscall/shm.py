@@ -21,7 +21,7 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
         """
 
         if len(ql.os.shm) >= SHMMNI:
-            return -1   # ENOSPC
+            return -ENOSPC
 
         mode = flags & ((1 << 9) - 1)
 
@@ -54,13 +54,13 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
                 shmid = __create_shm(key, size, shmflg)
 
             else:
-                return -1   # ENOENT
+                return -ENOENT
 
         # a shm with the specified key exists
         else:
             # the user asked to create a new one?
             if shmflg & (IPC_CREAT | IPC_EXCL):
-                return -1   # EEXIST
+                return -EEXIST
 
             # check whether the user has permissions to access this shm
             # FIXME: should probably use ql.os.cuid instead, but we don't support it yet
@@ -68,7 +68,7 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
                 return shmid
 
             else:
-                return -1   # EACCES
+                return -EACCES
 
     return shmid
 
@@ -78,7 +78,7 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
 
     # a shm with the specified key does not exist
     if shm is None:
-        return -1   # EINVAL
+        return -EINVAL
 
     if shmaddr == 0:
         # system may choose any suitable page-aligned address
@@ -100,7 +100,7 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
     else:
         # shmaddr is expected to be aligned
         if shmaddr & (ql.mem.pagesize - 1):
-            return -1   # EINVAL
+            return -EINVAL
 
         attaddr = shmaddr
 
@@ -114,11 +114,11 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
 
     # user asked to attached the seg as readable; is it allowed?
     if (perms & UC_PROT_READ) and not (shm.mode & SHM_R):
-        return -1   # EACCES
+        return -EACCES
 
     # user asked to attached the seg as writable; is it allowed?
     if (perms & UC_PROT_WRITE) and not (shm.mode & SHM_W):
-        return -1   # EACCES
+        return -EACCES
 
     # TODO: if segment is already attached, there is no need to map another memory for it.
     # if we do, data changes will not be reflected between the segment attachments. we could
@@ -129,7 +129,7 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
         # attach the segment at shmaddr
         ql.mem.map(attaddr, shm.segsz, perms, '[shm]')
     except QlMemoryMappedError:
-        return -1   # EINVAL
+        return -EINVAL
 
     # track attachment
     shm.attach.append(attaddr)
@@ -143,7 +143,7 @@ def ql_syscall_shmdt(ql: Qiling, shmaddr: int):
     shm = ql.os.shm.get_by_attaddr(shmaddr)
 
     if shm is None:
-        return -1   # EINVAL
+        return -EINVAL
 
     shm.attach.remove(shmaddr)
 

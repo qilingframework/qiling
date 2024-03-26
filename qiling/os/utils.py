@@ -23,6 +23,25 @@ class QlOsUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
 
+    @staticmethod
+    def as_signed(value: int, nbits: int) -> int:
+        """Transform an unsigned integer value into its 2's complement signed value
+        equivalent. This method has no effect on signed integers.
+
+        Args:
+            value: an unsigned integer to transform
+            nbits: value bit size
+
+        Returns: a signed integer
+        """
+
+        # truncate value to specified bit size
+        value &= (1 << nbits) - 1
+
+        msb = 1 << (nbits - 1)
+
+        return -(value & ~(msb - 1)) | value
+
     def read_string(self, address: int, encoding: str, maxlen: int = 0) -> str:
         """Read a null-terminated string from memory.
 

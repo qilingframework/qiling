@@ -696,9 +696,10 @@ def _CreateFileMapping(ql: Qiling, address: int, params):
     dwMaximumSizeLow = params['dwMaximumSizeLow']
     lpName = params['lpName']
 
+    hFile = ql.os.utils.as_signed(hFile, ql.arch.bits)
     req_size = (dwMaximumSizeHigh << 32) | dwMaximumSizeLow
 
-    if hFile == ql.unpack(ql.packs(INVALID_HANDLE_VALUE)):
+    if hFile == INVALID_HANDLE_VALUE:
         fmobj = FileMappingMem()
 
     else:

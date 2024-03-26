@@ -19,7 +19,7 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
 
     def __call_shmat(*args: int) -> int:
         if version == 1:
-            return -1   # EINVAL
+            return -EINVAL
 
         return ql_syscall_shmat(ql, args[0], args[3], args[1])
 
@@ -28,17 +28,17 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
 
     def __call_shmget(*args: int) -> int:
         return ql_syscall_shmget(ql, args[0], args[1], args[2])
-    
+
     def __call_msgget(*args: int) -> int:
         return ql_syscall_msgget(ql, args[0], args[1])
 
     def __call_msgsnd(*args: int) -> int:
         return ql_syscall_msgsnd(ql, args[0], args[3], args[1], args[2])
-    
+
     def __call_msgrcv(*args: int) -> int:
         if version == 0:
             if args[3] == 0:
-                return -1   # EINVAL
+                return -EINVAL
 
             msgp = ql.mem.read_ptr(args[3])
             msgtyp = ql.mem.read_ptr(args[3] + ql.arch.pointersize)
@@ -59,7 +59,7 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
     }
 
     if call not in ipc_call:
-        return -1   # ENOSYS
+        return -ENOSYS
 
     return ipc_call[call](first, second, third, ptr, fifth)
 
