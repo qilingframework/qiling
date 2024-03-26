@@ -146,8 +146,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if ostype is None:
             raise QlErrorOsType(f'Unknown or unsupported operating system')
 
-        # if endianess is still undetermined, set it to little-endian.
-        # this setting is ignored for architectures with predefined endianess
+        # if endianness is still undetermined, set it to little-endian.
+        # this setting is ignored for architectures with predefined endianness
         if endian is None:
             endian = QL_ENDIAN.EL
 
@@ -749,7 +749,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # was initialized with.
         #
         # either unicorn is patched to reflect thumb mode in cpsr upon initialization, or we pursue the same logic
-        # by determining the endianess by address lsb. either way this condition should not be here
+        # by determining the endianness by address lsb. either way this condition should not be here
         if getattr(self.arch, '_init_thumb', False):
             begin |= 0b1
 

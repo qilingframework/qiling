@@ -83,7 +83,7 @@ class QlArchARM(QlArch):
 
     @property
     def disassembler(self) -> Cs:
-        # note: since endianess and thumb mode might change during execution, we cannot
+        # note: since endianness and thumb mode might change during execution, we cannot
         # cache the disassembler instance directly; rather we pick the appropriate cached
         # instance
 
@@ -103,7 +103,7 @@ class QlArchARM(QlArch):
 
     @property
     def assembler(self) -> Ks:
-        # note: since endianess and thumb mode might change during execution, we cannot
+        # note: since endianness and thumb mode might change during execution, we cannot
         # cache the assembler instance directly; rather we pick the appropriate cached
         # instance
 

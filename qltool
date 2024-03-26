@@ -205,7 +205,7 @@ def run():
     code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
     code_parser.add_argument('--arch', required=True, choices=arch_map, action=__arg_archtype)
     code_parser.add_argument('--thumb', action='store_true', default=False, help='specify thumb mode for ARM')
-    code_parser.add_argument('--endian', choices=endian_map, default=QL_ENDIAN.EL, action=__arg_endian, help='specify endianess for bi-endian archs')
+    code_parser.add_argument('--endian', choices=endian_map, default=QL_ENDIAN.EL, action=__arg_endian, help='specify endianness for bi-endian archs')
     code_parser.add_argument('--os', required=True, choices=os_map, action=__arg_ostype)
     code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
     code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')

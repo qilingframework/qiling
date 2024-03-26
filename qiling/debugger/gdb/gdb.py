@@ -159,11 +159,11 @@ class QlGdb(QlDebugger):
                 val = int(hexval, 16)
 
                 if self.ql.arch.endian == QL_ENDIAN.EL:
-                    val = __swap_endianess(val)
+                    val = __swap_endianness(val)
 
                 self.ql.arch.regs.write(reg, val)
 
-        def __swap_endianess(value: int) -> int:
+        def __swap_endianness(value: int) -> int:
             length = (value.bit_length() + 7) // 8
             raw = value.to_bytes(length, 'little')
 
