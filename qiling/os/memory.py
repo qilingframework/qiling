@@ -283,6 +283,9 @@ class QlMemoryManager:
         """Restore saved memory content.
         """
 
+        # Unmap everything so we start with a clean memory state.
+        self.unmap_all()
+
         for lbound, ubound, perms, label, data in mem_dict['ram']:
             self.ql.log.debug(f'restoring memory range: {lbound:#08x} {ubound:#08x} {label}')
 
