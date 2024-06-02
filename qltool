@@ -267,7 +267,7 @@ def run():
         'profile':     options.profile,
         'console':     options.console,
         'filter':      options.filter,
-        'log_file':    options.log_file,
+        'log_devices': options.log_file and [options.log_file],
         'log_plain':   options.log_plain,
         'multithread': options.multithread,
         'libcache':    options.libcache

@@ -218,7 +218,7 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_x86(self):
         filename = 'test.qlog'
 
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, log_file=filename)
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, log_devices=[filename])
         ql.run()
 
         os.remove(filename)
