@@ -443,7 +443,7 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
 
     try:
         sock.bind(dest)
-    except (ConnectionError, FileNotFoundError) as ex:
+    except (OSError, ConnectionError, FileNotFoundError) as ex:
         return -ex.errno
 
     return 0
