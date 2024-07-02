@@ -18,7 +18,7 @@ from qiling.os.posix.const import *
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
     try:
         # find addr's enclosing memory range
-        label = next(label for lbound, ubound, _, label, _ in ql.mem.get_mapinfo() if (lbound <= addr < ubound) and label.startswith(('[mmap]', '[mmap anonymous]')))
+        ubound, label = next((ubound, label) for lbound, ubound, _, label, _ in ql.mem.get_mapinfo() if (lbound <= addr < ubound) and label.startswith(('[mmap]', '[mmap anonymous]')))
     except StopIteration:
         # nothing to do; cannot munmap what was not originally mmapped
         ql.log.debug(f'munmap: enclosing area for {addr:#x} was not mmapped')
@@ -43,9 +43,10 @@ def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
                     fd.lseek(fd._mapped_offset)
                     fd.write(content)
 
-        # unmap the enclosing memory region
+        # unmap the enclosing memory pages.
+        # munmap allows the length to exceed the mapped range. in such case, unmap by original ubound
         lbound = ql.mem.align(addr)
-        ubound = ql.mem.align_up(addr + length)
+        ubound = min(ql.mem.align_up(addr + length), ubound)
 
         ql.mem.unmap(lbound, ubound - lbound)
 
