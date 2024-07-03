@@ -568,6 +568,15 @@ class QlLoaderELF(QlLoader):
                         ql.mem.write_ptr(prev_mips_hi16_loc + 2, (val >> 16), 2)
                         ql.mem.write_ptr(loc + 2, (val & 0xFFFF), 2)
 
+                    elif desc in ('R_ARM_CALL', 'R_ARM_JUMP24'):
+                        val = (rev_reloc_symbols[symbol_name] - loc - 8) >> 2
+                        val = (val & 0xFFFFFF) | (ql.mem.read_ptr(loc, 4) & 0xFF000000)
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
+
+                    elif desc == 'R_ARM_ABS32':
+                        val = rev_reloc_symbols[symbol_name] + ql.mem.read_ptr(loc, 4)
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
+
                     else:
                         raise NotImplementedError(f'Relocation type {desc} not implemented')
 
