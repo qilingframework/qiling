@@ -60,7 +60,15 @@ class QlOs:
             # for the standard streams which usually do not support certain operations,
             # such as fileno(). here we use this to determine how we are going to use
             # the environment standard streams
-            sys.stdin.fileno()
+            
+            # IDAPython returns True for stdin but False for stdout and stderr so checking
+            # all three
+            if not hasattr(sys.stdin, "fileno"):
+                raise UnsupportedOperation
+            if not hasattr(sys.stdout, "fileno"):
+                raise UnsupportedOperation
+            if not hasattr(sys.stderr, "fileno"):
+                raise UnsupportedOperation
         except UnsupportedOperation:
             # Qiling is used on an interactive shell or embedded python interpreter.
             # if the internal stream buffer is accessible, we should use it
