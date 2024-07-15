@@ -906,7 +906,7 @@ class QlEmuQiling:
                 elif self.ql.arch.bits == 64:
                     self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
-            self.baseaddr = 0x0
+            self.baseaddr = get_imagebase()
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -1115,7 +1115,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_set_pc(self):
         if self.qlinit:
-            ea = IDA.get_current_address()
+            ea = self.qlemu.ql_addr_from_ida(IDA.get_current_address())
             self.qlemu.ql.arch.regs.arch_pc = ea
             logging.info(f"QIling PC set to {hex(ea)}")
             self.qlemu.status = self.qlemu.ql.save()
