@@ -1,8 +1,9 @@
 ### Directions for using this example fuzzer
 
-* Use `binwalk` to fully unpack the `.trx` firmware file provided.
-Rename the unpacked squashfs to `squashfs-root`.
-
+* Use `binwalk` to fully unpack the `.trx` firmware file hosted [here](https://www.asus.com/networking-iot-servers/wifi-routers/asus-wifi-routers/rtn12/helpdesk_bios?model2Name=RTN12).
+Select `Driver & Utility` -> `BIOS & Firmware` and select version `9.0.1.3`. 
+Unpack the `.trx` file with binwalk.
+Rename the resulting squashfs dir to `squashfs-root`.
 
 * Ensure the `nvram` file provided is located in the same directory as the
 fuzzer script.
