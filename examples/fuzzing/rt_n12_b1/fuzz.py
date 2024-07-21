@@ -20,7 +20,7 @@ def my_send(ql: Qiling) -> None:
         {"sockfd": INT, "buf": POINTER, "len": SIZE_T, "flags": INT}
     )
     ql.log.info("Hooked send()")
-    ql.log.info(params[buf])
+    ql.log.info(params['buf'])
 
 
 def fuzz(ql: Qiling, input_file) -> None:
@@ -194,7 +194,6 @@ class Emulator:
         # nvram_addr is a Qiling mapping designed to hold the contents of
         # whatever NVRAM lookup we just performed.
 
-        self.ql.fast_mode = True
         self.populate_nvram()
         self.add_hooks()
 
