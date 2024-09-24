@@ -194,6 +194,9 @@ def setup_logger(ql: Qiling, logdevs: Collection[Union[IO, str]], plain: bool, o
 
             elif isinstance(dev, str):
                 handler = FileHandler(dev)
+                
+            elif isinstance(dev, type(sys.stderr)):
+                handler = StreamHandler(dev)
 
             else:
                 raise TypeError(f'unexpected logging device type: {type(dev).__name__}')
