@@ -127,6 +127,7 @@ class QlArchARM(QlArch):
 
     def enable_vfp(self) -> None:
         # set full access to cp10 and cp11
-        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0b11 << 20) | (0b11 << 22)
+        cpacr = self.cpr.read(*arm_const.CPACR)
+        self.cpr.write(*arm_const.CPACR, cpacr | (0b11 << 20) | (0b11 << 22))
 
-        self.regs.fpexc = (1 << 30)
+        self.regs.fpexc = (0b1 << 30)

@@ -14,6 +14,8 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
+from qiling.arch.arm_const import TPIDRURO
+from qiling.arch.arm64_const import TPIDR_EL0
 from qiling.exception import QlErrorExecutionStop
 
 LINUX_THREAD_ID = 2000
@@ -479,19 +481,21 @@ class QlLinuxARMThread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.arch.regs.c13_c0_3 = self.tls
-        self.ql.log.debug(f"Set c13_c0_3 to {hex(self.ql.arch.regs.c13_c0_3)}")
+        self.ql.arch.cpr.write(*TPIDRURO, self.tls)
+
+        self.ql.log.debug(f"Setting TPIDRURO to {self.tls:#010x}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.arch.regs.c13_c0_3
-        self.ql.log.debug(f"Saved context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
+        self.tls = self.ql.arch.cpr.read(*TPIDRURO)
 
+        self.ql.log.debug(f"Context saved. TPIDRURO = {self.tls:#010x}")
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. c13_c0_3={hex(self.ql.arch.regs.c13_c0_3)}")
+
+        self.ql.log.debug(f"Context restored. TPIDRURO = {self.ql.arch.cpr.read(*TPIDRURO):#010x}")
 
     def clone(self):
         new_thread = super(QlLinuxARMThread, self).clone()
@@ -507,18 +511,21 @@ class QlLinuxARM64Thread(QlLinuxThread):
 
     def set_thread_tls(self, tls_addr):
         self.tls = tls_addr
-        self.ql.arch.regs.tpidr_el0 = self.tls
-        self.ql.log.debug(f"Set tpidr_el0 to {hex(self.ql.arch.regs.tpidr_el0)}")
+        self.ql.arch.cpr.write(*TPIDR_EL0, self.tls)
+
+        self.ql.log.debug(f"Setting TPIDR_EL0 to {self.tls:#010x}")
 
     def save(self):
         self.save_context()
-        self.tls = self.ql.arch.regs.tpidr_el0
-        self.ql.log.debug(f"Saved context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
+        self.tls = self.ql.arch.cpr.read(*TPIDR_EL0)
+
+        self.ql.log.debug(f"Context saved. TPIDR_EL0 = {self.tls:#010x}")
 
     def restore(self):
         self.restore_context()
         self.set_thread_tls(self.tls)
-        self.ql.log.debug(f"Restored context. tpidr_el0={hex(self.ql.arch.regs.tpidr_el0)}")
+
+        self.ql.log.debug(f"Context restored. TPIDR_EL0 = {self.ql.arch.cpr.read(*TPIDR_EL0):#010x}")
 
     def clone(self):
         new_thread = super(QlLinuxARM64Thread, self).clone()

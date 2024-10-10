@@ -5,6 +5,7 @@
 
 from qiling import Qiling
 from qiling.arch.x86_const import *
+from qiling.arch.arm_const import TPIDRURO
 from qiling.const import QL_ARCH
 
 from datetime import datetime
@@ -68,11 +69,12 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
 
 
 def ql_syscall_set_tls(ql: Qiling, address: int):
-    if ql.arch.type == QL_ARCH.ARM:
-        ql.arch.regs.c13_c0_3 = address
+    if ql.arch.type is QL_ARCH.ARM:
+        ql.arch.cpr.write(*TPIDRURO, address)
         ql.mem.write_ptr(ql.arch.arm_get_tls_addr + 16, address, 4)
         ql.arch.regs.r0 = address
-        ql.log.debug("settls(0x%x)" % address)
+
+        ql.log.debug("settls(%#x)", address)
 
 def ql_syscall_clock_gettime(ql: Qiling, clock_id: int, tp: int):
     ts_obj = __get_timespec_obj(ql.arch.bits)
