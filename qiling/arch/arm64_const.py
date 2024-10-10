@@ -5,6 +5,31 @@
 
 from unicorn.arm64_const import *
 
+
+# coprocessor registers
+TPIDR_EL0   = (3, 3, 13, 0, 2)
+TPIDRRO_EL0 = (3, 3, 13, 0, 3)
+TPIDR_EL1   = (3, 0, 13, 0, 4)
+ELR_EL1     = (3, 0,  4, 0, 1)
+ELR_EL2     = (3, 4,  4, 0, 1)
+ELR_EL3     = (3, 6,  4, 0, 1)
+SP_EL0      = (3, 0,  4, 1, 0)
+SP_EL1      = (3, 4,  4, 1, 0)
+SP_EL2      = (3, 6,  4, 1, 0)
+TTBR0_EL1   = (3, 0,  2, 0, 0)
+TTBR1_EL1   = (3, 0,  2, 0, 1)
+ESR_EL1     = (3, 0,  5, 2, 0)
+ESR_EL2     = (3, 4,  5, 2, 0)
+ESR_EL3     = (3, 6,  5, 2, 0)
+FAR_EL1     = (3, 0,  6, 0, 0)
+FAR_EL2     = (3, 4,  6, 0, 0)
+FAR_EL3     = (3, 6,  6, 0, 0)
+PAR_EL1     = (3, 0,  7, 4, 0)
+MAIR_EL1    = (3, 0, 10, 2, 0)
+VBAR_EL1    = (3, 0, 12, 0, 0)
+VBAR_EL2    = (3, 4, 12, 0, 0)
+VBAR_EL3    = (3, 6, 12, 0, 0)
+
 reg_map = {
     "x0":  UC_ARM64_REG_X0,
     "x1":  UC_ARM64_REG_X1,
@@ -41,8 +66,6 @@ reg_map = {
     "pc": UC_ARM64_REG_PC,
     "lr": UC_ARM64_REG_LR,
     "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
-    "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
-    "pstate": UC_ARM64_REG_PSTATE
 }
 
 reg_map_b = {
