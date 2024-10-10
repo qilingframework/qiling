@@ -89,7 +89,9 @@ class QlArchX86(QlArchIntel):
             **x86_const.reg_map_cr,
             **x86_const.reg_map_dr,
             **x86_const.reg_map_st,
-            **x86_const.reg_map_misc
+            **x86_const.reg_map_misc,
+            **x86_const.reg_map_xmm,
+            **x86_const.reg_map_ymm
         )
 
         pc_reg = 'eip'
@@ -118,6 +120,7 @@ class QlArchX8664(QlArchIntel):
             **x86_const.reg_map_32,
             **x86_const.reg_map_64,
             **x86_const.reg_map_cr,
+            **x86_const.reg_map_cr_64,
             **x86_const.reg_map_dr,
             **x86_const.reg_map_st,
             **x86_const.reg_map_misc,
@@ -126,7 +129,9 @@ class QlArchX8664(QlArchIntel):
             **x86_const.reg_map_64_d,
             **x86_const.reg_map_seg_base,
             **x86_const.reg_map_xmm,
+            **x86_const.reg_map_xmm_64,
             **x86_const.reg_map_ymm,
+            **x86_const.reg_map_ymm_64,
             **x86_const.reg_map_zmm
         )
 
