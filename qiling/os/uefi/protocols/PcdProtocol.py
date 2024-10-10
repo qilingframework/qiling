@@ -3,10 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from qiling.os.const import *
 from ..fncc import dxeapi
 from ..ProcessorBind import *
 from ..UefiBaseType import EFI_GUID, EFI_STATUS
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
 
 
 PCD_PROTOCOL_CALLBACK = FUNCPTR(VOID, PTR(EFI_GUID), UINTN, PTR(VOID), UINTN)
@@ -83,126 +90,126 @@ class PCD_PROTOCOL(STRUCT):
 @dxeapi(params = {
     "SkuId": UINT
 })
-def hook_SetSku(ql, address, params):
+def hook_SetSku(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_Get8(ql, address, params):
+def hook_Get8(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_Get16(ql, address, params):
+def hook_Get16(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_Get32(ql, address, params):
+def hook_Get32(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_Get64(ql, address, params):
+def hook_Get64(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_GetPtr(ql, address, params):
+def hook_GetPtr(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_GetBool(ql, address, params):
+def hook_GetBool(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT
 })
-def hook_GetSize(ql, address, params):
-    pass
-
-@dxeapi(params = {
-    "Guid":        GUID,
-    "TokenNumber": UINT
-})
-def hook_Get8Ex(ql, address, params):
+def hook_GetSize(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": UINT
 })
-def hook_Get16Ex(ql, address, params):
+def hook_Get8Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": UINT
 })
-def hook_Get32Ex(ql, address, params):
+def hook_Get16Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": UINT
 })
-def hook_Get64Ex(ql, address, params):
+def hook_Get32Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": UINT
 })
-def hook_GetPtrEx(ql, address, params):
+def hook_Get64Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": UINT
 })
-def hook_GetBoolEx(ql, address, params):
+def hook_GetPtrEx(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": UINT
 })
-def hook_GetSizeEx(ql, address, params):
+def hook_GetBoolEx(ql: Qiling, address: int, params):
+    pass
+
+@dxeapi(params = {
+    "Guid":        GUID,
+    "TokenNumber": UINT
+})
+def hook_GetSizeEx(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set8(ql, address, params):
+def hook_Set8(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set16(ql, address, params):
+def hook_Set16(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set32(ql, address, params):
+def hook_Set32(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set64(ql, address, params):
+def hook_Set64(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -210,22 +217,14 @@ def hook_Set64(ql, address, params):
     "SizeOfValue": POINTER,
     "Buffer":      POINTER
 })
-def hook_SetPtr(ql, address, params):
+def hook_SetPtr(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_SetBool(ql, address, params):
-    pass
-
-@dxeapi(params = {
-    "Guid":        GUID,
-    "TokenNumber": UINT,
-    "Value":       INT
-})
-def hook_Set8Ex(ql, address, params):
+def hook_SetBool(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -233,7 +232,7 @@ def hook_Set8Ex(ql, address, params):
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set16Ex(ql, address, params):
+def hook_Set8Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -241,7 +240,7 @@ def hook_Set16Ex(ql, address, params):
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set32Ex(ql, address, params):
+def hook_Set16Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -249,7 +248,15 @@ def hook_Set32Ex(ql, address, params):
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_Set64Ex(ql, address, params):
+def hook_Set32Ex(ql: Qiling, address: int, params):
+    pass
+
+@dxeapi(params = {
+    "Guid":        GUID,
+    "TokenNumber": UINT,
+    "Value":       INT
+})
+def hook_Set64Ex(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -258,7 +265,7 @@ def hook_Set64Ex(ql, address, params):
     "SizeOfValue": POINTER,
     "Buffer":      POINTER
 })
-def hook_SetPtrEx(ql, address, params):
+def hook_SetPtrEx(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -266,7 +273,7 @@ def hook_SetPtrEx(ql, address, params):
     "TokenNumber": UINT,
     "Value":       INT
 })
-def hook_SetBoolEx(ql, address, params):
+def hook_SetBoolEx(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -274,7 +281,7 @@ def hook_SetBoolEx(ql, address, params):
     "TokenNumber":      UINT,
     "CallBackFunction": POINTER
 })
-def hook_CallbackOnSet(ql, address, params):
+def hook_CallbackOnSet(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
@@ -282,20 +289,20 @@ def hook_CallbackOnSet(ql, address, params):
     "TokenNumber":      UINT,
     "CallBackFunction": POINTER
 })
-def hook_CancelCallback(ql, address, params):
+def hook_CancelCallback(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid":        GUID,
     "TokenNumber": POINTER
 })
-def hook_GetNextToken(ql, address, params):
+def hook_GetNextToken(ql: Qiling, address: int, params):
     pass
 
 @dxeapi(params = {
     "Guid": POINTER
 })
-def hook_GetNextTokenSpace(ql, address, params):
+def hook_GetNextTokenSpace(ql: Qiling, address: int, params):
     pass
 
 

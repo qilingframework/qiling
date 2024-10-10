@@ -6,14 +6,11 @@
 from __future__ import annotations
 
 import ctypes
-from contextlib import contextmanager
+
 from functools import lru_cache
-from typing import TYPE_CHECKING, Mapping, Sequence, Union, Optional
+from typing import Mapping, Sequence, Union
 
 from qiling.os.struct import BaseStructEL
-
-if TYPE_CHECKING:
-    from qiling import Qiling
 
 
 bits = 64
