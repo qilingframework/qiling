@@ -14,6 +14,8 @@ import unittest
 
 from typing import List
 
+from qiling.arch.models import X86_CPU_MODEL
+
 sys.path.append("..")
 from qiling import Qiling
 from qiling.const import *
@@ -76,7 +78,7 @@ class ELFTest(unittest.TestCase):
 
                 logged.extend(content.decode().splitlines())
 
-        ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_multithreading'], X86_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_multithreading'], X86_LINUX_ROOTFS, cputype=X86_CPU_MODEL.INTEL_HASWELL, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
         ql.os.stats = QlOsNullStats()
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
@@ -114,7 +116,7 @@ class ELFTest(unittest.TestCase):
 
                 logged.extend(content.decode().splitlines())
 
-        ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_multithreading'], X64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_multithreading'], X64_LINUX_ROOTFS, cputype=X86_CPU_MODEL.INTEL_HASWELL, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
         ql.os.stats = QlOsNullStats()
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
