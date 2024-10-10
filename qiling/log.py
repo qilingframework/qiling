@@ -9,7 +9,6 @@ import copy
 import logging
 import os
 import re
-import sys
 import weakref
 
 from typing import TYPE_CHECKING, Collection, IO, Optional, Protocol, Union, runtime_checkable

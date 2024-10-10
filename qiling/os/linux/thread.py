@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import gevent, os
+import os
+import gevent
 
 from typing import Callable, Sequence
 from abc import abstractmethod
@@ -475,61 +476,64 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
 class QlLinuxARMThread(QlLinuxThread):
     """docstring for QlLinuxARMThread"""
     def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
-        super(QlLinuxARMThread, self).__init__(ql, start_address, exit_point, context, set_child_tid_addr, thread_id)
+        super().__init__(ql, start_address, exit_point, context, set_child_tid_addr, thread_id)
+
         self.tls = 0
 
-
-    def set_thread_tls(self, tls_addr):
+    def set_thread_tls(self, tls_addr: int) -> None:
         self.tls = tls_addr
         self.ql.arch.cpr.write(*TPIDRURO, self.tls)
 
         self.ql.log.debug(f"Setting TPIDRURO to {self.tls:#010x}")
 
-    def save(self):
+    def save(self) -> None:
         self.save_context()
         self.tls = self.ql.arch.cpr.read(*TPIDRURO)
 
         self.ql.log.debug(f"Context saved. TPIDRURO = {self.tls:#010x}")
 
-    def restore(self):
+    def restore(self) -> None:
         self.restore_context()
         self.set_thread_tls(self.tls)
 
         self.ql.log.debug(f"Context restored. TPIDRURO = {self.ql.arch.cpr.read(*TPIDRURO):#010x}")
 
     def clone(self):
-        new_thread = super(QlLinuxARMThread, self).clone()
+        new_thread = super().clone()
         new_thread.tls = self.tls
+
         return new_thread
 
 
 class QlLinuxARM64Thread(QlLinuxThread):
     """docstring for QlLinuxARM64Thread"""
     def __init__(self, ql, start_address, exit_point, context = None, set_child_tid_addr = None, thread_id = None):
-        super(QlLinuxARM64Thread, self).__init__(ql, start_address, exit_point, context, set_child_tid_addr, thread_id)
+        super().__init__(ql, start_address, exit_point, context, set_child_tid_addr, thread_id)
+
         self.tls = 0
 
-    def set_thread_tls(self, tls_addr):
+    def set_thread_tls(self, tls_addr: int) -> None:
         self.tls = tls_addr
         self.ql.arch.cpr.write(*TPIDR_EL0, self.tls)
 
         self.ql.log.debug(f"Setting TPIDR_EL0 to {self.tls:#010x}")
 
-    def save(self):
+    def save(self) -> None:
         self.save_context()
         self.tls = self.ql.arch.cpr.read(*TPIDR_EL0)
 
         self.ql.log.debug(f"Context saved. TPIDR_EL0 = {self.tls:#010x}")
 
-    def restore(self):
+    def restore(self) -> None:
         self.restore_context()
         self.set_thread_tls(self.tls)
 
         self.ql.log.debug(f"Context restored. TPIDR_EL0 = {self.ql.arch.cpr.read(*TPIDR_EL0):#010x}")
 
     def clone(self):
-        new_thread = super(QlLinuxARM64Thread, self).clone()
+        new_thread = super().clone()
         new_thread.tls = self.tls
+
         return new_thread
 
 class QlLinuxThreadManagement:
