@@ -13,6 +13,7 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_EN
 from qiling import Qiling
 from qiling.arch.arch import QlArch
 from qiling.arch import arm_const
+from qiling.arch.cpr import QlCprManager
 from qiling.arch.models import ARM_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
@@ -68,6 +69,13 @@ class QlArchARM(QlArch):
     @property
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EB if self.regs.cpsr & (1 << 9) else QL_ENDIAN.EL
+
+    @cached_property
+    def cpr(self) -> QlCprManager:
+        """Coprocessor Registers.
+        """
+
+        return QlCprManager(self.uc)
 
     @property
     def effective_pc(self) -> int:

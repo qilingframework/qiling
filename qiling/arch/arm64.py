@@ -13,6 +13,7 @@ from keystone import Ks, KS_ARCH_ARM64, KS_MODE_ARM
 from qiling import Qiling
 from qiling.arch.arch import QlArch
 from qiling.arch import arm64_const
+from qiling.arch.cpr64 import QlCpr64Manager
 from qiling.arch.models import ARM64_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
@@ -55,6 +56,13 @@ class QlArchARM64(QlArch):
     @property
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
+
+    @cached_property
+    def cpr(self) -> QlCpr64Manager:
+        """Coprocessor Registers.
+        """
+
+        return QlCpr64Manager(self.uc)
 
     @cached_property
     def disassembler(self) -> Cs:
