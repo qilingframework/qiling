@@ -54,3 +54,16 @@ class HookRet:
 
     def remove(self) -> None:
         self.__remove(self)
+
+
+class HookSwitch(Hook):
+    def __init__(self, callback, user_data=None,  begin: int = 1, end: int = 0):
+        super().__init__(callback, user_data, begin, end)
+        self.switch = False
+
+    def bound_check(self, pc: int, size: int = 1) -> bool:
+        if self.begin == pc and not self.switch:
+            self.switch = True
+        if self.end == pc and self.switch:
+            self.switch = False
+        return self.switch

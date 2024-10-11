@@ -43,7 +43,7 @@ from unicorn.unicorn_const import (
     UC_HOOK_INSN_INVALID
 )
 
-from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet
+from .core_hooks_types import Hook, HookAddr, HookIntr, HookRet, HookSwitch
 from .const import QL_HOOK_BLOCK
 from .exception import QlErrorCoreHook
 
@@ -397,6 +397,12 @@ class QlCoreHooks:
 
         return HookRet(self, hook_type, hook)
 
+    def ql_switch_hook(self, callback: Callable, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
+        hook = HookSwitch(callback, user_data, begin, end)
+        self._ql_hook(UC_HOOK_CODE, hook)
+
+        return HookRet(self, UC_HOOK_CODE, hook)
+
     def hook_code(self, callback: TraceHookCalback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept assembly instructions before they get executed.
 
@@ -418,6 +424,27 @@ class QlCoreHooks:
     # TODO: remove; this is a special case of hook_intno(-1)
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
         return self.ql_hook(UC_HOOK_INTR, callback, user_data, begin, end)
+
+    def hook_switch(self, callback: TraceHookCalback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
+        """Intercept assembly instructions before they get executed.
+
+        Args:
+            callback  : a method to call upon interception
+            user_data : an additional context to pass to callback (default: `None`)
+            begin     : the memory address from when to start watching 
+            end       : the memory address from when to stop watching 
+
+        Notes:
+            If `begin` and `end` are not specified, the hook will never execute, use
+            `hook_code` instead.
+            If 'begin' and 'end' are the same address, the hook will never execute, use
+            `hook_address` instead.
+
+        Returns:
+            Hook handle
+        """
+
+        return self.ql_switch_hook(callback, user_data, begin, end)
 
     def hook_block(self, callback: TraceHookCalback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept landings in new basic blocks in a specified range.
