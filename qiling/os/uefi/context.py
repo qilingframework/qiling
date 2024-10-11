@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, MutableSequence, Optional, Tuple
+from typing import Any, Mapping, Dict, MutableSequence, Optional, Tuple, Type
 
 from qiling import Qiling
 from qiling.os.memory import QlMemoryHeap
@@ -8,12 +8,13 @@ from qiling.os.uefi.UefiSpec import EFI_CONFIGURATION_TABLE, EFI_SYSTEM_TABLE
 from qiling.os.uefi.smst import EFI_SMM_SYSTEM_TABLE2
 from qiling.os.uefi import utils
 
+
 class UefiContext(ABC):
     def __init__(self, ql: Qiling):
         self.ql = ql
         self.heap: QlMemoryHeap
         self.top_of_stack: int
-        self.protocols = {}
+        self.protocols: Dict[int, Dict[str, int]] = {}
         self.loaded_image_protocol_modules: MutableSequence[int] = []
         self.next_image_base: int
 
@@ -39,7 +40,7 @@ class UefiContext(ABC):
         self.ql.mem.map(base, size, info='[stack]')
         self.top_of_stack = (base + size - 1) & ~(CPU_STACK_ALIGNMENT - 1)
 
-    def install_protocol(self, proto_desc: Mapping, handle: int, address: int = None, from_hook: bool = False):
+    def install_protocol(self, proto_desc: Mapping, handle: int, address: Optional[int] = None, from_hook: bool = False):
         guid = proto_desc['guid']
 
         if handle not in self.protocols:
@@ -53,7 +54,7 @@ class UefiContext(ABC):
             address = self.heap.alloc(struct_class.sizeof())
 
         instance = utils.init_struct(self.ql, address, proto_desc)
-        instance.saveTo(self.ql, address)
+        instance.save_to(self.ql.mem, address)
 
         self.protocols[handle][guid] = address
         return self.notify_protocol(handle, guid, address, from_hook)
@@ -61,12 +62,12 @@ class UefiContext(ABC):
     def notify_protocol(self, handle: int, protocol: str, interface: int, from_hook: bool):
         for (event_id, event_dic) in self.ql.loader.events.items():
             if event_dic['Guid'] == protocol:
-                if event_dic['CallbackArgs'] == None:
-                    # To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify 
-                    # and updare it here.
+                if event_dic['CallbackArgs'] is None:
+                    # To support smm notification, we use None for CallbackArgs on SmmRegisterProtocolNotify
+                    # and update it here.
                     guid = utils.str_to_guid(protocol)
                     guid_ptr = self.heap.alloc(guid.sizeof())
-                    guid.saveTo(self.ql, guid_ptr)
+                    guid.save_to(self.ql.mem, guid_ptr)
 
                     event_dic['CallbackArgs'] = [guid_ptr, interface, handle]
 
@@ -75,11 +76,13 @@ class UefiContext(ABC):
 
         return utils.execute_protocol_notifications(self.ql, from_hook)
 
+
 class DxeContext(UefiContext):
     def __init__(self, ql: Qiling):
         super().__init__(ql)
 
         self.conftable = DxeConfTable(ql)
+
 
 class SmmContext(UefiContext):
     def __init__(self, ql: Qiling):
@@ -90,25 +93,16 @@ class SmmContext(UefiContext):
         self.smram_base: int
         self.smram_size: int
 
-        # assume tseg is inaccessible to non-smm
-        self.tseg_open = False
-
-        # assume tseg is locked
-        self.tseg_locked = True
-
         # registered sw smi handlers
         self.swsmi_handlers: Mapping[int, Tuple[int, Mapping]] = {}
 
-class UefiConfTable:
-    _struct_systbl: STRUCT
-    _fname_arrptr: str
-    _fname_nitems: str
 
-    def __init__(self, ql: Qiling):
+class UefiConfTable:
+    def __init__(self, ql: Qiling, systbl_type: Type[STRUCT], fname_arrptr: str, fname_nitems: str):
         self.ql = ql
 
-        self.__arrptr_off = self._struct_systbl.offsetof(self._fname_arrptr)
-        self.__nitems_off = self._struct_systbl.offsetof(self._fname_nitems)
+        self.__arrptr_off = systbl_type.offsetof(fname_arrptr)
+        self.__nitems_off = systbl_type.offsetof(fname_nitems)
 
     @property
     @abstractmethod
@@ -119,35 +113,31 @@ class UefiConfTable:
     def baseptr(self) -> int:
         addr = self.system_table + self.__arrptr_off
 
-        return utils.read_int64(self.ql, addr)
+        return self.ql.mem.read_ptr(addr)
 
     @property
     def nitems(self) -> int:
         addr = self.system_table + self.__nitems_off
 
-        return utils.read_int64(self.ql, addr)    # UINTN
+        return self.ql.mem.read_ptr(addr)	# UINTN
 
     @nitems.setter
     def nitems(self, value: int):
         addr = self.system_table + self.__nitems_off
 
-        utils.write_int64(self.ql, addr, value)
+        self.ql.mem.write_ptr(addr, value)
 
     def install(self, guid: str, table: int):
         ptr = self.find(guid)
-        append = ptr is None
 
-        if append:
+        if ptr is None:
             ptr = self.baseptr + self.nitems * EFI_CONFIGURATION_TABLE.sizeof()
-            append = True
-
-        instance = EFI_CONFIGURATION_TABLE()
-        instance.VendorGuid = utils.str_to_guid(guid)
-        instance.VendorTable = table
-        instance.saveTo(self.ql, ptr)
-
-        if append:
             self.nitems += 1
+
+        EFI_CONFIGURATION_TABLE(
+            VendorGuid = utils.str_to_guid(guid),
+            VendorTable = table
+        ).save_to(self.ql.mem, ptr)
 
     def find(self, guid: str) -> Optional[int]:
         ptr = self.baseptr
@@ -155,7 +145,7 @@ class UefiConfTable:
         efi_guid = utils.str_to_guid(guid)
 
         for _ in range(nitems):
-            entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+            entry = EFI_CONFIGURATION_TABLE.load_from(self.ql.mem, ptr)
 
             if utils.CompareGuid(entry.VendorGuid, efi_guid):
                 return ptr
@@ -168,26 +158,26 @@ class UefiConfTable:
         ptr = self.find(guid)
 
         if ptr is not None:
-            entry = EFI_CONFIGURATION_TABLE.loadFrom(self.ql, ptr)
+            entry = EFI_CONFIGURATION_TABLE.load_from(self.ql.mem, ptr)
 
             return entry.VendorTable.value
 
         # not found
         return None
 
+
 class DxeConfTable(UefiConfTable):
-    _struct_systbl = EFI_SYSTEM_TABLE
-    _fname_arrptr = 'ConfigurationTable'
-    _fname_nitems = 'NumberOfTableEntries'
+    def __init__(self, ql: Qiling):
+        super().__init__(ql, EFI_SYSTEM_TABLE, 'ConfigurationTable', 'NumberOfTableEntries')
 
     @property
     def system_table(self) -> int:
         return self.ql.loader.gST
 
+
 class SmmConfTable(UefiConfTable):
-    _struct_systbl = EFI_SMM_SYSTEM_TABLE2
-    _fname_arrptr = 'SmmConfigurationTable'
-    _fname_nitems = 'NumberOfTableEntries'
+    def __init__(self, ql: Qiling):
+        super().__init__(ql, EFI_SMM_SYSTEM_TABLE2, 'SmmConfigurationTable', 'NumberOfTableEntries')
 
     @property
     def system_table(self) -> int:

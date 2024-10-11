@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -19,19 +19,19 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 #        | NumberOfTableEntries        |
 #        | ConfigurationTable*  -> (4) |
 #        +-----------------------------+
-#    (1)    +-- EFI_RUNTIME_SERVICES -----+
+#    (1) +-- EFI_RUNTIME_SERVICES -----+
 #        |                             |
 #        | ...                         |
 #        +-----------------------------+
-#    (2)    +-- EFI_BOOT_SERVICES --------+
+#    (2) +-- EFI_BOOT_SERVICES --------+
 #        |                             |
 #        | ...                         |
 #        +-----------------------------+
-#    (3)    +-- EFI_DXE_SERVICES ---------+
+#    (3) +-- EFI_DXE_SERVICES ---------+
 #        |                             |
 #        | ...                         |
 #        +-----------------------------+
-#    (4)    +-- EFI_CONFIGURATION_TABLE --+        of HOB_LIST
+#    (4) +-- EFI_CONFIGURATION_TABLE --+        of HOB_LIST
 #        | VendorGuid                  |
 #        | VendorTable*         -> (5) |
 #        +-----------------------------+
@@ -44,16 +44,16 @@ from qiling.os.uefi.UefiSpec import EFI_SYSTEM_TABLE, EFI_BOOT_SERVICES, EFI_RUN
 
 # dynamically allocated (context.conf_table_data_ptr):
 #
-#    (5)    +-- VOID* --------------------+
+#    (5) +-- VOID* --------------------+
 #        | ...                         |
 #        +-----------------------------+
 
 def initialize(ql: Qiling, context: UefiContext, gST: int):
     ql.loader.gST = gST
 
-    gBS = gST + EFI_SYSTEM_TABLE.sizeof()        # boot services
-    gRT = gBS + EFI_BOOT_SERVICES.sizeof()        # runtime services
-    gDS = gRT + EFI_RUNTIME_SERVICES.sizeof()    # dxe services
+    gBS = gST + EFI_SYSTEM_TABLE.sizeof()       # boot services
+    gRT = gBS + EFI_BOOT_SERVICES.sizeof()      # runtime services
+    gDS = gRT + EFI_RUNTIME_SERVICES.sizeof()   # dxe services
     cfg = gDS + ds.EFI_DXE_SERVICES.sizeof()    # configuration tables array
 
     ql.log.info(f'Global tables:')
@@ -67,13 +67,12 @@ def initialize(ql: Qiling, context: UefiContext, gST: int):
     rt.initialize(ql, gRT)
     ds.initialize(ql, gDS)
 
-    instance = EFI_SYSTEM_TABLE()
-    instance.RuntimeServices = gRT
-    instance.BootServices = gBS
-    instance.NumberOfTableEntries = 0
-    instance.ConfigurationTable = cfg
-
-    instance.saveTo(ql, gST)
+    EFI_SYSTEM_TABLE(
+        RuntimeServices = gRT,
+        BootServices = gBS,
+        NumberOfTableEntries = 0,
+        ConfigurationTable = cfg
+    ).save_to(ql.mem, gST)
 
     install_configuration_table(context, "HOB_LIST", None)
     install_configuration_table(context, "DXE_SERVICE_TABLE", gDS)

@@ -3,8 +3,11 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from pefile import PE
+import os
 from typing import Any, Mapping, Optional, Sequence
+from pefile import PE
+
+from unicorn.unicorn_const import UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
@@ -96,17 +99,64 @@ class QlLoaderPE_UEFI(QlLoader):
         # use image base only if it does not point to NULL
         image_base = pe.OPTIONAL_HEADER.ImageBase or context.next_image_base
         image_size = ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
+        image_name = os.path.basename(path)
 
         assert (image_base % ql.mem.pagesize) == 0, 'image base is expected to be page-aligned'
 
         if image_base != pe.OPTIONAL_HEADER.ImageBase:
             pe.relocate_image(image_base)
 
-        pe.parse_data_directories()
-        data = bytes(pe.get_memory_mapped_image())
+        # pe.parse_data_directories()
 
-        ql.mem.map(image_base, image_size, info="[module]")
-        ql.mem.write(image_base, data)
+        sec_alignment = pe.OPTIONAL_HEADER.SectionAlignment
+
+        def __map_sections():
+            """Load file sections to memory, each in its own memory region protected by
+            its defined permissions. That allows separation of code and data, which makes
+            it easier to detect abnomal behavior or memory corruptions.
+            """
+
+            # load the header
+            hdr_data = bytes(pe.header)
+            hdr_base = image_base
+            hdr_size = ql.mem.align_up(len(hdr_data), sec_alignment)
+            hdr_perm = UC_PROT_READ
+
+            ql.mem.map(hdr_base, hdr_size, hdr_perm, image_name)
+            ql.mem.write(hdr_base, hdr_data)
+
+            # load sections
+            for section in pe.sections:
+                if not section.IMAGE_SCN_MEM_DISCARDABLE:
+                    sec_name = section.Name.rstrip(b'\x00').decode()
+                    sec_data = bytes(section.get_data(ignore_padding=True))
+                    sec_base = image_base + section.get_VirtualAddress_adj()
+                    sec_size = ql.mem.align_up(len(sec_data), sec_alignment)
+
+                    sec_perm = sum((
+                        section.IMAGE_SCN_MEM_READ * UC_PROT_READ,
+                        section.IMAGE_SCN_MEM_WRITE * UC_PROT_WRITE,
+                        section.IMAGE_SCN_MEM_EXECUTE * UC_PROT_EXEC
+                    ))
+
+                    ql.mem.map(sec_base, sec_size, sec_perm, f'{image_name} ({sec_name})')
+                    ql.mem.write(sec_base, sec_data)
+
+        def __map_all():
+            """Load the entire file to memory as a single memory region.
+            """
+
+            data = bytes(pe.get_memory_mapped_image())
+
+            ql.mem.map(image_base, image_size, info=image_name)
+            ql.mem.write(image_base, data)
+
+        # if sections are aligned to page, we can map them separately
+        if (sec_alignment % ql.mem.pagesize) == 0:
+            __map_sections()
+        else:
+            __map_all()
+
         ql.log.info(f'Module {path} loaded to {image_base:#x}')
 
         entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
@@ -120,7 +170,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.install_loaded_image_protocol(image_base, image_size)
 
         # this would be used later be loader.find_containing_image
-        self.images.append(Image(image_base, image_base + image_size, path))
+        self.images.append(Image(image_base, image_base + image_size, os.path.abspath(path)))
 
         # update next memory slot to allow sequencial loading. its availability
         # is unknown though
@@ -160,7 +210,7 @@ class QlLoaderPE_UEFI(QlLoader):
 
         for handle in context.loaded_image_protocol_modules:
             struct_addr = context.protocols[handle][self.loaded_image_protocol_guid]
-            loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.loadFrom(self.ql, struct_addr)
+            loaded_image_protocol = EfiLoadedImageProtocol.EFI_LOADED_IMAGE_PROTOCOL.load_from(self.ql.mem, struct_addr)
 
             unload_ptr = loaded_image_protocol.Unload.value
 
@@ -223,19 +273,19 @@ class QlLoaderPE_UEFI(QlLoader):
         context = DxeContext(ql)
 
         # initialize and locate heap
-        heap_base = int(profile['heap_address'], 0)
-        heap_size = int(profile['heap_size'], 0)
+        heap_base = profile.getint('heap_address')
+        heap_size = profile.getint('heap_size')
         context.init_heap(heap_base, heap_size)
         ql.log.info(f'DXE heap at {heap_base:#010x}')
 
         # initialize and locate stack
-        stack_base = int(profile['stack_address'], 0)
-        stack_size = int(profile['stack_size'], 0)
+        stack_base = profile.getint('stack_address')
+        stack_size = profile.getint('stack_size')
         context.init_stack(stack_base, stack_size)
         ql.log.info(f'DXE stack at {context.top_of_stack:#010x}')
 
         # base address for next image
-        context.next_image_base = int(profile['image_address'], 0)
+        context.next_image_base = profile.getint('image_address')
 
         # statically allocating 4 KiB for ST, RT, BS, DS and about 100 configuration table entries.
         # the actual size needed was rounded up to the nearest page boundary.
@@ -272,23 +322,23 @@ class QlLoaderPE_UEFI(QlLoader):
         context = SmmContext(ql)
 
         # set smram boundaries
-        context.smram_base = int(profile["smram_base"], 0)
-        context.smram_size = int(profile["smram_size"], 0)
+        context.smram_base = profile.getint('smram_base')
+        context.smram_size = profile.getint('smram_size')
 
         # initialize and locate heap
-        heap_base = int(profile["heap_address"], 0)
-        heap_size = int(profile["heap_size"], 0)
+        heap_base = profile.getint('heap_address')
+        heap_size = profile.getint('heap_size')
         context.init_heap(heap_base, heap_size)
         ql.log.info(f"SMM heap at {heap_base:#010x}")
 
         # initialize and locate stack
-        stack_base = int(profile['stack_address'], 0)
-        stack_size = int(profile['stack_size'], 0)
+        stack_base = profile.getint('stack_address')
+        stack_size = profile.getint('stack_size')
         context.init_stack(stack_base, stack_size)
         ql.log.info(f'SMM stack at {context.top_of_stack:#010x}')
 
         # base address for next image
-        context.next_image_base = int(profile['image_address'], 0)
+        context.next_image_base = profile.getint('image_address')
 
         # statically allocating 4 KiB for SMM ST and about 100 configuration table entries
         # the actual size needed was rounded up to the nearest page boundary.
@@ -325,7 +375,7 @@ class QlLoaderPE_UEFI(QlLoader):
             raise QlErrorArch("Unsupported architecture")
 
         # x86-64 arch only
-        if ql.arch.type != QL_ARCH.X8664:
+        if ql.arch.type is not QL_ARCH.X8664:
             raise QlErrorArch("Only 64-bit modules are supported at the moment")
 
         self.loaded_image_protocol_guid = ql.os.profile["LOADED_IMAGE_PROTOCOL"]["Guid"]
