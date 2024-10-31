@@ -18,8 +18,7 @@ from qiling.arch.arm64_const import (
     reg_map_v as arm64_regs_v
 )
 from qiling.arch.mips_const import (
-    reg_map as mips_regs_gpr,
-    reg_map_fpu as mips_regs_fpu
+    reg_map as mips_regs_gpr
 )
 from qiling.arch.x86_const import (
     reg_map_32 as x86_regs_32,

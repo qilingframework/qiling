@@ -39,9 +39,7 @@ class QlArchMIPS(QlArch):
     @cached_property
     def regs(self) -> QlRegisterManager:
         regs_map = dict(
-            **mips_const.reg_map,
-            **mips_const.reg_map_afpr128,
-            **mips_const.reg_map_fpu
+            **mips_const.reg_map
         )
 
         pc_reg = 'pc'
