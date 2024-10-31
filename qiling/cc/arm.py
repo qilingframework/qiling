@@ -24,7 +24,7 @@ class QlArmBaseCC(QlCommonBaseCC):
 
     def unwind(self, nslots: int) -> int:
         # TODO: cleanup?
-        return self.arch.stack_pop()
+        return self.arch.regs.lr
 
 class aarch64(QlArmBaseCC):
     _retaddr_on_stack = False
