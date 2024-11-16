@@ -95,7 +95,7 @@ jobs:
           pip3 install -e .[RE]
 
           pip3 install poetry setuptools wheel
-          cd tests &&./test_ondebian.sh  # 假设存在针对Debian的测试脚本，可根据实际情况调整
+          cd tests && ./test_onlinux.sh
 
     # - name: mac run tests
     #   if: contains(matrix.os, 'macos')
