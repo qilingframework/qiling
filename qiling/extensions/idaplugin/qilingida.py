@@ -886,7 +886,13 @@ class QlEmuQiling:
         self.env = {}
 
     def start(self, *args, **kwargs):
-        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+        # ida replaces sys.stderr with their own customized class that is not fully compatible with the
+        # standard stream protocol. here we patch stderr replacement to make it look like a proper file.
+        # this has to happen before Qiling init
+        if not hasattr(sys.stderr, 'fileno'):
+            setattr(sys.stderr, 'fileno', lambda: sys.__stderr__.fileno())
+
+        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, *args, **kwargs)
 
         if sys.platform != 'win32':
             self.ql.os.stdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
