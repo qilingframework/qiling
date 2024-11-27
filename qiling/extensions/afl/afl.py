@@ -94,7 +94,7 @@ def ql_afl_fuzz_custom(ql: Qiling,
                        persistent_iters: int = 1):
 
     def __place_input_wrapper(uc: Uc, input_bytes: Array[c_char], iters: int, context: Any) -> bool:
-        return place_input_callback(ql, input_bytes.value, iters)
+        return place_input_callback(ql, input_bytes.raw, iters)
 
     def __validate_crash_wrapper(uc: Uc, result: int, input_bytes: bytes, iters: int, context: Any) -> bool:
         return validate_crash_callback(ql, result, input_bytes, iters)

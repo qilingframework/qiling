@@ -52,6 +52,7 @@ def os_convert(os: str) -> Optional[QL_OS]:
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     alias_map = {
+        'amd64': 'x8664',
         'x86_64':  'x8664',
         'riscv32': 'riscv'
     }
