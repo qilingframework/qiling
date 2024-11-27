@@ -5,7 +5,6 @@
 
 from typing import Any, Callable
 
-
 class Hook:
     def __init__(self, callback: Callable, user_data: Any = None, begin: int = 1, end: int = 0):
         self.callback = callback

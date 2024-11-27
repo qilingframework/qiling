@@ -419,7 +419,6 @@ class QlCoreHooks:
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
         return self.ql_hook(UC_HOOK_INTR, callback, user_data, begin, end)
 
-
     def hook_block(self, callback: TraceHookCalback, user_data: Any = None, begin: int = 1, end: int = 0) -> HookRet:
         """Intercept landings in new basic blocks in a specified range.
 
