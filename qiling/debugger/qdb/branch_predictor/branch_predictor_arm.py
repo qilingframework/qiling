@@ -45,7 +45,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
         cur_addr = self.cur_addr
         line = self.disasm(cur_addr)
 
-        prophecy.where = cur_addr + line.size
+        cur_addr = self.cur_addr if pref_addr is None else pref_addr
 
         if line.mnemonic == self.CODE_END: # indicates program exited
             prophecy.where = True
