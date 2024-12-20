@@ -40,12 +40,10 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                 bits & 0x80000000 != 0, # N, sign flag
                 )
 
-    def predict(self):
+    def predict(self, pref_addr=None):
         prophecy = self.Prophecy()
-        cur_addr = self.cur_addr
-        line = self.disasm(cur_addr)
-
         cur_addr = self.cur_addr if pref_addr is None else pref_addr
+        line = self.disasm(cur_addr)
 
         if line.mnemonic == self.CODE_END: # indicates program exited
             prophecy.where = True
@@ -160,7 +158,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
             next_addr = cur_addr + self.THUMB_INST_SIZE
             for each in it_block_range:
                 _insn = self.read_insn(next_addr)
-                n2_addr = handle_bnj_arm(ql, next_addr)
+                n2_addr = self.predict(ql, next_addr)
 
                 if (cond_met and each == "t") or (not cond_met and each == "e"):
                     if n2_addr != (next_addr+len(_insn)): # branch detected
