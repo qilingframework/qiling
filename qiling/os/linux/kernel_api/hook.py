@@ -4,7 +4,7 @@
 #
 
 from qiling import Qiling
-from qiling.const import QL_INTERCEPT
+from qiling.const import QL_INTERCEPT, QL_ARCH
 from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound
 
 # import all kernel api hooks to global namespace
@@ -25,6 +25,11 @@ def hook_kernel_api(ql: Qiling, address: int, size):
         if api_func:
             try:
                 api_func(ql, address, api_name)
+
+                # Restore PC
+                if ql.arch.type == QL_ARCH.ARM:
+                    ql.arch.regs.arch_sp -= ql.arch.pointersize
+                    ql.arch.regs.arch_pc = ql.arch.regs.lr
             except Exception:
                 ql.log.exception("")
                 ql.log.debug("%s Exception Found" % api_name)

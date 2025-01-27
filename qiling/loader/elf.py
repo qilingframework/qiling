@@ -21,6 +21,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.exception import QlErrorELFFormat, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.linux.function_hook import FunctionHook
 from qiling.os.linux.syscall_nums import SYSCALL_NR
 from qiling.os.linux.kernel_api.hook import *
@@ -57,7 +58,7 @@ class AUXV(IntEnum):
 
 # start area memory for API hooking
 # we will reserve 0x1000 bytes for this (which contains multiple slots of 4/8 bytes, each for one api)
-API_HOOK_MEM = 0x1000000
+API_HOOK_MEM = 0x2000000
 
 # memory for syscall table
 SYSCALL_MEM = API_HOOK_MEM + 0x1000
@@ -87,6 +88,9 @@ class QlLoaderELF(QlLoader):
         stack_size = self.profile.getint('stack_size')
         self.ql.mem.map(stack_address, stack_size, info='[stack]')
 
+        # Setup heap
+        self.ql.os.heap = QlMemoryHeap(self.ql, 0x3000000, 0x3000000 + 0x1000000)
+
         self.path = self.ql.path
 
         with open(self.path, 'rb') as infile:
@@ -97,7 +101,7 @@ class QlLoaderELF(QlLoader):
 
         # is it a driver?
         if elftype == 'ET_REL':
-            self.load_driver(elffile, stack_address + stack_size, loadbase=0x8000000)
+            self.load_driver(elffile, stack_address + stack_size, loadbase=0x1000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
@@ -414,10 +418,19 @@ class QlLoaderELF(QlLoader):
         raise QlErrorELFFormat('invalid module: symbol init_module not found')
 
     def lkm_dynlinker(self, elffile: ELFFile, mem_start: int) -> Mapping[str, int]:
+        self._symbol_name_map = None
         def __get_symbol(name: str) -> Optional[Symbol]:
             _symtab = elffile.get_section_by_name('.symtab')
-            _sym = _symtab.get_symbol_by_name(name)
 
+            # Cache
+            if self._symbol_name_map == None:
+                self._symbol_name_map = {}
+                for i, sym in enumerate(_symtab.iter_symbols()):
+                    if sym.name not in self._symbol_name_map:
+                        self._symbol_name_map[sym.name] = []
+                    self._symbol_name_map[sym.name].append(sym)
+
+            _sym = None if name not in self._symbol_name_map else self._symbol_name_map[name]
             return _sym[0] if _sym else None
 
         ql = self.ql
@@ -554,6 +567,22 @@ class QlLoaderELF(QlLoader):
 
                         ql.mem.write_ptr(prev_mips_hi16_loc + 2, (val >> 16), 2)
                         ql.mem.write_ptr(loc + 2, (val & 0xFFFF), 2)
+
+                    elif desc in ('R_ARM_CALL', 'R_ARM_JUMP24'):
+                        ins = ql.mem.read_ptr(loc, 4) & 0xFF000000
+                        val = (((rev_reloc_symbols[symbol_name] - loc) >> 2) - 2) & 0x00FFFFFF
+                        ql.mem.write_ptr(loc, ins | val)
+
+                    elif desc == "R_ARM_ABS32":
+                        val = ql.mem.read_ptr(loc, 4)
+                        val += rev_reloc_symbols[symbol_name]
+                        ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
+
+                    elif desc == "R_ARM_PREL31":
+                        ql.log.warning(f'Ignoring relocation type {desc} at 0x{loc:x} for symbol "{symbol_name}" (0x{rev_reloc_symbols[symbol_name]:x})')
+
+                    elif desc == "R_ARM_NONE":
+                        ql.log.warning(f'Ignoring relocation type {desc} at 0x{loc:x} for symbol "{symbol_name}" (0x{rev_reloc_symbols[symbol_name]:x})')
 
                     else:
                         raise NotImplementedError(f'Relocation type {desc} not implemented')

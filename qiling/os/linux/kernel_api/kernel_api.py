@@ -115,9 +115,27 @@ def hook_kmalloc_caches(ql, address, params):
 })
 def hook_kmalloc(ql, address, params):
     size = params['size']
-    addr = ql.heap.alloc(size)
+    addr = ql.os.heap.alloc(size)
     return addr
 
+
+@linux_kernel_api(params={
+    "size": SIZE_T,
+    "flags": INT
+})
+def hook___kmalloc(ql, address, params):
+    size = params['size']
+    addr = ql.os.heap.alloc(size)
+    return addr
+
+
+@linux_kernel_api(params={
+    "p": POINTER
+})
+def hook_ksize(ql, address, params):
+    p = params['p']
+    size = ql.os.heap.size(p)
+    return size
 
 @linux_kernel_api(params={
     "dest": POINTER,
@@ -147,10 +165,11 @@ def hook_get_by_key(ql, address, params):
 
 
 @linux_kernel_api(params={
-    "Ptr": POINTER
+    "p": POINTER
 })
 def hook_kfree(ql, address, params):
-    pass
+    p = params['p']
+    ql.os.heap.free(p)
 
 
 @linux_kernel_api(params={
