@@ -134,7 +134,7 @@ class QlGdbFeatures:
             QL_ARCH.ARM:      dict(**arm_regs, **arm_regs_vfp, **arm_regs_q, **arm_regs_s),
             QL_ARCH.CORTEX_M: arm_regs,
             QL_ARCH.ARM64:    dict(**arm64_regs, **arm64_regs_v),
-            QL_ARCH.MIPS:     dict(**mips_regs_gpr, **mips_regs_fpu)
+            QL_ARCH.MIPS:     dict(**mips_regs_gpr)
         }[archtype]
 
         regsinfo = sorted(QlGdbFeatures.__walk_xml_regs(xmltree))
