@@ -5,7 +5,7 @@
 
 # Setup:
 # - Unpack firmware rootfs (assumed hereby: 'rootfs/tendaac15')
-#   - AC15 firmware may be acquired from https://down.tenda.com.cn/uploadfile/AC15/US_AC15V1.0BR_V15.03.05.19_multi_TD01.zip
+#   - AC15 firmware may be acquired from https://www.tenda.com.cn/download/detail-2680.html (US_AC15V1.0BR_V15.03.05.19_multi_TD01.zip)
 # - Refresh webroot directory:
 #   - Enter the 'squashfs-root' directory
 #   - rm -rf webroot

@@ -4,13 +4,13 @@
 #
 
 import re
-from typing import Any, Callable, Iterable, Mapping, MutableSequence, Sequence, Tuple
+from typing import Any, Callable, Iterable, Mapping, List, Sequence, Tuple
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.cc import QlCC, intel
 from qiling.const import QL_INTERCEPT, QL_OS
-from qiling.os.const import *
+from qiling.os.const import POINTER, STRING, WSTRING, GUID
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs, QlOsUtils
 from qiling.os.fcall import QlFunctionCall, TypedArg
@@ -30,8 +30,8 @@ class QlOsUefi(QlOs):
         self.smm: SmmEnv
         self.heap: QlMemoryHeap    # Will be initialized by the loader.
 
-        self.on_module_enter: MutableSequence[Callable[[str], bool]] = []
-        self.on_module_exit: MutableSequence[Callable[[int], bool]] = []
+        self.on_module_enter: List[Callable[[str], bool]] = []
+        self.on_module_exit: List[Callable[[int], bool]] = []
 
         cc: QlCC = {
             32: intel.cdecl,
@@ -41,12 +41,14 @@ class QlOsUefi(QlOs):
         self.fcall = QlFunctionCall(ql, cc)
 
     def save(self):
-        saved_state = super(QlOsUefi, self).save()
+        saved_state = super().save()
         saved_state['entry_point'] = self.entry_point
+
         return saved_state
 
     def restore(self, saved_state):
-        super(QlOsUefi, self).restore(saved_state)
+        super().restore(saved_state)
+
         self.entry_point = saved_state['entry_point']
 
     def process_fcall_params(self, targs: Iterable[TypedArg]) -> Sequence[Tuple[str, str]]:
@@ -70,10 +72,10 @@ class QlOsUefi(QlOs):
             return super(QlOsUefi, self).process_fcall_params([(None, '', v)])[0][1]
 
         ahandlers: Mapping[Any, Callable[[Any], str]] = {
-            POINTER    : lambda v: f'{v:#010x}' if v else 'NULL',
-            STRING    : lambda v: QlOsUtils.stringify(v),
-            WSTRING    : lambda v: f'L{QlOsUtils.stringify(v)}',
-            GUID    : lambda v: guids_db.get(v.upper(), v) if v else 'NULL'
+            POINTER: lambda v: f'{v:#010x}' if v else 'NULL',
+            STRING:  lambda v: QlOsUtils.stringify(v),
+            WSTRING: lambda v: f'L{QlOsUtils.stringify(v)}',
+            GUID:    lambda v: guids_db.get(v.upper(), v) if v else 'NULL'
         }
 
         return tuple((aname, ahandlers.get(atype, fallback)(avalue)) for atype, aname, avalue in targs)

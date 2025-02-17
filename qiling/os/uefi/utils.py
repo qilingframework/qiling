@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import binascii
-
 from uuid import UUID
-from typing import Optional, Mapping
+from typing import TYPE_CHECKING, Any, Optional, Mapping
 
 from qiling import Qiling
 from qiling.os.uefi.const import EFI_SUCCESS
 from qiling.os.uefi.UefiBaseType import EFI_GUID
+
+
+if TYPE_CHECKING:
+    from qiling.os.uefi.ProcessorBind import STRUCT
+
 
 def signal_event(ql: Qiling, event_id: int) -> None:
     event = ql.loader.events[event_id]
@@ -63,65 +66,7 @@ def execute_protocol_notifications(ql: Qiling, from_hook: bool = False) -> bool:
 
     return True
 
-def ptr_read8(ql: Qiling, addr: int) -> int:
-    """Read BYTE data from a pointer
-    """
-
-    return ql.mem.read_ptr(addr, 1)
-
-def ptr_write8(ql: Qiling, addr: int, val: int) -> None:
-    """Write BYTE data to a pointer
-    """
-
-    ql.mem.write_ptr(addr, val, 1)
-
-def ptr_read16(ql: Qiling, addr: int) -> int:
-    """Read WORD data from a pointer
-    """
-
-    return ql.mem.read_ptr(addr, 2)
-
-def ptr_write16(ql: Qiling, addr: int, val: int) -> None:
-    """Write WORD data to a pointer
-    """
-
-    ql.mem.write_ptr(addr, val, 2)
-
-def ptr_read32(ql: Qiling, addr: int) -> int:
-    """Read DWORD data from a pointer
-    """
-
-    return ql.mem.read_ptr(addr, 4)
-
-def ptr_write32(ql: Qiling, addr: int, val: int) -> None:
-    """Write DWORD data to a pointer
-    """
-
-    ql.mem.write_ptr(addr, val, 4)
-
-def ptr_read64(ql: Qiling, addr: int) -> int:
-    """Read QWORD data from a pointer
-    """
-
-    return ql.mem.read_ptr(addr, 8)
-
-def ptr_write64(ql: Qiling, addr: int, val: int) -> None:
-    """Write QWORD data to a pointer
-    """
-
-    ql.mem.write_ptr(addr, val, 8)
-
-# backward comptability
-read_int8   = ptr_read8
-write_int8  = ptr_write8
-read_int16  = ptr_read16
-write_int16 = ptr_write16
-read_int32  = ptr_read32
-write_int32 = ptr_write32
-read_int64  = ptr_read64
-write_int64 = ptr_write64
-
-def init_struct(ql: Qiling, base: int, descriptor: Mapping):
+def init_struct(ql: Qiling, base: int, descriptor: Mapping[str, Any]) -> 'STRUCT':
     struct_class = descriptor['struct']
     struct_fields = descriptor.get('fields', [])
 
@@ -174,7 +119,7 @@ def install_configuration_table(context, key: str, table: Optional[int]):
     # if pointer to table data was not specified, load table data
     # from profile and have table pointing to it
     if table is None:
-        data = binascii.unhexlify(cfgtable['TableData'])
+        data = bytes.fromhex(cfgtable['TableData'])
         table = context.conf_table_data_next_ptr
 
         context.ql.mem.write(table, data)
