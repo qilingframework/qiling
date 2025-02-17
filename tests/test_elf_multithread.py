@@ -14,12 +14,10 @@ import unittest
 
 from typing import List
 
-from qiling.arch.models import X86_CPU_MODEL
-
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import *
-from qiling.exception import *
+from qiling.arch.models import X86_CPU_MODEL
+from qiling.const import QL_VERBOSE, QL_INTERCEPT
 from qiling.os.filestruct import ql_file
 from qiling.os.stats import QlOsNullStats
 
