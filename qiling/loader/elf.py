@@ -371,7 +371,13 @@ class QlLoaderELF(QlLoader):
             elf_table.extend(self.ql.pack(key))
             elf_table.extend(self.ql.pack(val))
 
-        new_stack = self.ql.mem.align(new_stack - len(elf_table), self.ql.arch.pointersize)
+        sp_align = self.ql.arch.pointersize
+
+        # mips requires doubleword alignment
+        if self.ql.arch.type is QL_ARCH.MIPS:
+            sp_align *= 2
+
+        new_stack = self.ql.mem.align(new_stack - len(elf_table), sp_align)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
         self.auxv = new_stack + bytes_before_auxv
