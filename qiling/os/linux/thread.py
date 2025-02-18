@@ -242,7 +242,7 @@ class QlLinuxThread(QlThread):
             self.ql.log.debug(f"Scheduled from {hex(start_address)}.")
             try:
                 # Known issue for timeout: https://github.com/unicorn-engine/unicorn/issues/1355
-                self.ql.emu_start(start_address, self.exit_point, count=31337)
+                self.ql.emu_start(start_address, self.exit_point, count=32337)
             except UcError as e:
                 self.ql.os.emu_error()
                 self.ql.log.exception("")
