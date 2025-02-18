@@ -329,7 +329,7 @@ class QlLoaderELF(QlLoader):
         # https://github.com/google/cpu_features/blob/main/include/internal/hwcaps.h
         hwcap_values = {
             (QL_ARCH.ARM,   QL_ENDIAN.EL, 32): 0x001fb8d7,
-            (QL_ARCH.ARM,   QL_ENDIAN.EB, 32): 0x001fb8d7,
+            (QL_ARCH.ARM,   QL_ENDIAN.EB, 32): 0xd7b81f00,
             (QL_ARCH.ARM64, QL_ENDIAN.EL, 64): 0x078bfbfd
         }
 
