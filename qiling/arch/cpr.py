@@ -80,5 +80,18 @@ class QlCprManager:
 
         self.uc.cpr_write(coproc, opc1, crn, crm, opc2, el, is_64, value)
 
+    def save(self) -> Dict[str, int]:
+        """Save registers.
+        """
+
+        return dict((name, self.read(*reg)) for name, reg in self.register_mapping.items())
+
+    def restore(self, context: Mapping[str, int]) -> None:
+        """Restore registers.
+        """
+
+        for name, val in context.items():
+            self.write(*self.register_mapping[name], val)
+
 
 __all__ = ['QlCprManager']
