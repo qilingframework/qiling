@@ -75,7 +75,11 @@ class QlArchARM(QlArch):
         """Coprocessor Registers.
         """
 
-        return QlCprManager(self.uc)
+        regs_map = dict(
+            **arm_const.reg_cpr
+        )
+
+        return QlCprManager(self.uc, regs_map)
 
     @property
     def effective_pc(self) -> int:
@@ -127,7 +131,6 @@ class QlArchARM(QlArch):
 
     def enable_vfp(self) -> None:
         # set full access to cp10 and cp11
-        cpacr = self.cpr.read(*arm_const.CPACR)
-        self.cpr.write(*arm_const.CPACR, cpacr | (0b11 << 20) | (0b11 << 22))
+        self.cpr.CPACR |= (0b11 << 20) | (0b11 << 22)
 
         self.regs.fpexc = (0b1 << 30)

@@ -62,7 +62,11 @@ class QlArchARM64(QlArch):
         """Coprocessor Registers.
         """
 
-        return QlCpr64Manager(self.uc)
+        regs_map = dict(
+            **arm64_const.reg_cpr
+        )
+
+        return QlCpr64Manager(self.uc, regs_map)
 
     @cached_property
     def disassembler(self) -> Cs:
@@ -73,4 +77,4 @@ class QlArchARM64(QlArch):
         return Ks(KS_ARCH_ARM64, KS_MODE_ARM)
 
     def enable_vfp(self):
-        self.regs.cpacr_el1 = self.regs.cpacr_el1 | 0x300000
+        self.regs.cpacr_el1 |= (0b11 << 20)

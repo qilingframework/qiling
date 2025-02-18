@@ -6,8 +6,11 @@
 from unicorn.arm_const import *
 
 
-CPACR    = (15, 0,  1, 0, 2, 0, False)
-TPIDRURO = (15, 0, 13, 0, 3, 0, False)
+# coprocessor registers
+reg_cpr = {
+    'CPACR':    (15, 0,  1, 0, 2, 0, False),
+    'TPIDRURO': (15, 0, 13, 0, 3, 0, False)
+}
 
 reg_map = {
     "r0":  UC_ARM_REG_R0,

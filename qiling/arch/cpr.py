@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import weakref
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Mapping, Tuple
 
 if TYPE_CHECKING:
     from unicorn import Uc
+
+_CPR_T = Tuple[int, int, int, int, int, int, bool]
 
 
 class QlCprManager:
@@ -20,8 +22,30 @@ class QlCprManager:
     # for more information about various aarch32 coprocessor register, pelase refer to:
     # https://developer.arm.com/documentation/ddi0601/latest/AArch32-Registers
 
-    def __init__(self, uc: Uc) -> None:
+    def __init__(self, uc: Uc, regs_map: Mapping[str, _CPR_T]) -> None:
+        """Initialize the coprocessor registers manager.
+        """
+
+        # this funny way of initialization is used to avoid calling self setattr and
+        # getattr upon init. if it did, it would go into an endless recursion
+        self.register_mapping: Dict[str, _CPR_T]
+        super().__setattr__('register_mapping', regs_map)
+
         self.uc: Uc = weakref.proxy(uc)
+
+    def __getattr__(self, name: str) -> int:
+        if name in self.register_mapping:
+            return self.read(*self.register_mapping[name])
+
+        else:
+            return super().__getattribute__(name)
+
+    def __setattr__(self, name: str, value: int) -> None:
+        if name in self.register_mapping:
+            self.write(*self.register_mapping[name], value)
+
+        else:
+            super().__setattr__(name, value)
 
     def read(self, coproc: int, opc1: int, crn: int, crm: int, opc2: int, el: int, is_64: bool) -> int:
         """Read a coprocessor register value.
