@@ -572,7 +572,13 @@ class QlLinuxThreadManagement:
             pass
 
     def _prepare_lib_patch(self):
-        if self.ql.loader.elf_entry != self.ql.loader.entry_point:
+        # If current control flow comes from a second call of ql.run method, which means 
+        # we have complished the preparation of library patch, then ql.entry_point would 
+        # be the next instruction needed to execute, so we do not need do library patch twice now.  
+        if self.ql.entry_point is not None:
+            self.ql.loader.elf_entry = self.ql.entry_point
+            return None
+        elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
             entry_address = self.ql.loader.elf_entry
 
             if self.ql.arch.type == QL_ARCH.ARM:
