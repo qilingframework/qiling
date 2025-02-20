@@ -150,7 +150,7 @@ def run_qdb_script(qdb: QlQdb, filename: str) -> None:
     with open(filename) as fd:
         for line in iter(fd.readline, ""):
 
-            # skip commented and empty line 
+            # skip commented and empty line
             if line.startswith("#") or line == "\n":
                 continue
 
@@ -192,9 +192,9 @@ class SnapshotManager:
         transform saved context into binary set
         """
 
-        reg  = st.get("reg",  st[0])
-        mem  = st.get("mem",  st[1])
-        xreg = st.get("xreg", st[2])
+        reg  = st.get("reg", {})
+        mem  = st.get("mem", [])
+        xreg = st.get("cpr") or st.get("msr") or {}
 
         ram = []
         for mem_seg in mem["ram"]:
