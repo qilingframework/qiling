@@ -5,7 +5,7 @@
 
 import cmd
 
-from typing import Optional, Tuple, Union, List
+from typing import Callable, Optional, Tuple, Union, List
 from contextlib import contextmanager
 
 from qiling import Qiling
@@ -18,6 +18,30 @@ from .misc import parse_int, Breakpoint, TempBreakpoint, try_read_int
 from .const import color
 
 from .utils import QDB_MSG, qdb_print
+
+
+def save_reg_dump(func: Callable) -> Callable[..., None]:
+    """Decorator for saving registers dump.
+    """
+
+    def inner(self: 'QlQdb', *args, **kwargs) -> None:
+        self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
+
+        func(self, *args, **kwargs)
+
+    return inner
+
+def check_ql_alive(func: Callable) -> Callable[..., None]:
+    """Decorator for checking whether ql instance is alive.
+    """
+
+    def inner(self: 'QlQdb', *args, **kwargs) -> None:
+        if self.ql is None:
+            qdb_print(QDB_MSG.ERROR, "The program is not being run.")
+        else:
+            func(self, *args, **kwargs)
+
+    return inner
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
@@ -159,30 +183,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         saved_states = self.ql.save(reg=reg, mem=mem)
         yield self
         self.ql.restore(saved_states)
-
-    def save_reg_dump(func) -> None:
-        """
-        decorator function for saving register dump
-        """
-
-        def inner(self, *args, **kwargs):
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
-            func(self, *args, **kwargs)
-
-        return inner
-
-    def check_ql_alive(func) -> None:
-        """
-        decorator function for checking ql instance is alive
-        """
-
-        def inner(self, *args, **kwargs):
-            if self.ql is None:
-                qdb_print(QDB_MSG.ERROR, "The program is not being run.")
-            else:
-                func(self, *args, **kwargs)
-
-        return inner
 
     def parseline(self, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
