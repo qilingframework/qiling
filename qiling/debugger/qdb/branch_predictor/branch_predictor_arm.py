@@ -244,8 +244,8 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
             _, r = line.op_str.split(", ")
             prophecy.where = self.read_reg(r)
 
-        if prophecy.where & 1:
-            prophecy.where -= 1
+        if prophecy.where is not None:
+            prophecy.where &= ~0b1
 
         return prophecy
 
