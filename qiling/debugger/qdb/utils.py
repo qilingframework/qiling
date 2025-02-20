@@ -192,18 +192,17 @@ class SnapshotManager:
         transform saved context into binary set
         """
 
-        reg = st["reg"] if "reg" in st else st[0]
-
-        if "mem" not in st:
-            return (reg, st[1])
+        reg  = st.get("reg",  st[0])
+        mem  = st.get("mem",  st[1])
+        xreg = st.get("xreg", st[2])
 
         ram = []
-        for mem_seg in st["mem"]["ram"]:
+        for mem_seg in mem["ram"]:
             lbound, ubound, perms, label, raw_bytes = mem_seg
             rb_set = {(idx, val) for idx, val in enumerate(raw_bytes)}
             ram.append((lbound, ubound, perms, label, rb_set))
 
-        return (reg, ram)
+        return (reg, ram, xreg)
 
     def __init__(self, ql):
         self.ql = ql
