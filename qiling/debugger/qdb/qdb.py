@@ -269,6 +269,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         prophecy = self.predictor.predict()
 
         if prophecy.going:
+            self.set_breakpoint(prophecy.where, is_temp=True)
+
+        else:
             cur_insn = self.predictor.disasm(self.cur_addr)
             bp_addr = self.cur_addr + cur_insn.size
 
@@ -276,9 +279,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 bp_addr += cur_insn.size
 
             self.set_breakpoint(bp_addr, is_temp=True)
-
-        else:
-            self.set_breakpoint(prophecy.where, is_temp=True)
 
         self._run()
 
