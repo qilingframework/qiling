@@ -39,7 +39,7 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
         return self.signed_val(getattr(self.ql.arch.regs, reg_name))
 
     def predict(self):
-        prophecy = self.Prophecy()
+        prophecy = Prophecy()
         line = self.disasm(self.cur_addr)
 
         if line.mnemonic == self.CODE_END: # indicates program extied

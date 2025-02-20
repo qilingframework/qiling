@@ -41,7 +41,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                 )
 
     def predict(self, pref_addr=None):
-        prophecy = self.Prophecy()
+        prophecy = Prophecy()
         cur_addr = self.cur_addr if pref_addr is None else pref_addr
         line = self.disasm(cur_addr)
 

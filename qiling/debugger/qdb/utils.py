@@ -14,20 +14,22 @@ from qiling.const import QL_ARCH
 from .context import Context
 
 from .render import (
-        ContextRenderX86,
-        ContextRenderX8664,
-        ContextRenderARM,
-        ContextRenderCORTEX_M,
-        ContextRenderMIPS
-        )
+    ContextRender,
+    ContextRenderX86,
+    ContextRenderX8664,
+    ContextRenderARM,
+    ContextRenderCORTEX_M,
+    ContextRenderMIPS
+)
 
 from .branch_predictor import (
-        BranchPredictorX86,
-        BranchPredictorX8664,
-        BranchPredictorARM,
-        BranchPredictorCORTEX_M,
-        BranchPredictorMIPS,
-        )
+    BranchPredictor,
+    BranchPredictorX86,
+    BranchPredictorX8664,
+    BranchPredictorARM,
+    BranchPredictorCORTEX_M,
+    BranchPredictorMIPS,
+)
 
 from .const import color, QDB_MSG
 
@@ -117,31 +119,37 @@ def setup_address_marker():
 
 """
 
-def setup_branch_predictor(ql):
-    """
-    setup BranchPredictor correspondingly
-    """
-
-    return {
-            QL_ARCH.X86: BranchPredictorX86,
-            QL_ARCH.X8664: BranchPredictorX8664,
-            QL_ARCH.ARM: BranchPredictorARM,
-            QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
-            QL_ARCH.MIPS: BranchPredictorMIPS,
-            }.get(ql.arch.type)(ql)
-
-def setup_context_render(ql, predictor):
-    """
-    setup context render correspondingly
+def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
+    """Setup BranchPredictor according to arch.
     """
 
-    return {
-            QL_ARCH.X86: ContextRenderX86,
-            QL_ARCH.X8664: ContextRenderX8664,
-            QL_ARCH.ARM: ContextRenderARM,
-            QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
-            QL_ARCH.MIPS: ContextRenderMIPS,
-            }.get(ql.arch.type)(ql, predictor)
+    preds: Dict[QL_ARCH, Type[BranchPredictor]] = {
+        QL_ARCH.X86:      BranchPredictorX86,
+        QL_ARCH.X8664:    BranchPredictorX8664,
+        QL_ARCH.ARM:      BranchPredictorARM,
+        QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
+        QL_ARCH.MIPS:     BranchPredictorMIPS
+    }
+
+    p = preds[ql.arch.type]
+
+    return p(ql)
+
+def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRender:
+    """Setup context render according to arch.
+    """
+
+    rends: Dict[QL_ARCH, Type[ContextRender]] = {
+        QL_ARCH.X86:      ContextRenderX86,
+        QL_ARCH.X8664:    ContextRenderX8664,
+        QL_ARCH.ARM:      ContextRenderARM,
+        QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
+        QL_ARCH.MIPS:     ContextRenderMIPS
+    }
+
+    r = rends[ql.arch.type]
+
+    return r(ql, predictor)
 
 def run_qdb_script(qdb, filename: str) -> None:
     with open(filename) as fd:

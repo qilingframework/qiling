@@ -27,7 +27,7 @@ class BranchPredictorX8664(BranchPredictor, ArchX8664):
         ArchX8664.__init__(self)
 
     def predict(self):
-        prophecy = self.Prophecy()
+        prophecy = Prophecy()
         line = self.disasm(self.cur_addr)
 
         jump_table = {
