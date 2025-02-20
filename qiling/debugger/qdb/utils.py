@@ -178,7 +178,7 @@ class SnapshotManager:
         """
 
         def __init__(self, saved_state):
-            self.reg, self.ram = SnapshotManager.transform(saved_state)
+            self.reg, self.ram, self.xreg = SnapshotManager.transform(saved_state)
 
     class DiffedState:
         """
@@ -186,7 +186,7 @@ class SnapshotManager:
         """
 
         def __init__(self, diffed_st):
-            self.reg, self.ram = diffed_st
+            self.reg, self.ram, self.xreg = diffed_st
 
     @staticmethod
     def transform(st):
@@ -258,9 +258,10 @@ class SnapshotManager:
         # prev_st = self.layers.pop()
         diffed_reg = self.diff_reg(before_st.reg, after_st.reg)
         diffed_ram = self.diff_ram(before_st.ram, after_st.ram)
+        diffed_xreg = self.diff_reg(before_st.xreg, after_st.xreg)
         # diffed_reg = self.diff_reg(prev_st.reg, cur_st.reg)
         # diffed_ram = self.diff_ram(prev_st.ram, cur_st.ram)
-        return self.DiffedState((diffed_reg, diffed_ram))
+        return self.DiffedState((diffed_reg, diffed_ram, diffed_xreg))
 
     def snapshot(func):
         """
@@ -297,8 +298,25 @@ class SnapshotManager:
         for reg_name, reg_value in prev_st.reg.items():
             cur_st.reg[reg_name] = reg_value
 
-        to_be_restored = {"reg": cur_st.reg}
+        for reg_name, reg_value in prev_st.xreg.items():
+            cur_st.xreg[reg_name] = reg_value
 
+        to_be_restored = {
+            "reg": cur_st.reg,
+
+            # though we have arch-specific context to restore, we want to keep this arch-agnostic.
+            # one way to work around that is to include 'xreg' both as msr (intel) and cpr (arm).
+            # only the relevant one will be picked up while the other one will be discarded
+            "msr": cur_st.xreg,
+            "cpr": cur_st.xreg
+        }
+
+        # FIXME: not sure how this one even works. while curr_st is a fresh qiling snapshot,
+        # prev_st is a DiffedState which does not hold a complete state but only a diff between
+        # two points which seem to be unrelated here.
+        #
+        # this code only patches current memory content with the diff between points a and b while
+        # we may be already be at point c.
         if getattr(prev_st, "ram", None) and prev_st.ram != cur_st.ram:
 
             ram = []
