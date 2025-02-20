@@ -4,7 +4,7 @@
 #
 
 from __future__ import annotations
-from typing import Callable, Optional, Mapping, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Mapping, Tuple, Type
 
 from capstone import CsInsn
 
