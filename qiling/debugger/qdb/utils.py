@@ -8,10 +8,7 @@ from typing import Callable, Optional, Mapping, Tuple
 
 from capstone import CsInsn
 
-from qiling import Qiling
 from qiling.const import QL_ARCH
-
-from .context import Context
 
 from .render import (
     ContextRender,
@@ -33,7 +30,11 @@ from .branch_predictor import (
 
 from .const import color, QDB_MSG
 
-    
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from .qdb import QlQdb
+
 
 def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
     """
@@ -53,15 +54,13 @@ def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
 
     print(color_coated)
 
-"""
-
-    class Marker provide the ability for marking an address as a more easier rememberable alias
-
-"""
 
 def setup_address_marker():
 
     class Marker:
+        """provide the ability to mark an address as a more easier rememberable alias
+        """
+
         def __init__(self):
             self._mark_list = {}
 
@@ -113,12 +112,8 @@ def setup_address_marker():
 
     return Marker()
 
-"""
 
-    helper functions for setting proper branch predictor and context render depending on different arch
-
-"""
-
+# helper functions for setting proper branch predictor and context render depending on different arch
 def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
     """Setup BranchPredictor according to arch.
     """
@@ -151,7 +146,7 @@ def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRende
 
     return r(ql, predictor)
 
-def run_qdb_script(qdb, filename: str) -> None:
+def run_qdb_script(qdb: QlQdb, filename: str) -> None:
     with open(filename) as fd:
         for line in iter(fd.readline, ""):
 
@@ -167,17 +162,12 @@ def run_qdb_script(qdb, filename: str) -> None:
                 func()
 
 
-"""
+class SnapshotManager:
+    """for functioning differential snapshot
 
-    For supporting Qdb features like:
+    Supports Qdb features like:
     1. record/replay debugging
     2. memory access in gdb-style
-
-"""
-
-class SnapshotManager:
-    """
-    for functioning differential snapshot
     """
 
     class State:
@@ -276,7 +266,7 @@ class SnapshotManager:
         decorator function for saving differential context on certian qdb command
         """
 
-        def magic(self, *args, **kwargs):
+        def magic(self: QlQdb, *args, **kwargs):
             if self.rr:
                 # save State before execution
                 p_st = self.rr._save()
@@ -340,12 +330,9 @@ class SnapshotManager:
                         bs = bytes(dict(sorted(cur_rb_dict.items())).values())
                         ram.append((*cur_others, bs))
 
-            to_be_restored.update({"mem": {"ram": ram, "mmio": {}}})
+            to_be_restored["mem"] = {
+                "ram": ram,
+                "mmio": {}
+            }
 
         self.ql.restore(to_be_restored)
-
-
-
-
-if __name__ == "__main__":
-    pass

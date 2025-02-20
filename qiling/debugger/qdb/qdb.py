@@ -9,7 +9,7 @@ from typing import Optional, Tuple, Union, List
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_STATE, QL_VERBOSE
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
@@ -275,7 +275,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             cur_insn = self.predictor.disasm(self.cur_addr)
             bp_addr = self.cur_addr + cur_insn.size
 
-            if self.ql.arch.type == QL_ARCH.MIPS:
+            if self.ql.arch.type is QL_ARCH.MIPS:
                 bp_addr += cur_insn.size
 
             self.set_breakpoint(bp_addr, is_temp=True)

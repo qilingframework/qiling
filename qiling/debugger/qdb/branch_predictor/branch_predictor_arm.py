@@ -6,7 +6,10 @@
 
 
 from .branch_predictor import *
-from ..arch import ArchARM, ArchCORTEX_M
+from ..arch import ArchARM
+from ..misc import read_int
+
+
 
 class BranchPredictorARM(BranchPredictor, ArchARM):
     """

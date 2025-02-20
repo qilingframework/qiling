@@ -5,7 +5,7 @@
 
 
 
-import ast, re
+import re
 
 from .branch_predictor import *
 from ..arch import ArchX8664
@@ -109,7 +109,7 @@ class BranchPredictorX8664(BranchPredictor, ArchX8664):
                 for each_reg in filter(lambda r: len(r) == 3, self.ql.arch.regs.register_mapping.keys()):
                     if each_reg in new_line:
                         new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
-                        
+
                 for each_reg in filter(lambda r: len(r) == 2, self.ql.arch.regs.register_mapping.keys()):
                     if each_reg in new_line:
                         new_line = re.sub(each_reg, hex(self.read_reg(each_reg)), new_line)
