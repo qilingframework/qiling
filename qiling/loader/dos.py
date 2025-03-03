@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, traceback
+import sys
+import traceback
 
 from .loader import QlLoader
 
 from qiling import Qiling
 from qiling.os.disk import QlDisk
+
 
 # @see: http://pinvoke.net/default.aspx/Structures.IMAGE_DOS_HEADER
 class ComParser:
@@ -20,17 +22,21 @@ class ComParser:
 
         nbytes  = ql.unpack16(data[2:4]) or 0x200    # number of bytes in last block; 0 means it is fully populated
         nblocks = ql.unpack16(data[4:6])             # number of blocks used
+        hdrpgs  = ql.unpack16(data[8:10])            # number of paragraphs taken up by the header
+
         self.size = (nblocks - 1) * 0x200 + nbytes
+        self.header_size = hdrpgs * 0x10
 
         self.init_ss = ql.unpack16(data[14:16])
         self.init_sp = ql.unpack16(data[16:18])
         self.init_ip = ql.unpack16(data[20:22])
         self.init_cs = ql.unpack16(data[22:24])
 
+
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql: Qiling):
-        super(QlLoaderDOS, self).__init__(ql)
-        self.ql = ql
+        super().__init__(ql)
+
         self.old_excepthook = sys.excepthook
 
     # Hack to print all exceptions if curses has been setup.
@@ -38,6 +44,7 @@ class QlLoaderDOS(QlLoader):
         if self.ql.os.stdscr is not None:
             tbmsg = "".join(traceback.format_exception(tp, value, tb))
             self.ql.log.info(f"{tbmsg}")
+
         self.old_excepthook(tp, value, tb)
 
     def run(self):
@@ -49,9 +56,9 @@ class QlLoaderDOS(QlLoader):
             with open(path, "rb") as f:
                 content = f.read()
 
-            cs = int(profile.get("COM", "start_cs"), 0)
-            ip = int(profile.get("COM", "start_ip"), 0)
-            sp = int(profile.get("COM", "start_sp"), 0)
+            cs = profile.getint("COM", "start_cs")
+            ip = profile.getint("COM", "start_ip")
+            sp = profile.getint("COM", "start_sp")
             ss = cs
 
             base_address = (cs << 4) + ip
@@ -69,7 +76,7 @@ class QlLoaderDOS(QlLoader):
             ss = com.init_ss
 
             base_address = 0
-            content = content[0x80:]
+            content = content[com.header_size:]
 
         elif path.endswith(".DOS_MBR"):
             with open(path, "rb") as f:
@@ -100,8 +107,7 @@ class QlLoaderDOS(QlLoader):
 
         self.stack_address = (ss << 4) + sp
         self.start_address = (cs << 4) + ip
-        self.stack_size = int(profile.get("COM", "stack_size"), 0)
-        self.ticks_per_second = profile.getfloat("KERNEL", "ticks_per_second")
+        self.stack_size = profile.getint("COM", "stack_size")
 
         # map the entire system memory
         self.ql.mem.map(0, 0x100000, info="[FULL]")

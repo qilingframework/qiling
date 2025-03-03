@@ -64,8 +64,8 @@ class ELFTest(unittest.TestCase):
         os.remove(filename)
 
         self.assertGreaterEqual(len(contents), 4)
-        self.assertIn('Operation not permitted', contents[-2])
-        self.assertIn('Operation not permitted', contents[-1])
+        self.assertIn('Bad file descriptor', contents[-2])
+        self.assertIn('Bad file descriptor', contents[-1])
 
     def test_multithread_elf_linux_x86(self):
         logged: List[str] = []
@@ -74,7 +74,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_multithreading'], X86_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -93,7 +93,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARM64_LINUX_ROOTFS}/bin/arm64_multithreading'], ARM64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -112,7 +112,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_multithreading'], X64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -131,7 +131,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{MIPSEB_LINUX_ROOTFS}/bin/mips32_multithreading'], MIPSEB_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -150,7 +150,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{MIPSEL_LINUX_ROOTFS}/bin/mips32el_multithreading'], MIPSEL_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -169,7 +169,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARM_LINUX_ROOTFS}/bin/arm_multithreading'], ARM_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -189,7 +189,7 @@ class ELFTest(unittest.TestCase):
             if fd == 1:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARMEB_LINUX_ROOTFS}/bin/armeb_multithreading'], ARMEB_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -208,7 +208,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_tcp_test', '20000'], X86_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -224,8 +224,8 @@ class ELFTest(unittest.TestCase):
         #   'server recv() return 14.\n'
         #   'server send() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -239,7 +239,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_tcp_test', '20001'], X64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -255,8 +255,8 @@ class ELFTest(unittest.TestCase):
         #   'server recv() return 14.\n'
         #   'server send() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -270,7 +270,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARM_LINUX_ROOTFS}/bin/arm_tcp_test', '20002'], ARM_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -286,8 +286,8 @@ class ELFTest(unittest.TestCase):
         #   'server read() return 14.\n'
         #   'server write() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -301,7 +301,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARM64_LINUX_ROOTFS}/bin/arm64_tcp_test', '20003'], ARM64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -317,8 +317,8 @@ class ELFTest(unittest.TestCase):
         #   'server recv() return 14.\n'
         #   'server send() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -332,7 +332,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARMEB_LINUX_ROOTFS}/bin/armeb_tcp_test', '20004'], ARMEB_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -348,8 +348,8 @@ class ELFTest(unittest.TestCase):
         #   'server recv() return 14.\n'
         #   'server send() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -363,7 +363,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{MIPSEB_LINUX_ROOTFS}/bin/mips32_tcp_test', '20005'], MIPSEB_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -379,8 +379,8 @@ class ELFTest(unittest.TestCase):
         #   'server recv() return 14.\n'
         #   'server send() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -394,7 +394,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{MIPSEL_LINUX_ROOTFS}/bin/mips32el_tcp_test', '20006'], MIPSEL_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -410,8 +410,8 @@ class ELFTest(unittest.TestCase):
         #   'server read() return 14.\n'
         #   'server write() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -425,7 +425,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_udp_test', '20010'], X86_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -441,8 +441,8 @@ class ELFTest(unittest.TestCase):
         #   'server recvfrom() return 14.\n'
         #   'server sendto() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -456,7 +456,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_udp_test', '20011'], X64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -472,8 +472,8 @@ class ELFTest(unittest.TestCase):
         #   'server recvfrom() return 14.\n'
         #   'server sendto() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -487,7 +487,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARM64_LINUX_ROOTFS}/bin/arm64_udp_test', '20013'], ARM64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -503,8 +503,8 @@ class ELFTest(unittest.TestCase):
         #   'server recvfrom() return 14.\n'
         #   'server sendto() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()
@@ -518,7 +518,7 @@ class ELFTest(unittest.TestCase):
             if fd == 2:
                 content = ql.mem.read(write_buf, count)
 
-                logged.append(content.decode())
+                logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{ARMEB_LINUX_ROOTFS}/bin/armeb_udp_test', '20014'], ARMEB_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
@@ -534,8 +534,8 @@ class ELFTest(unittest.TestCase):
         #   'server recvfrom() return 14.\n'
         #   'server sendto() 14 return 14.\n'
 
-        m = re.search(r'(?P<num>\d+)\.\s+\Z', logged[-2])
-        self.assertIsNotNone(m, 'could not extract numeric value from log message')
+        m = re.search(r'(?P<num>\d+)\.\Z', logged[-2])
+        self.assertIsNotNone(m, f'could not extract numeric value from log message "{logged[-2]}"')
 
         num = m.group('num')
         msg = logged[-1].strip()

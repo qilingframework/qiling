@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 import ctypes
+from qiling.arch.cortex_m_const import IRQ
 
 from qiling.hw.peripheral import QlPeripheral
 
@@ -28,11 +29,11 @@ class CortexMNvic(QlPeripheral):
 
     def __init__(self, ql, label):
         super().__init__(ql, label)
-        
+
         # reference:
         # https://www.youtube.com/watch?v=uFBNf7F3l60
-        # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller 
-        
+        # https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller
+
         self.instance = self.struct()
 
         ## The max number of interrupt request
@@ -50,8 +51,8 @@ class CortexMNvic(QlPeripheral):
             (self.struct.ICPR, self.clear_pending),
         ]
 
-        self.intrs = []       
-        self.interrupt_handler = self.ql.arch.interrupt_handler 
+        self.intrs = []
+        self.interrupt_handler = self.ql.arch.interrupt_handler
 
     def enable(self, IRQn):
         if IRQn >= 0:
@@ -79,7 +80,7 @@ class CortexMNvic(QlPeripheral):
             self.instance.ICPR[IRQn >> self.OFFSET] |= 1 << (IRQn & self.MASK)
         else:
             self.ql.hw.scb.set_pending(IRQn)
-        
+
         if self.get_enable(IRQn):
             self.intrs.append(IRQn)
 
@@ -100,18 +101,32 @@ class CortexMNvic(QlPeripheral):
         if IRQn >= 0:
             return self.instance.IPR[IRQn]
         else:
-            return self.ql.hw.scb.get_priority(IRQn)    
-        
+            return self.ql.hw.scb.get_priority(IRQn)
+
     def step(self):
         if not self.intrs:
             return
 
-        self.intrs.sort(key=lambda x: self.get_priority(x))        
-                
+        self.intrs.sort(key=lambda x: self.get_priority(x))
+
+        postponed = []
+
         while self.intrs:
             IRQn = self.intrs.pop(0)
+
+            basepri = self.ql.arch.regs.basepri & 0xF0
+            if (
+                    (basepri and basepri <= self.get_priority(IRQn))
+                    or (IRQn > IRQ.HARD_FAULT and (self.ql.arch.regs.primask & 0x1))
+                    or (IRQn != IRQ.NMI and (self.ql.arch.regs.faultmask & 0x1))
+                    ):
+                postponed.append(IRQn)
+                continue
+
             self.clear_pending(IRQn)
             self.interrupt_handler(self.ql, IRQn)
+
+        self.intrs = postponed
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
@@ -132,8 +147,8 @@ class CortexMNvic(QlPeripheral):
                 ipr = self.struct.IPR
                 if ipr.offset <= ofs < ipr.offset + ipr.size:
                     byte &= 0xf0 # IPR[3: 0] reserved
-                
-                ctypes.memmove(ctypes.addressof(self.instance) + ofs, bytes([byte]), 1)                
+
+                ctypes.memmove(ctypes.addressof(self.instance) + ofs, bytes([byte]), 1)
 
         for ofs in range(offset, offset + size):
             write_byte(ofs, value & 0xff)

@@ -12,13 +12,13 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS
 from qiling.exception import QlMemoryMappedError
 from qiling.os.filestruct import ql_file
-from qiling.os.posix.const_mapping import *
+from qiling.os.posix.const import *
 
 
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
     try:
         # find addr's enclosing memory range
-        label = next(label for lbound, ubound, _, label, _ in ql.mem.get_mapinfo() if (lbound <= addr < ubound) and label.startswith(('[mmap]', '[mmap anonymous]')))
+        ubound, label = next((ubound, label) for lbound, ubound, _, label, _ in ql.mem.get_mapinfo() if (lbound <= addr < ubound) and label.startswith(('[mmap]', '[mmap anonymous]')))
     except StopIteration:
         # nothing to do; cannot munmap what was not originally mmapped
         ql.log.debug(f'munmap: enclosing area for {addr:#x} was not mmapped')
@@ -43,9 +43,10 @@ def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
                     fd.lseek(fd._mapped_offset)
                     fd.write(content)
 
-        # unmap the enclosing memory region
+        # unmap the enclosing memory pages.
+        # munmap allows the length to exceed the mapped range. in such case, unmap by original ubound
         lbound = ql.mem.align(addr)
-        ubound = ql.mem.align_up(addr + length)
+        ubound = min(ql.mem.align_up(addr + length), ubound)
 
         ql.mem.unmap(lbound, ubound - lbound)
 
@@ -129,7 +130,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
     if flags & (mmap_flags.MAP_FIXED | mmap_flags.MAP_FIXED_NOREPLACE):
         # on non-QNX systems, base must be aligned to page boundary
         if addr & (pagesize - 1) and ql.os.type != QL_OS.QNX:
-            return -1   # errno: EINVAL
+            return -EINVAL
 
     # if not, use the base address as a hint but always above or equal to
     # the value specified in /proc/sys/vm/mmap_min_addr (here: mmap_address)
@@ -146,7 +147,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
 
     if flags & mmap_flags.MAP_FIXED_NOREPLACE:
         if not ql.mem.is_available(lbound, mapping_size):
-            return -1   # errno: EEXIST
+            return -EEXIST
 
     elif flags & mmap_flags.MAP_FIXED:
         ql.log.debug(f'{api_name}: unmapping memory between {lbound:#x}-{ubound:#x} to make room for fixed mapping')
@@ -161,15 +162,15 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         label = '[mmap anonymous]'
 
     else:
-        fd = ql.unpacks(ql.pack(fd))
+        fd = ql.os.utils.as_signed(fd, 32)
 
         if fd not in range(NR_OPEN):
-            return -1   # errno: EBADF
+            return -EBADF
 
         f: Optional[ql_file] = ql.os.fd[fd]
 
         if f is None:
-            return -1   # errno: EBADF
+            return -EBADF
 
         # set mapping properties for future unmap
         f._is_map_shared = bool(flags & mmap_flags.MAP_SHARED)
@@ -193,7 +194,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         ql.mem.map(lbound, mapping_size, info=label)
     except QlMemoryMappedError:
         ql.log.debug(f'{api_name}: out of memory')
-        return -1   # errono: ENOMEM
+        return -ENOMEM
     else:
         if data:
             ql.mem.write(addr, data)

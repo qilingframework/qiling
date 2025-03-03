@@ -5,6 +5,7 @@
 
 from functools import cached_property
 from contextlib import ContextDecorator
+from typing import Optional
 
 from unicorn import UC_ARCH_ARM, UC_MODE_ARM, UC_MODE_MCLASS, UC_MODE_THUMB
 from capstone import Cs, CS_ARCH_ARM, CS_MODE_ARM, CS_MODE_MCLASS, CS_MODE_THUMB
@@ -13,6 +14,7 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB
 from qiling import Qiling
 from qiling.arch.arm import QlArchARM
 from qiling.arch import cortex_m_const
+from qiling.arch.models import ARM_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.arch.cortex_m_const import IRQ, EXC_RETURN, CONTROL, EXCP
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
@@ -66,12 +68,14 @@ class QlArchCORTEX_M(QlArchARM):
     type = QL_ARCH.CORTEX_M
     bits = 32
 
-    def __init__(self, ql: Qiling):
-        super().__init__(ql, endian=QL_ENDIAN.EL, thumb=True)
+    def __init__(self, ql: Qiling, *, cputype: Optional[ARM_CPU_MODEL] = None):
+        super().__init__(ql, cputype=cputype, endian=QL_ENDIAN.EL, thumb=True)
 
     @cached_property
     def uc(self):
-        return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, 10)
+        cpu = self.cpu and self.cpu.value
+
+        return MultiTaskUnicorn(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_MCLASS + UC_MODE_THUMB, cpu, 10)
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -97,18 +101,18 @@ class QlArchCORTEX_M(QlArchARM):
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EL
 
-    def is_handler_mode(self):
+    def is_handler_mode(self) -> bool:
         return self.regs.ipsr > 1
 
-    def using_psp(self):
+    def using_psp(self) -> bool:
         return not self.is_handler_mode() and (self.regs.control & CONTROL.SPSEL) > 0
 
-    def init_context(self):
+    def init_context(self) -> None:
         self.regs.lr = 0xffffffff
         self.regs.msp = self.ql.mem.read_ptr(0x0)
         self.regs.pc = self.ql.mem.read_ptr(0x4)
 
-    def unicorn_exception_handler(self, ql, intno):
+    def unicorn_exception_handler(self, ql: Qiling, intno: int):
         forward_mapper = {
             EXCP.UDEF           : IRQ.HARD_FAULT,    # undefined instruction
             EXCP.SWI            : IRQ.SVCALL,        # software interrupt
@@ -139,8 +143,9 @@ class QlArchCORTEX_M(QlArchARM):
         except IndexError:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
 
-    def interrupt_handler(self, ql, intno):
+    def interrupt_handler(self, ql: Qiling, intno: int):
         basepri = self.regs.basepri & 0xf0
+
         if basepri and basepri <= ql.hw.nvic.get_priority(intno):
             return
 

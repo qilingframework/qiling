@@ -1,24 +1,30 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import Qiling
-from qiling.os.const import *
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+from qiling.os.const import POINTER
 from qiling.os.uefi.const import *
-from ..fncc import *
+from ..fncc import dxeapi
 from ..ProcessorBind import *
-from ..UefiBaseType import *
+from ..UefiBaseType import EFI_PHYSICAL_ADDRESS, EFI_STATUS
 from ..PiMultiPhase import *
-from .. import utils
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 # @see: MdePkg\Include\Pi\PiMultiPhase.h
 class EFI_MMRAM_DESCRIPTOR(STRUCT):
     _fields_ = [
-        ('PhysicalStart',    EFI_PHYSICAL_ADDRESS),
-        ('CpuStart',        EFI_PHYSICAL_ADDRESS),
-        ('PhysicalSize',    UINT64),
-        ('RegionState',        UINT64)
+        ('PhysicalStart', EFI_PHYSICAL_ADDRESS),
+        ('CpuStart',      EFI_PHYSICAL_ADDRESS),
+        ('PhysicalSize',  UINT64),
+        ('RegionState',   UINT64)
     ]
 
 # @see: MdePkg\Include\Protocol\MmAccess.h
@@ -28,34 +34,43 @@ class EFI_SMM_ACCESS2_PROTOCOL(STRUCT):
 
     _fields_ = [
         ('Open',            FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
-        ('Close',            FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
+        ('Close',           FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
         ('Lock',            FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL))),
-        ('GetCapabilities',    FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL), PTR(UINTN), PTR(EFI_MMRAM_DESCRIPTOR))),
-        ('LockState',        BOOLEAN),
-        ('OpenState',        BOOLEAN)
+        ('GetCapabilities', FUNCPTR(EFI_STATUS, PTR(EFI_SMM_ACCESS2_PROTOCOL), PTR(UINTN), PTR(EFI_MMRAM_DESCRIPTOR))),
+        ('LockState',       BOOLEAN),
+        ('OpenState',       BOOLEAN)
     ]
 
 @dxeapi(params = {
-    "This" : POINTER
+    "This": POINTER
 })
 def hook_Open(ql: Qiling, address: int, params):
-    ql.loader.smm_context.tseg_open = True
+    this = params["This"]
+
+    with EFI_SMM_ACCESS2_PROTOCOL.ref(ql.mem, this) as struct:
+        struct.OpenState = True
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "This" : POINTER
+    "This": POINTER
 })
 def hook_Close(ql: Qiling, address: int, params):
-    ql.loader.smm_context.tseg_open = False
+    this = params["This"]
+
+    with EFI_SMM_ACCESS2_PROTOCOL.ref(ql.mem, this) as struct:
+        struct.OpenState = False
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "This" : POINTER
+    "This": POINTER
 })
 def hook_Lock(ql: Qiling, address: int, params):
-    ql.loader.smm_context.tseg_locked = True
+    this = params["This"]
+
+    with EFI_SMM_ACCESS2_PROTOCOL.ref(ql.mem, this) as struct:
+        struct.LockState = True
 
     return EFI_SUCCESS
 
@@ -81,9 +96,9 @@ def _coalesce(seq):
     return res
 
 @dxeapi(params = {
-    "This"          : POINTER,    # PTR(EFI_SMM_ACCESS2_PROTOCOL)
-    "MmramMapSize"  : POINTER,    # IN OUT PTR(UINTN)
-    "MmramMap"      : POINTER    # OUT PTR(EFI_MMRAM_DESCRIPTOR)
+    "This":         POINTER,    # PTR(EFI_SMM_ACCESS2_PROTOCOL)
+    "MmramMapSize": POINTER,    # IN OUT PTR(UINTN)
+    "MmramMap":     POINTER     # OUT PTR(EFI_MMRAM_DESCRIPTOR)
 })
 def hook_GetCapabilities(ql: Qiling, address: int, params):
     heap = ql.loader.smm_context.heap
@@ -108,7 +123,7 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
     size = len(chunks) * EFI_SMRAM_DESCRIPTOR.sizeof()
     MmramMapSize = params["MmramMapSize"]
 
-    if utils.read_int64(ql, MmramMapSize) < size:
+    if ql.mem.read_ptr(MmramMapSize) < size:
         # since the caller cannot predict how much memory would be required for storing
         # the memory map, this method is normally called twice. the first one passes a
         # zero size only to determine the expected size, then the caller allocates the
@@ -124,33 +139,38 @@ def hook_GetCapabilities(ql: Qiling, address: int, params):
         # have, to compensate on the coming allocation.
         extra = 2 * EFI_SMRAM_DESCRIPTOR.sizeof()
 
-        utils.write_int64(ql, MmramMapSize, size + extra)
+        ql.mem.write_ptr(MmramMapSize, size + extra)
         return EFI_BUFFER_TOO_SMALL
+
+    this = params["This"]
+    struct = EFI_SMM_ACCESS2_PROTOCOL.load_from(ql.mem, this)
+
+    state = EFI_CACHEABLE
+    state |= EFI_SMRAM_OPEN if struct.OpenState else EFI_SMRAM_CLOSED
+    state |= EFI_SMRAM_LOCKED if struct.LockState else 0
 
     MmramMap = params["MmramMap"]
 
-    state = EFI_CACHEABLE
-    state |= EFI_SMRAM_OPEN if ql.loader.smm_context.tseg_open else EFI_SMRAM_CLOSED
-    state |= EFI_SMRAM_LOCKED if ql.loader.smm_context.tseg_locked else 0
-
     for i, ch in enumerate(chunks):
-        desc = EFI_SMRAM_DESCRIPTOR()
-        desc.PhysicalStart = ch[0]
-        desc.CpuStart = ch[0]
-        desc.PhysicalSize = ch[1] - ch[0]
-        desc.RegionState = state | (EFI_ALLOCATED if ch[2] else 0)
-
-        desc.saveTo(ql, MmramMap + (i * desc.sizeof()))
+        EFI_SMRAM_DESCRIPTOR(
+            PhysicalStart = ch[0],
+            CpuStart = ch[0],
+            PhysicalSize = ch[1] - ch[0],
+            RegionState = state | (EFI_ALLOCATED if ch[2] else 0)
+        ).save_to(ql.mem, MmramMap + (i * EFI_SMRAM_DESCRIPTOR.sizeof()))
 
     return EFI_SUCCESS
+
 
 descriptor = {
     "guid" : "c2702b74-800c-4131-8746-8fb5b89ce4ac",
     "struct" : EFI_SMM_ACCESS2_PROTOCOL,
     "fields" : (
         ("Open",            hook_Open),
-        ("Close",            hook_Close),
+        ("Close",           hook_Close),
         ("Lock",            hook_Lock),
-        ("GetCapabilities",    hook_GetCapabilities)
+        ("GetCapabilities", hook_GetCapabilities),
+        ("LockState",       True),  # lock tseg
+        ("OpenState",       False)  # make tseg inaccessible to non-smm
     )
 }

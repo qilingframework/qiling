@@ -23,6 +23,25 @@ class QlOsUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
 
+    @staticmethod
+    def as_signed(value: int, nbits: int) -> int:
+        """Transform an unsigned integer value into its 2's complement signed value
+        equivalent. This method has no effect on signed integers.
+
+        Args:
+            value: an unsigned integer to transform
+            nbits: value bit size
+
+        Returns: a signed integer
+        """
+
+        # truncate value to specified bit size
+        value &= (1 << nbits) - 1
+
+        msb = 1 << (nbits - 1)
+
+        return -(value & ~(msb - 1)) | value
+
     def read_string(self, address: int, encoding: str, maxlen: int = 0) -> str:
         """Read a null-terminated string from memory.
 
@@ -153,7 +172,10 @@ class QlOsUtils:
 
         va_list = __dup(va_args, orig_args)
 
-        read_string = self.read_wstring if wstring else self.read_cstring
+        read_str = {
+            False: self.read_cstring,
+            True:  self.read_wstring
+        }
 
         def __repl(m: re.Match) -> str:
             """Convert printf format string tokens into Python's.
@@ -187,9 +209,13 @@ class QlOsUtils:
                 typ = m['type']
                 arg = next(va_list)
 
-                if typ in 'sS':
+                if typ == 's':
                     typ = 's'
-                    arg = read_string(arg)
+                    arg = read_str[wstring](arg)
+
+                elif typ == 'S':
+                    typ = 's'
+                    arg = read_str[not wstring](arg)
 
                 elif typ == 'Z':
                     # note: ANSI_STRING and UNICODE_STRING have identical layout
@@ -197,7 +223,7 @@ class QlOsUtils:
 
                     with ucstr_struct.ref(self.ql.mem, arg) as ucstr_obj:
                         typ = 's'
-                        arg = read_string(ucstr_obj.Buffer)
+                        arg = read_str[wstring](ucstr_obj.Buffer)
 
                 elif typ == 'p':
                     pound = '#'

@@ -2,7 +2,6 @@ import os
 import ast
 import pickle
 import re
-import six
 import argparse
 import json
 
@@ -131,13 +130,13 @@ if colored:
         """
         Function to beautify terminal output
         """
-        six.print_(colored(string, color))
+        print(colored(string, color))
 else:
     def log(string, color):
         """
         Function to beautify terminal output
         """
-        six.print_(string)
+        print(string)
 
 
 class IntValidator(Validator):

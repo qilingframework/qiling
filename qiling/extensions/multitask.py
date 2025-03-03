@@ -1,6 +1,5 @@
 # Lazymio (mio@lazym.io)
 
-from typing import Dict, List
 from unicorn import *
 from unicorn.x86_const import UC_X86_REG_EIP, UC_X86_REG_RIP
 from unicorn.arm64_const import UC_ARM64_REG_PC
@@ -16,6 +15,9 @@ import gevent.threadpool
 import gevent.lock
 import threading
 
+from typing import Dict, List, Optional
+
+
 # This class is named UnicornTask be design since it's not a
 # real thread. The expected usage is to inherit this class
 # and overwrite specific methods.
@@ -23,10 +25,10 @@ import threading
 # This class is a friend class of MultiTaskUnicorn
 class UnicornTask:
 
-    def __init__(self, uc: Uc, begin: int, end: int, task_id = None):
+    def __init__(self, uc: Uc, begin: int, end: int, task_id=None):
         self._uc = uc
         self._begin = begin
-        self._end = end 
+        self._end = end
         self._stop_request = False
         self._ctx = None
         self._task_id = None
@@ -34,46 +36,55 @@ class UnicornTask:
         self._mode = self._uc._mode
 
     @property
-    def pc(self):
+    def pc(self) -> int:
         """ Get current PC of the thread. This property should only be accessed when
             the task is running.
         """
         raw_pc = self._raw_pc()
-        if (self._uc.reg_read(UC_ARM_REG_CPSR) & (1 << 5)):
-            return raw_pc | 1
-        else:
-            return raw_pc
 
-    def _raw_pc(self):
+        if self._arch == UC_ARCH_ARM:
+            return raw_pc | ((self._uc.reg_read(UC_ARM_REG_CPSR) >> 5) & 0b1)
+
+        return raw_pc
+
+    def _raw_pc(self) -> int:
         # This extension is designed to be independent of Qiling, so let's
         # do this manually...
+
+        pc_reg = 0  # invalid reg
+
         if self._arch == UC_ARCH_X86:
-            if (self._mode & UC_MODE_32) != 0:
-                return self._uc.reg_read(UC_X86_REG_EIP)
-            elif (self._mode & UC_MODE_64) != 0:
-                return self._uc.reg_read(UC_X86_REG_RIP)
+            if self._mode & UC_MODE_32:
+                pc_reg = UC_X86_REG_EIP
+            elif self._mode & UC_MODE_64:
+                pc_reg = UC_X86_REG_RIP
+
         elif self._arch == UC_ARCH_MIPS:
-            return self._uc.reg_read(UC_MIPS_REG_PC)
+            pc_reg = UC_MIPS_REG_PC
+
         elif self._arch == UC_ARCH_ARM:
-            return self._uc.reg_read(UC_ARM_REG_PC)
+            pc_reg = UC_ARM_REG_PC
 
         elif self._arch == UC_ARCH_ARM64:
-            return self._uc.reg_read(UC_ARM64_REG_PC)
-        elif self._arch == UC_ARCH_PPC:
-            return self._uc.reg_read(UC_PPC_REG_PC)
-        elif self._arch == UC_ARCH_M68K:
-            return self._uc.reg_read(UC_M68K_REG_PC)
-        elif self._arch == UC_ARCH_SPARC:
-            return self._uc.reg_read(UC_SPARC_REG_PC)
-        elif self._arch == UC_ARCH_RISCV:
-            return self._uc.reg_read(UC_RISCV_REG_PC)
+            pc_reg = UC_ARM64_REG_PC
 
-        # Really?
-        return 0
+        elif self._arch == UC_ARCH_PPC:
+            pc_reg = UC_PPC_REG_PC
+
+        elif self._arch == UC_ARCH_M68K:
+            pc_reg = UC_M68K_REG_PC
+
+        elif self._arch == UC_ARCH_SPARC:
+            pc_reg = UC_SPARC_REG_PC
+
+        elif self._arch == UC_ARCH_RISCV:
+            pc_reg = UC_RISCV_REG_PC
+
+        return self._uc.reg_read(pc_reg) if pc_reg else 0
 
     def _reach_end(self):
         # We may stop due to the scheduler asks us to, so check it manually.
-        #print(f"{hex(self._raw_pc())} {hex(self._end)}")
+        # print(f"{hex(self._raw_pc())} {hex(self._end)}")
         return self._raw_pc() == self._end
 
     def save(self):
@@ -106,19 +117,21 @@ class UnicornTask:
         """
         pass
 
+
 # This manages nested uc_emu_start calls and is designed as a friend
 # class of MultiTaskUnicorn.
 class NestedCounter:
 
     def __init__(self, mtuc: "MultiTaskUnicorn"):
         self._mtuc = mtuc
-    
+
     def __enter__(self, *args, **kwargs):
         self._mtuc._nested_started += 1
         return self
 
     def __exit__(self, *args, **kwargs):
         self._mtuc._nested_started -= 1
+
 
 # This mimic a Unicorn object by maintaining the same interface.
 # If no task is registered, the behavior is exactly the same as
@@ -137,14 +150,18 @@ class NestedCounter:
 # the same time.
 class MultiTaskUnicorn(Uc):
 
-    def __init__(self, arch, mode, interval: int = 100):
+    def __init__(self, arch: int, mode: int, cpu: Optional[int], interval: Optional[int] = 100):
         """ Create a MultiTaskUnicorn object.
             Interval: Sceduling interval in **ms**. The longger interval, the better
             performance but less interrupts.
         """
         super().__init__(arch, mode)
+
+        if cpu is not None:
+            self.ctl_set_cpu_model(cpu)
+
         self._interval = interval
-        self._tasks = {} # type: Dict[int, UnicornTask]
+        self._tasks = {}  # type: Dict[int, UnicornTask]
         self._task_id_counter = 2000
         self._to_stop = False
         self._cur_utk_id = None
@@ -271,7 +288,7 @@ class MultiTaskUnicorn(Uc):
 
     def task_exit(self, utk_id):
         """ Stop a task.
-            
+
             utk_id: The id returned from task_create.
         """
         if utk_id not in self._tasks:

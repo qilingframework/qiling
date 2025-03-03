@@ -107,7 +107,7 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
         ql.arch.regs.arch_pc += list(ql.arch.disassembler.disasm_lite(bytes(ql.mem.read(ql.arch.regs.arch_pc, 4)), ql.arch.regs.arch_pc))[0][1]
         ql.log.debug(f"Fix pc for child thread to {hex(ql.arch.regs.arch_pc)}")
 
-    ql.os.set_syscall_return(0)
+    ql.os.syscall_abi.set_return_value(0)
     th.save()
 
     if th is None or f_th is None:

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from binascii import crc32
 
-from qiling.const import QL_ENDIAN
 from qiling.os.const import *
 from qiling.os.uefi import guids_db
 from qiling.os.uefi.const import *
@@ -15,8 +16,12 @@ from qiling.os.uefi.ProcessorBind import *
 from qiling.os.uefi.UefiSpec import *
 from qiling.os.uefi.protocols import common
 
+if TYPE_CHECKING:
+    from qiling import Qiling
+
+
 @dxeapi(params = {
-    "NewTpl" : ULONGLONG        # EFI_TPL
+    "NewTpl": ULONGLONG     # EFI_TPL
 })
 def hook_RaiseTPL(ql: Qiling, address: int, params):
     prev_tpl = ql.loader.tpl
@@ -25,22 +30,22 @@ def hook_RaiseTPL(ql: Qiling, address: int, params):
     return prev_tpl
 
 @dxeapi(params = {
-    "OldTpl": ULONGLONG            # EFI_TPL
+    "OldTpl": ULONGLONG     # EFI_TPL
 })
 def hook_RestoreTPL(ql: Qiling, address: int, params):
     ql.loader.tpl = params["OldTpl"]
 
 @dxeapi(params = {
-    "type"        : INT,            # EFI_ALLOCATE_TYPE
-    "MemoryType": INT,            # EFI_MEMORY_TYPE
-    "Pages"        : ULONGLONG,    # UINTN
-    "Memory"    : POINTER        # PTR(EFI_PHYSICAL_ADDRESS)
+    "type":       INT,          # EFI_ALLOCATE_TYPE
+    "MemoryType": INT,          # EFI_MEMORY_TYPE
+    "Pages":      ULONGLONG,    # UINTN
+    "Memory":     POINTER       # PTR(EFI_PHYSICAL_ADDRESS)
 })
 def hook_AllocatePages(ql: Qiling, address: int, params):
     alloc_size = params["Pages"] * PAGE_SIZE
 
     if params['type'] == EFI_ALLOCATE_TYPE.AllocateAddress:
-        address = read_int64(ql, params["Memory"])
+        address = ql.mem.read_ptr(params["Memory"])
 
         # TODO: check the range [address, address + alloc_size] is available first
         ql.mem.map(address, alloc_size)
@@ -51,13 +56,13 @@ def hook_AllocatePages(ql: Qiling, address: int, params):
         if address == 0:
             return EFI_OUT_OF_RESOURCES
 
-        write_int64(ql, params["Memory"], address)
+        ql.mem.write_ptr(params["Memory"], address)
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Memory"    : ULONGLONG,    # EFI_PHYSICAL_ADDRESS
-    "Pages"        : ULONGLONG        # UINTN
+    "Memory": ULONGLONG,    # EFI_PHYSICAL_ADDRESS
+    "Pages":  ULONGLONG     # UINTN
 })
 def hook_FreePages(ql: Qiling, address: int, params):
     address = params["Memory"]
@@ -67,19 +72,19 @@ def hook_FreePages(ql: Qiling, address: int, params):
     return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 
 @dxeapi(params = {
-    "MemoryMapSize"        : POINTER,    # PTR(UINTN)
-    "MemoryMap"            : POINTER,    # PTR(EFI_MEMORY_DESCRIPTOR)
-    "MapKey"            : POINTER,    # PTR(UINTN)
-    "DescriptorSize"    : POINTER,    # PTR(UINTN)
-    "DescriptorVersion"    : POINTER    # PTR(UINT32)
+    "MemoryMapSize":     POINTER,   # PTR(UINTN)
+    "MemoryMap":         POINTER,   # PTR(EFI_MEMORY_DESCRIPTOR)
+    "MapKey":            POINTER,   # PTR(UINTN)
+    "DescriptorSize":    POINTER,   # PTR(UINTN)
+    "DescriptorVersion": POINTER    # PTR(UINT32)
 })
 def hook_GetMemoryMap(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "PoolType"    : INT,        # EFI_MEMORY_TYPE
-    "Size"        : INT,        # UINTN
-    "Buffer"    : POINTER    # PTR(PTR(VOID))
+    "PoolType": INT,        # EFI_MEMORY_TYPE
+    "Size":     INT,        # UINTN
+    "Buffer":   POINTER     # PTR(PTR(VOID))
 })
 def hook_AllocatePool(ql: Qiling, address: int, params):
     # TODO: allocate memory acording to "PoolType"
@@ -87,12 +92,12 @@ def hook_AllocatePool(ql: Qiling, address: int, params):
     Buffer = params["Buffer"]
 
     address = ql.loader.dxe_context.heap.alloc(Size)
-    write_int64(ql, Buffer, address)
+    ql.mem.write_ptr(Buffer, address)
 
     return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
 @dxeapi(params = {
-    "Buffer": POINTER # PTR(VOID)
+    "Buffer": POINTER   # PTR(VOID)
 })
 def hook_FreePool(ql: Qiling, address: int, params):
     Buffer = params["Buffer"]
@@ -102,33 +107,33 @@ def hook_FreePool(ql: Qiling, address: int, params):
     return EFI_SUCCESS if ret else EFI_INVALID_PARAMETER
 
 @dxeapi(params = {
-    "Type"            : UINT,        # UINT32
-    "NotifyTpl"        : UINT,        # EFI_TPL
-    "NotifyFunction": POINTER,    # EFI_EVENT_NOTIFY
-    "NotifyContext"    : POINTER,    # PTR(VOID)
-    "Event"            : POINTER    # PTR(EFI_EVENT)
+    "Type":             UINT,       # UINT32
+    "NotifyTpl":        UINT,       # EFI_TPL
+    "NotifyFunction":   POINTER,    # EFI_EVENT_NOTIFY
+    "NotifyContext":    POINTER,    # PTR(VOID)
+    "Event":            POINTER     # PTR(EFI_EVENT)
 })
 def hook_CreateEvent(ql: Qiling, address: int, params):
     return CreateEvent(ql, params)
 
 @dxeapi(params = {
-    "Event"            : POINTER,        # EFI_EVENT
-    "Type"            : ULONGLONG,    # EFI_TIMER_DELAY
-    "TriggerTime"    : ULONGLONG        # UINT64
+    "Event":       POINTER,     # EFI_EVENT
+    "Type":        ULONGLONG,   # EFI_TIMER_DELAY
+    "TriggerTime": ULONGLONG    # UINT64
 })
 def hook_SetTimer(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
     "NumberOfEvents": ULONGLONG,    # UINTN
-    "Event"            : POINTER,        # PTR(EFI_EVENT)
-    "Index"            : POINTER,        # PTR(UINTN)
+    "Event":          POINTER,      # PTR(EFI_EVENT)
+    "Index":          POINTER,      # PTR(UINTN)
 })
 def hook_WaitForEvent(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Event": POINTER # EFI_EVENT
+    "Event": POINTER    # EFI_EVENT
 })
 def hook_SignalEvent(ql: Qiling, address: int, params):
     event_id = params["Event"]
@@ -141,7 +146,7 @@ def hook_SignalEvent(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Event": POINTER # EFI_EVENT
+    "Event": POINTER    # EFI_EVENT
 })
 def hook_CloseEvent(ql: Qiling, address: int, params):
     event_id = params["Event"]
@@ -154,7 +159,7 @@ def hook_CloseEvent(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Event": POINTER # EFI_EVENT
+    "Event": POINTER    # EFI_EVENT
 })
 def hook_CheckEvent(ql: Qiling, address: int, params):
     event_id = params["Event"]
@@ -162,19 +167,19 @@ def hook_CheckEvent(ql: Qiling, address: int, params):
     return EFI_SUCCESS if ql.loader.events[event_id]["Set"] else EFI_NOT_READY
 
 @dxeapi(params = {
-    "Handle"        : POINTER,        # PTR(EFI_HANDLE)
-    "Protocol"        : GUID,            # PTR(EFI_GUID)
-    "InterfaceType"    : ULONGLONG,    # EFI_INTERFACE_TYPE
-    "Interface"        : POINTER,        # PTR(VOID)
+    "Handle":        POINTER,       # PTR(EFI_HANDLE)
+    "Protocol":      GUID,          # PTR(EFI_GUID)
+    "InterfaceType": ULONGLONG,     # EFI_INTERFACE_TYPE
+    "Interface":     POINTER,       # PTR(VOID)
 })
 def hook_InstallProtocolInterface(ql: Qiling, address: int, params):
     return common.InstallProtocolInterface(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "Handle"        : POINTER,    # EFI_HANDLE
-    "Protocol"        : GUID,        # PTR(EFI_GUID)
-    "OldInterface"    : POINTER,    # PTR(VOID)
-    "NewInterface"    : POINTER    # PTR(VOID)
+    "Handle":       POINTER,    # EFI_HANDLE
+    "Protocol":     GUID,       # PTR(EFI_GUID)
+    "OldInterface": POINTER,    # PTR(VOID)
+    "NewInterface": POINTER     # PTR(VOID)
 })
 def hook_ReinstallProtocolInterface(ql: Qiling, address: int, params):
     handle = params["Handle"]
@@ -193,25 +198,25 @@ def hook_ReinstallProtocolInterface(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Handle"    : POINTER,    # EFI_HANDLE
-    "Protocol"    : GUID,        # PTR(EFI_GUID)
-    "Interface"    : POINTER    # PTR(VOID)
+    "Handle":    POINTER,   # EFI_HANDLE
+    "Protocol":  GUID,      # PTR(EFI_GUID)
+    "Interface": POINTER    # PTR(VOID)
 })
 def hook_UninstallProtocolInterface(ql: Qiling, address: int, params):
     return common.UninstallProtocolInterface(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "Handle"    : POINTER,    # EFI_HANDLE
-    "Protocol"    : GUID,        # PTR(EFI_GUID)
-    "Interface"    : POINTER    # PTR(PTR(VOID))
+    "Handle":    POINTER,   # EFI_HANDLE
+    "Protocol":  GUID,      # PTR(EFI_GUID)
+    "Interface": POINTER    # PTR(PTR(VOID))
 })
 def hook_HandleProtocol(ql: Qiling, address: int, params):
     return common.HandleProtocol(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "Protocol"        : GUID,        # PTR(EFI_GUID)
-    "Event"            : POINTER,    # EFI_EVENT
-    "Registration"    : POINTER    # PTR(PTR(VOID))
+    "Protocol":     GUID,       # PTR(EFI_GUID)
+    "Event":        POINTER,    # EFI_EVENT
+    "Registration": POINTER     # PTR(PTR(VOID))
 })
 def hook_RegisterProtocolNotify(ql: Qiling, address: int, params):
     event = params['Event']
@@ -225,54 +230,54 @@ def hook_RegisterProtocolNotify(ql: Qiling, address: int, params):
     return EFI_INVALID_PARAMETER
 
 @dxeapi(params = {
-    "SearchType": INT,        # EFI_LOCATE_SEARCH_TYPE
-    "Protocol"    : GUID,        # PTR(EFI_GUID)
-    "SearchKey"    : POINTER,    # PTR(VOID)
-    "BufferSize": POINTER,    # PTR(UINTN)
-    "Buffer"    : POINTER    # PTR(EFI_HANDLE)
+    "SearchType": INT,      # EFI_LOCATE_SEARCH_TYPE
+    "Protocol":   GUID,     # PTR(EFI_GUID)
+    "SearchKey":  POINTER,  # PTR(VOID)
+    "BufferSize": POINTER,  # PTR(UINTN)
+    "Buffer":     POINTER   # PTR(EFI_HANDLE)
 })
 def hook_LocateHandle(ql: Qiling, address: int, params):
     return common.LocateHandle(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "Protocol"    : GUID,        # PTR(EFI_GUID)
-    "DevicePath": POINTER,    # PTR(PTR(EFI_DEVICE_PATH_PROTOCOL))
-    "Device"    : POINTER    # PTR(EFI_HANDLE)
+    "Protocol":   GUID,     # PTR(EFI_GUID)
+    "DevicePath": POINTER,  # PTR(PTR(EFI_DEVICE_PATH_PROTOCOL))
+    "Device":     POINTER   # PTR(EFI_HANDLE)
 })
 def hook_LocateDevicePath(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Guid"    : GUID,        # PTR(EFI_GUID)
-    "Table"    : POINTER    # PTR(VOID)
+    "Guid":  GUID,      # PTR(EFI_GUID)
+    "Table": POINTER    # PTR(VOID)
 })
 def hook_InstallConfigurationTable(ql: Qiling, address: int, params):
     return common.InstallConfigurationTable(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "BootPolicy"        : BOOL,            # BOOLEAN
-    "ParentImageHandle"    : POINTER,        # EFI_HANDLE
-    "DevicePath"        : POINTER,        # PTR(EFI_DEVICE_PATH_PROTOCOL)
-    "SourceBuffer"        : POINTER,        # PTR(VOID)
-    "SourceSize"        : ULONGLONG,    # UINTN
-    "ImageHandle"        : POINTER        # PTR(EFI_HANDLE)
+    "BootPolicy":        BOOL,          # BOOLEAN
+    "ParentImageHandle": POINTER,       # EFI_HANDLE
+    "DevicePath":        POINTER,       # PTR(EFI_DEVICE_PATH_PROTOCOL)
+    "SourceBuffer":      POINTER,       # PTR(VOID)
+    "SourceSize":        ULONGLONG,     # UINTN
+    "ImageHandle":       POINTER        # PTR(EFI_HANDLE)
 })
 def hook_LoadImage(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "ImageHandle"    : POINTER,    # EFI_HANDLE
-    "ExitDataSize"    : POINTER,    # PTR(UINTN)
-    "ExitData"        : POINTER    # PTR(PTR(CHAR16))
+    "ImageHandle":  POINTER,    # EFI_HANDLE
+    "ExitDataSize": POINTER,    # PTR(UINTN)
+    "ExitData":     POINTER     # PTR(PTR(CHAR16))
 })
 def hook_StartImage(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "ImageHandle"    : POINTER,        # EFI_HANDLE
-    "ExitStatus"    : ULONGLONG,    # EFI_STATUS
-    "ExitDataSize"    : ULONGLONG,    # UINTN
-    "ExitData"        : POINTER        # PTR(CHAR16)
+    "ImageHandle":  POINTER,    # EFI_HANDLE
+    "ExitStatus":   ULONGLONG,  # EFI_STATUS
+    "ExitDataSize": ULONGLONG,  # UINTN
+    "ExitData":     POINTER     # PTR(CHAR16)
 })
 def hook_Exit(ql: Qiling, address: int, params):
     ql.emu_stop()
@@ -280,143 +285,143 @@ def hook_Exit(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "ImageHandle" : POINTER # EFI_HANDLE
+    "ImageHandle": POINTER  # EFI_HANDLE
 })
 def hook_UnloadImage(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "ImageHandle"    : POINTER,    # EFI_HANDLE
-    "MapKey"        : ULONGLONG    # UINTN
+    "ImageHandle": POINTER,     # EFI_HANDLE
+    "MapKey":      ULONGLONG    # UINTN
 })
 def hook_ExitBootServices(ql: Qiling, address: int, params):
     ql.emu_stop()
 
-    # TODO: cleanup BS tableas and data, and notify signal list gEfiEventExitBootServicesGuid
+    # TODO: cleanup BS tables and data, and notify signal list gEfiEventExitBootServicesGuid
     # @see: MdeModulePkg\Core\Dxe\DxeMain\DxeMain.c, CoreExitBootServices
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Count": POINTER # PTR(UINT64)
+    "Count": POINTER    # PTR(UINT64)
 })
 def hook_GetNextMonotonicCount(ql: Qiling, address: int, params):
     out = params["Count"]
 
     ql.os.monotonic_count += 1
-    write_int64(ql, out, ql.os.monotonic_count)
+    ql.mem.write_ptr(out, ql.os.monotonic_count, 8)
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Microseconds": ULONGLONG # UINTN
+    "Microseconds": ULONGLONG   # UINTN
 })
 def hook_Stall(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Timeout"        : ULONGLONG,    # UINTN
-    "WatchdogCode"    : ULONGLONG,    # UINT64
-    "DataSize"        : ULONGLONG,    # UINTN
-    "WatchdogData"    : POINTER        # PTR(CHAR16)
+    "Timeout":      ULONGLONG,  # UINTN
+    "WatchdogCode": ULONGLONG,  # UINT64
+    "DataSize":     ULONGLONG,  # UINTN
+    "WatchdogData": POINTER     # PTR(CHAR16)
 })
 def hook_SetWatchdogTimer(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "ControllerHandle"        : POINTER,    # EFI_HANDLE
-    "DriverImageHandle"        : POINTER,    #PTR(EFI_HANDLE)
-    "RemainingDevicePath"    : POINTER,    # PTR(EFI_DEVICE_PATH_PROTOCOL)
-    "Recursive"                : BOOL        # BOOLEAN
+    "ControllerHandle":    POINTER,     # EFI_HANDLE
+    "DriverImageHandle":   POINTER,     #PTR(EFI_HANDLE)
+    "RemainingDevicePath": POINTER,     # PTR(EFI_DEVICE_PATH_PROTOCOL)
+    "Recursive":           BOOL         # BOOLEAN
 })
 def hook_ConnectController(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "ControllerHandle"    : POINTER,    # EFI_HANDLE
-    "DriverImageHandle"    : POINTER,    # EFI_HANDLE
-    "ChildHandle"        : POINTER    # EFI_HANDLE
+    "ControllerHandle":  POINTER,   # EFI_HANDLE
+    "DriverImageHandle": POINTER,   # EFI_HANDLE
+    "ChildHandle":       POINTER    # EFI_HANDLE
 })
 def hook_DisconnectController(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Handle"            : POINTER,    # EFI_HANDLE
-    "Protocol"            : GUID,        # PTR(EFI_GUID)
-    "Interface"            : POINTER,    # PTR(PTR(VOID))
-    "AgentHandle"        : POINTER,    # EFI_HANDLE
-    "ControllerHandle"    : POINTER,    # EFI_HANDLE
-    "Attributes"        : UINT        # UINT32
+    "Handle":           POINTER,    # EFI_HANDLE
+    "Protocol":         GUID,       # PTR(EFI_GUID)
+    "Interface":        POINTER,    # PTR(PTR(VOID))
+    "AgentHandle":      POINTER,    # EFI_HANDLE
+    "ControllerHandle": POINTER,    # EFI_HANDLE
+    "Attributes":       UINT        # UINT32
 })
 def hook_OpenProtocol(ql: Qiling, address: int, params):
     return common.LocateProtocol(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "Handle"            : POINTER,    # EFI_HANDLE
-    "Protocol"            : GUID,        # PTR(EFI_GUID)
-    "AgentHandle"        : POINTER,    # EFI_HANDLE
-    "ControllerHandle"    : POINTER    # EFI_HANDLE
+    "Handle":           POINTER,    # EFI_HANDLE
+    "Protocol":         GUID,       # PTR(EFI_GUID)
+    "AgentHandle":      POINTER,    # EFI_HANDLE
+    "ControllerHandle": POINTER     # EFI_HANDLE
 })
 def hook_CloseProtocol(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Handle"        : POINTER,    # EFI_HANDLE
-    "Protocol"        : GUID,        # PTR(EFI_GUID)
-    "EntryBuffer"    : POINTER,    # PTR(PTR(EFI_OPEN_PROTOCOL_INFORMATION_ENTRY))
-    "EntryCount"    : POINTER    # PTR(UINTN)
+    "Handle":      POINTER,     # EFI_HANDLE
+    "Protocol":    GUID,        # PTR(EFI_GUID)
+    "EntryBuffer": POINTER,     # PTR(PTR(EFI_OPEN_PROTOCOL_INFORMATION_ENTRY))
+    "EntryCount":  POINTER      # PTR(UINTN)
 })
 def hook_OpenProtocolInformation(ql: Qiling, address: int, params):
     return EFI_NOT_FOUND
 
 @dxeapi(params = {
-    "Handle"                : POINTER,    # EFI_HANDLE
-    "ProtocolBuffer"        : POINTER,    # PTR(PTR(PTR(EFI_GUID)))
-    "ProtocolBufferCount"    : POINTER    # PTR(UINTN)
+    "Handle":              POINTER,     # EFI_HANDLE
+    "ProtocolBuffer":      POINTER,     # PTR(PTR(PTR(EFI_GUID)))
+    "ProtocolBufferCount": POINTER      # PTR(UINTN)
 })
 def hook_ProtocolsPerHandle(ql: Qiling, address: int, params):
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "SearchType": INT,        # EFI_LOCATE_SEARCH_TYPE
-    "Protocol"    : GUID,        # PTR(EFI_GUID)
-    "SearchKey"    : POINTER,    # PTR(VOID)
-    "NoHandles"    : POINTER,    # PTR(UINTN)
-    "Buffer"    : POINTER    # PTR(PTR(EFI_HANDLE))
+    "SearchType": INT,      # EFI_LOCATE_SEARCH_TYPE
+    "Protocol":   GUID,     # PTR(EFI_GUID)
+    "SearchKey":  POINTER,  # PTR(VOID)
+    "NoHandles":  POINTER,  # PTR(UINTN)
+    "Buffer":     POINTER   # PTR(PTR(EFI_HANDLE))
 })
 def hook_LocateHandleBuffer(ql: Qiling, address: int, params):
     buffer_size, handles = common.LocateHandles(ql.loader.dxe_context, params)
-    write_int64(ql, params["NoHandles"], len(handles))
+    ql.mem.write_ptr(params["NoHandles"], len(handles))
 
     if len(handles) == 0:
         return EFI_NOT_FOUND
 
     address = ql.loader.dxe_context.heap.alloc(buffer_size)
-    write_int64(ql, params["Buffer"], address)
+    ql.mem.write_ptr(params["Buffer"], address)
 
     if address == 0:
         return EFI_OUT_OF_RESOURCES
 
     for handle in handles:
-        write_int64(ql, address, handle)
+        ql.mem.write_ptr(address, handle)
         address += ql.arch.pointersize
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Protocol"        : GUID,        # PTR(EFI_GUID)
-    "Registration"    : POINTER,    # PTR(VOID)
-    "Interface"        : POINTER    # PTR(PTR(VOID))
+    "Protocol":     GUID,       # PTR(EFI_GUID)
+    "Registration": POINTER,    # PTR(VOID)
+    "Interface":    POINTER     # PTR(PTR(VOID))
 })
 def hook_LocateProtocol(ql: Qiling, address: int, params):
     return common.LocateProtocol(ql.loader.dxe_context, params)
 
 @dxeapi(params = {
-    "Handle" : POINTER # PTR(EFI_HANDLE)
+    "Handle": POINTER   # PTR(EFI_HANDLE)
     # ...
 })
 def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
-    handle = read_int64(ql, params["Handle"])
+    handle = ql.mem.read_ptr(params["Handle"])
 
     if handle == 0:
         handle = ql.loader.dxe_context.heap.alloc(ql.arch.pointersize)
@@ -426,23 +431,23 @@ def hook_InstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
     # process elipsiss arguments
     index = 1
     while ql.os.fcall.cc.getRawParam(index) != 0:
-        GUID_ptr = ql.os.fcall.cc.getRawParam(index)
+        guid_ptr = ql.os.fcall.cc.getRawParam(index)
         protocol_ptr = ql.os.fcall.cc.getRawParam(index + 1)
 
-        GUID = str(ql.os.utils.read_guid(GUID_ptr))
-        dic[GUID] = protocol_ptr
+        guid = str(ql.os.utils.read_guid(guid_ptr))
+        dic[guid] = protocol_ptr
 
-        ql.log.info(f'Installing protocol interface {guids_db.get(GUID.upper(), GUID)} to {protocol_ptr:#x}')
+        ql.log.info(f'Installing protocol interface {guids_db.get(guid.upper(), guid)} to {protocol_ptr:#x}')
         index += 2
 
     ql.loader.dxe_context.protocols[handle] = dic
     execute_protocol_notifications(ql, True)
-    write_int64(ql, params["Handle"], handle)
+    ql.mem.write_ptr(params["Handle"], handle)
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Handle" : POINTER # EFI_HANDLE
+    "Handle": POINTER   # EFI_HANDLE
     # ...
 })
 def hook_UninstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
@@ -459,33 +464,33 @@ def hook_UninstallMultipleProtocolInterfaces(ql: Qiling, address: int, params):
         GUID_ptr = ql.os.fcall.cc.getRawParam(index)
         protocol_ptr = ql.os.fcall.cc.getRawParam(index + 1)
 
-        GUID = str(ql.os.utils.read_guid(GUID_ptr))
+        guid = str(ql.os.utils.read_guid(GUID_ptr))
 
-        if GUID not in dic:
+        if guid not in dic:
             return EFI_INVALID_PARAMETER
 
-        del dic[GUID]
+        del dic[guid]
 
-        ql.log.info(f'Uninstalling protocol interface {guids_db.get(GUID.upper(), GUID)} from {protocol_ptr:#x}')
+        ql.log.info(f'Uninstalling protocol interface {guids_db.get(guid.upper(), guid)} from {protocol_ptr:#x}')
         index += 2
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Data"        : POINTER,        # PTR(VOID)
-    "DataSize"    : ULONGLONG,    # UINTN
-    "Crc32"        : POINTER        # PTR(UINT32)
+    "Data":     POINTER,    # PTR(VOID)
+    "DataSize": ULONGLONG,  # UINTN
+    "Crc32":    POINTER     # PTR(UINT32)
 })
 def hook_CalculateCrc32(ql: Qiling, address: int, params):
-    data = bytes(ql.mem.read(params['Data'], params['DataSize']))
-    write_int32(ql, params['Crc32'], crc32(data))
+    data = ql.mem.read(params['Data'], params['DataSize'])
+    ql.mem.write_ptr(params['Crc32'], crc32(data), 4)
 
     return EFI_SUCCESS
 
 @dxeapi(params = {
-    "Destination"    : POINTER,    # PTR(VOID)
-    "Source"        : POINTER,    # PTR(VOID)
-    "Length"        : SIZE_T    # UINTN
+    "Destination": POINTER,     # PTR(VOID)
+    "Source":      POINTER,     # PTR(VOID)
+    "Length":      SIZE_T       # UINTN
 })
 def hook_CopyMem(ql: Qiling, address: int, params):
     dst = params["Destination"]
@@ -495,9 +500,9 @@ def hook_CopyMem(ql: Qiling, address: int, params):
     ql.mem.write(dst, bytes(ql.mem.read(src, length)))
 
 @dxeapi(params = {
-    "Buffer": POINTER,    # PTR(VOID)
-    "Size"    : SIZE_T,    # UINTN
-    "Value"    : BYTE        # UINT8
+    "Buffer": POINTER,  # PTR(VOID)
+    "Size":   SIZE_T,   # UINTN
+    "Value":  BYTE      # UINT8
 })
 def hook_SetMem(ql: Qiling, address: int, params):
     buffer = params["Buffer"]
@@ -507,12 +512,12 @@ def hook_SetMem(ql: Qiling, address: int, params):
     ql.mem.write(buffer, bytes([value]) * size)
 
 @dxeapi(params = {
-    "Type"            : UINT,        # UINT32
-    "NotifyTpl"        : ULONGLONG,# EFI_TPL
-    "NotifyFunction": POINTER,    # EFI_EVENT_NOTIFY
-    "NotifyContext"    : POINTER,    # PTR(VOID)
-    "EventGroup"    : GUID,        # PTR(EFI_GUID)
-    "Event"            : POINTER    # PTR(EFI_EVENT)
+    "Type":           UINT,         # UINT32
+    "NotifyTpl":      ULONGLONG,    # EFI_TPL
+    "NotifyFunction": POINTER,      # EFI_EVENT_NOTIFY
+    "NotifyContext":  POINTER,      # PTR(VOID)
+    "EventGroup":     GUID,         # PTR(EFI_GUID)
+    "Event":          POINTER       # PTR(EFI_EVENT)
 })
 def hook_CreateEventEx(ql: Qiling, address: int, params):
     return CreateEvent(ql, params)
@@ -521,16 +526,16 @@ def CreateEvent(ql: Qiling, params):
     event_id = len(ql.loader.events)
     event_dic = {
         "NotifyFunction": params["NotifyFunction"],
-        "CallbackArgs"    : [event_id, params["NotifyContext"]],
-        "Guid"            : "",
-        "Set"            : False
+        "CallbackArgs":   [event_id, params["NotifyContext"]],
+        "Guid":           "",
+        "Set":            False
     }
 
     if "EventGroup" in params:
         event_dic["EventGroup"] = params["EventGroup"]
 
     ql.loader.events[event_id] = event_dic
-    write_int64(ql, params["Event"], event_id)
+    ql.mem.write_ptr(params["Event"], event_id)
 
     return EFI_SUCCESS
 
@@ -538,58 +543,58 @@ def initialize(ql: Qiling, gBS: int):
     descriptor = {
         'struct' : EFI_BOOT_SERVICES,
         'fields' : (
-            ('Hdr',                            None),
-            ('RaiseTPL',                    hook_RaiseTPL),
-            ('RestoreTPL',                    hook_RestoreTPL),
-            ('AllocatePages',                hook_AllocatePages),
-            ('FreePages',                    hook_FreePages),
-            ('GetMemoryMap',                hook_GetMemoryMap),
-            ('AllocatePool',                hook_AllocatePool),
-            ('FreePool',                    hook_FreePool),
-            ('CreateEvent',                    hook_CreateEvent),
-            ('SetTimer',                    hook_SetTimer),
-            ('WaitForEvent',                hook_WaitForEvent),
-            ('SignalEvent',                    hook_SignalEvent),
-            ('CloseEvent',                    hook_CloseEvent),
-            ('CheckEvent',                    hook_CheckEvent),
-            ('InstallProtocolInterface',    hook_InstallProtocolInterface),
-            ('ReinstallProtocolInterface',    hook_ReinstallProtocolInterface),
-            ('UninstallProtocolInterface',    hook_UninstallProtocolInterface),
-            ('HandleProtocol',                hook_HandleProtocol),
-            ('Reserved',                    None),
-            ('RegisterProtocolNotify',        hook_RegisterProtocolNotify),
-            ('LocateHandle',                hook_LocateHandle),
-            ('LocateDevicePath',            hook_LocateDevicePath),
-            ('InstallConfigurationTable',    hook_InstallConfigurationTable),
-            ('LoadImage',                    hook_LoadImage),
-            ('StartImage',                    hook_StartImage),
-            ('Exit',                        hook_Exit),
-            ('UnloadImage',                    hook_UnloadImage),
-            ('ExitBootServices',            hook_ExitBootServices),
-            ('GetNextMonotonicCount',        hook_GetNextMonotonicCount),
-            ('Stall',                        hook_Stall),
-            ('SetWatchdogTimer',            hook_SetWatchdogTimer),
-            ('ConnectController',            hook_ConnectController),
-            ('DisconnectController',        hook_DisconnectController),
-            ('OpenProtocol',                hook_OpenProtocol),
-            ('CloseProtocol',                hook_CloseProtocol),
-            ('OpenProtocolInformation',        hook_OpenProtocolInformation),
-            ('ProtocolsPerHandle',            hook_ProtocolsPerHandle),
-            ('LocateHandleBuffer',            hook_LocateHandleBuffer),
-            ('LocateProtocol',                hook_LocateProtocol),
-            ('InstallMultipleProtocolInterfaces',    hook_InstallMultipleProtocolInterfaces),
-            ('UninstallMultipleProtocolInterfaces',    hook_UninstallMultipleProtocolInterfaces),
-            ('CalculateCrc32',                hook_CalculateCrc32),
-            ('CopyMem',                        hook_CopyMem),
-            ('SetMem',                        hook_SetMem),
-            ('CreateEventEx',                hook_CreateEventEx)
+            ('Hdr',                        None),
+            ('RaiseTPL',                   hook_RaiseTPL),
+            ('RestoreTPL',                 hook_RestoreTPL),
+            ('AllocatePages',              hook_AllocatePages),
+            ('FreePages',                  hook_FreePages),
+            ('GetMemoryMap',               hook_GetMemoryMap),
+            ('AllocatePool',               hook_AllocatePool),
+            ('FreePool',                   hook_FreePool),
+            ('CreateEvent',                hook_CreateEvent),
+            ('SetTimer',                   hook_SetTimer),
+            ('WaitForEvent',               hook_WaitForEvent),
+            ('SignalEvent',                hook_SignalEvent),
+            ('CloseEvent',                 hook_CloseEvent),
+            ('CheckEvent',                 hook_CheckEvent),
+            ('InstallProtocolInterface',   hook_InstallProtocolInterface),
+            ('ReinstallProtocolInterface', hook_ReinstallProtocolInterface),
+            ('UninstallProtocolInterface', hook_UninstallProtocolInterface),
+            ('HandleProtocol',             hook_HandleProtocol),
+            ('Reserved',                   None),
+            ('RegisterProtocolNotify',     hook_RegisterProtocolNotify),
+            ('LocateHandle',               hook_LocateHandle),
+            ('LocateDevicePath',           hook_LocateDevicePath),
+            ('InstallConfigurationTable',  hook_InstallConfigurationTable),
+            ('LoadImage',                  hook_LoadImage),
+            ('StartImage',                 hook_StartImage),
+            ('Exit',                       hook_Exit),
+            ('UnloadImage',                hook_UnloadImage),
+            ('ExitBootServices',           hook_ExitBootServices),
+            ('GetNextMonotonicCount',      hook_GetNextMonotonicCount),
+            ('Stall',                      hook_Stall),
+            ('SetWatchdogTimer',           hook_SetWatchdogTimer),
+            ('ConnectController',          hook_ConnectController),
+            ('DisconnectController',       hook_DisconnectController),
+            ('OpenProtocol',               hook_OpenProtocol),
+            ('CloseProtocol',              hook_CloseProtocol),
+            ('OpenProtocolInformation',    hook_OpenProtocolInformation),
+            ('ProtocolsPerHandle',         hook_ProtocolsPerHandle),
+            ('LocateHandleBuffer',         hook_LocateHandleBuffer),
+            ('LocateProtocol',             hook_LocateProtocol),
+            ('InstallMultipleProtocolInterfaces',   hook_InstallMultipleProtocolInterfaces),
+            ('UninstallMultipleProtocolInterfaces', hook_UninstallMultipleProtocolInterfaces),
+            ('CalculateCrc32',             hook_CalculateCrc32),
+            ('CopyMem',                    hook_CopyMem),
+            ('SetMem',                     hook_SetMem),
+            ('CreateEventEx',              hook_CreateEventEx)
         )
     }
 
     ql.os.monotonic_count = 0
 
     instance = init_struct(ql, gBS, descriptor)
-    instance.saveTo(ql, gBS)
+    instance.save_to(ql.mem, gBS)
 
 __all__ = [
     'initialize'

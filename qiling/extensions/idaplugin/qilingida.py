@@ -886,7 +886,13 @@ class QlEmuQiling:
         self.env = {}
 
     def start(self, *args, **kwargs):
-        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+        # ida replaces sys.stderr with their own customized class that is not fully compatible with the
+        # standard stream protocol. here we patch stderr replacement to make it look like a proper file.
+        # this has to happen before Qiling init
+        if not hasattr(sys.stderr, 'fileno'):
+            setattr(sys.stderr, 'fileno', lambda: sys.__stderr__.fileno())
+
+        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, *args, **kwargs)
 
         if sys.platform != 'win32':
             self.ql.os.stdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
@@ -906,7 +912,7 @@ class QlEmuQiling:
                 elif self.ql.arch.bits == 64:
                     self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
-            self.baseaddr = 0x0
+            self.baseaddr = get_imagebase()
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -1115,7 +1121,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_set_pc(self):
         if self.qlinit:
-            ea = IDA.get_current_address()
+            ea = self.qlemu.ql_addr_from_ida(IDA.get_current_address())
             self.qlemu.ql.arch.regs.arch_pc = ea
             logging.info(f"QIling PC set to {hex(ea)}")
             self.qlemu.status = self.qlemu.ql.save()
