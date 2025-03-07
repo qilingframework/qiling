@@ -31,7 +31,7 @@ from qiling.const import QL_VERBOSE
 class ELFTest(unittest.TestCase):
 
     def test_tenda_ac15_arm(self):
-
+        stop = False
         def nvram_listener():
             server_address = '../examples/rootfs/arm_tendaac15/var/cfm_socket'
 
@@ -63,6 +63,7 @@ class ELFTest(unittest.TestCase):
                         data.clear()
                 finally:
                     connection.close()
+                    break
 
         def patcher(ql: Qiling):
             br0_addr = ql.mem.search(b'br0\x00')
@@ -74,7 +75,8 @@ class ELFTest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/arm_tendaac15/bin/httpd"], "../examples/rootfs/arm_tendaac15", verbose=QL_VERBOSE.DEBUG)
             ql.add_fs_mapper("/dev/urandom", "/dev/urandom")
             ql.hook_address(patcher, ql.loader.elf_entry)
-            ql.run()
+            while not stop:
+                ql.run(count=5000)
 
         if __name__ == "__main__":
             threads = [
@@ -103,7 +105,9 @@ class ELFTest(unittest.TestCase):
             response = conn.getresponse()
 
             self.assertIn(b"Please update your documents to reflect the new location.", response.read())
-
+            stop = True
+            for th in threads:
+                th.join()
 
 if __name__ == "__main__":
     unittest.main()
