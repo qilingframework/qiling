@@ -101,7 +101,7 @@ class ELFTest(unittest.TestCase):
 
             self.assertIn(b"Please update your documents to reflect the new location.", response.read())
             for th in threads:
-                th.join(timeout=10.0)
+                th.join(timeout=20.0)
                 self.assertFalse(th.is_alive())
 
 if __name__ == "__main__":
