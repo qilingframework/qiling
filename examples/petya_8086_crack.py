@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -39,18 +39,18 @@ def third_stage(key):
     def pass_red(ql, addr, data):
         curses.ungetch(ord("\n"))
         curses.ungetch(ord("\r"))
-    
+
     def input_key(ql, addr, data):
         for i in key[::-1]:
             curses.ungetch(i)
         curses.ungetch(ord("\n"))
         curses.ungetch(ord("\r"))
 
-    ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
+    ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"],
                  "rootfs/8086",
-                 console=False, 
+                 console=False,
                  verbose=QL_VERBOSE.DEBUG)
-    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
+    ql.add_fs_mapper("C:", QlDisk("rootfs/8086/petya/out_1M.raw", "C:"))
     ql.hook_code(pass_red, begin=0x886d, end=0x886d)
     ql.hook_code(input_key, begin=0x85f0, end=0x85f0)
     ql.hook_code(stop, begin=0x6806, end=0x6806)
@@ -58,7 +58,7 @@ def third_stage(key):
 
 # In this stage, we will crack for the password.
 def second_stage(ql: Qiling):
-    disk = QlDisk("rootfs/8086/petya/out_1M.raw", 0x80)
+    disk = QlDisk("rootfs/8086/petya/out_1M.raw", "C:")
     #nonce = get_nonce(disk)
     verfication_data = disk.read_sectors(0x37, 1)
     nonce_data = disk.read_sectors(0x36, 1)
@@ -89,18 +89,18 @@ def second_stage(ql: Qiling):
 
 # In this stage, we have to wait for petya being load to the right place.
 def first_stage():
-    ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"], 
+    ql = Qiling(["rootfs/8086/petya/petya.DOS_MBR"],
                  "rootfs/8086",
-                 console=False, 
+                 console=False,
                  verbose=QL_VERBOSE.DEBUG)
-    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
+    ql.add_fs_mapper("C:", QlDisk("rootfs/8086/petya/out_1M.raw", "C:"))
     # Workaround for `until` in uc_emu_start not working with dynamic loaded code.
     ql.hook_code(stop, begin=petya_2nd_stage_start, end=petya_2nd_stage_start)
     ql.run()
     return ql
 
 if __name__ == "__main__":
-    
+
     ql = first_stage()
     key = second_stage(ql)
     third_stage(key)
