@@ -4,9 +4,11 @@
 #
 
 import os
+import sys
 import pickle
+
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, AnyStr, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, AnyStr, Collection, IO, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 # See https://stackoverflow.com/questions/39740632/python-type-hinting-without-cyclic-imports
 if TYPE_CHECKING:
@@ -20,7 +22,8 @@ if TYPE_CHECKING:
     from .hw.hw import QlHwManager
     from .loader.loader import QlLoader
 
-from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE, QL_STOP, QL_VERBOSE, QL_ARCH_INTERPRETER, QL_OS_BAREMETAL
+from .arch.models import QL_CPU
+from .const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE, QL_STOP, QL_VERBOSE, QL_OS_BAREMETAL
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType
 from .host import QlHost
 from .log import *
@@ -38,10 +41,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
             code: Optional[bytes] = None,
             ostype: Optional[QL_OS] = None,
             archtype: Optional[QL_ARCH] = None,
+            cputype: Optional[QL_CPU] = None,
             verbose: QL_VERBOSE = QL_VERBOSE.DEFAULT,
             profile: Optional[Union[str, Mapping]] = None,
             console: bool = True,
-            log_file: Optional[str] = None,
+            log_devices: Optional[Collection[Union[IO, str]]] = None,
             log_override: Optional['Logger'] = None,
             log_plain: bool = False,
             multithread: bool = False,
@@ -142,17 +146,16 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if ostype is None:
             raise QlErrorOsType(f'Unknown or unsupported operating system')
 
-        # if endianess is still undetermined, set it to little-endian.
-        # this setting is ignored for architectures with predefined endianess
+        # if endianness is still undetermined, set it to little-endian.
+        # this setting is ignored for architectures with predefined endianness
         if endian is None:
             endian = QL_ENDIAN.EL
 
-        self._arch = select_arch(archtype, endian, thumb)(self)
+        self._arch = select_arch(archtype, cputype, endian, thumb)(self)
 
         # Once we finish setting up arch, we can init QlCoreStructs and QlCoreHooks
-        if not self.interpreter:
-            QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
-            QlCoreHooks.__init__(self, self.uc)
+        QlCoreStructs.__init__(self, self.arch.endian, self.arch.bits)
+        QlCoreHooks.__init__(self, self.uc)
 
         # emulation has not been started yet
         self._state = QL_STATE.NOT_SET
@@ -160,7 +163,10 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##########
         # Logger #
         ##########
-        self._log_file_fd = setup_logger(self, log_file, console, log_override, log_plain)
+        if log_devices is None:
+            log_devices = [sys.stderr]
+
+        self._log_file_fd = setup_logger(self, log_devices, log_plain, log_override)
 
         self.filter = filter
         self.verbose = verbose
@@ -179,9 +185,8 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         ##############
         # Components #
         ##############
-        if not self.interpreter:
-            self._mem = select_component('os', 'memory')(self)
-            self._os = select_os(ostype)(self)
+        self._mem = select_component('os', 'memory')(self)
+        self._os = select_os(ostype)(self)
 
         if self.baremetal:
             self._hw = select_component('hw', 'hw')(self)
@@ -349,23 +354,11 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         return os.path.basename(self.path)
 
     @property
-    def interpreter(self) -> bool:
-        """Indicate whether an interpreter engine is being emulated.
-
-        Currently supporting: EVM
-        """
-        return self.arch.type in QL_ARCH_INTERPRETER
-
-    @property
     def baremetal(self) -> bool:
         """Indicate whether a baremetal system is being emulated.
 
         Currently supporting: MCU
         """
-
-        # os is not initialized for interpreter archs
-        if self.interpreter:
-            return False
 
         return self.os.type in QL_OS_BAREMETAL
 
@@ -635,6 +628,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if reg:
             saved_states["reg"] = self.arch.regs.save()
 
+            if self.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
+                saved_states["cpr"] = self.arch.cpr.save()
+
         if mem:
             saved_states["mem"] = self.mem.save()
 
@@ -686,14 +682,17 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
 
+            if self.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
+                self.arch.cpr.restore(saved_states["cpr"])
+
         if "hw" in saved_states:
             self.hw.restore(saved_states['hw'])
 
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
 
-        if "os_context" in saved_states:
-            self.os.restore(saved_states["os_context"])
+        if "os" in saved_states:
+            self.os.restore(saved_states["os"])
 
         if "loader" in saved_states:
             self.loader.restore(saved_states["loader"])
@@ -756,7 +755,7 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         # was initialized with.
         #
         # either unicorn is patched to reflect thumb mode in cpsr upon initialization, or we pursue the same logic
-        # by determining the endianess by address lsb. either way this condition should not be here
+        # by determining the endianness by address lsb. either way this condition should not be here
         if getattr(self.arch, '_init_thumb', False):
             begin |= 0b1
 

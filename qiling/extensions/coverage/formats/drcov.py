@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -17,6 +17,7 @@ class bb_entry(Structure):
         ("mod_id", c_uint16)
     ]
 
+
 class QlDrCoverage(QlBaseCoverage):
     """
     Collects emulated code coverage and formats it in accordance with the DynamoRIO based
@@ -29,12 +30,12 @@ class QlDrCoverage(QlBaseCoverage):
     FORMAT_NAME = "drcov"
 
     def __init__(self, ql):
-        super().__init__()
-        self.ql            = ql
+        super().__init__(ql)
+
         self.drcov_version = 2
-        self.drcov_flavor  = 'drcov'
-        self.basic_blocks  = []
-        self.bb_callback   = None
+        self.drcov_flavor = 'drcov'
+        self.basic_blocks = []
+        self.bb_callback = None
 
     @staticmethod
     def block_callback(ql, address, size, self):

@@ -60,8 +60,13 @@ class QlOs:
             # for the standard streams which usually do not support certain operations,
             # such as fileno(). here we use this to determine how we are going to use
             # the environment standard streams
+
+            # IDAPython returns True for stdin but False for stdout and stderr so checking
+            # all three
             sys.stdin.fileno()
-        except UnsupportedOperation:
+            sys.stdout.fileno()
+            sys.stderr.fileno()
+        except (UnsupportedOperation, AttributeError):
             # Qiling is used on an interactive shell or embedded python interpreter.
             # if the internal stream buffer is accessible, we should use it
             self._stdin  = getattr(sys.stdin,  'buffer', sys.stdin)
@@ -241,10 +246,15 @@ class QlOs:
             self.ql.emu_stop()
 
     def emu_error(self):
-        self.ql.log.error(f'CPU Context:')
+        self.ql.log.error('CPU Context:')
+
         for reg in self.ql.arch.regs.register_mapping:
-            if isinstance(reg, str):
-                self.ql.log.error(f'{reg}\t: {self.ql.arch.regs.read(reg):#x}')
+            try:
+                value = f'{self.ql.arch.regs.read(reg):#x}'
+            except UcError:
+                value = 'n/a'
+
+            self.ql.log.error(f'{reg}\t: {value}')
 
         pc = self.ql.arch.regs.arch_pc
 

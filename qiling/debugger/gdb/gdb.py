@@ -83,7 +83,7 @@ class QlGdb(QlDebugger):
                 entry_point = ql.loader.entry_point
 
             elif ql.os.type in (QL_OS.LINUX, QL_OS.FREEBSD) and not ql.code:
-                entry_point = ql.os.elf_entry
+                entry_point = ql.loader.elf_entry
 
             else:
                 entry_point = ql.os.entry_point
@@ -159,11 +159,11 @@ class QlGdb(QlDebugger):
                 val = int(hexval, 16)
 
                 if self.ql.arch.endian == QL_ENDIAN.EL:
-                    val = __swap_endianess(val)
+                    val = __swap_endianness(val)
 
                 self.ql.arch.regs.write(reg, val)
 
-        def __swap_endianess(value: int) -> int:
+        def __swap_endianness(value: int) -> int:
             length = (value.bit_length() + 7) // 8
             raw = value.to_bytes(length, 'little')
 
@@ -444,24 +444,23 @@ class QlGdb(QlDebugger):
                     ]
 
                 # os dependent features
-                if not self.ql.interpreter:
+                features += [
+                    'QEnvironmentHexEncoded+',
+                    'QEnvironmentReset+',
+                    'QEnvironmentUnset+'
+                ]
+
+                # filesystem dependent features
+                if hasattr(self.ql.os, 'path'):
                     features += [
-                        'QEnvironmentHexEncoded+',
-                        'QEnvironmentReset+',
-                        'QEnvironmentUnset+'
+                        'QSetWorkingDir+',
+                        'qXfer:auxv:read+',
+                        'qXfer:exec-file:read+'
                     ]
 
-                    # filesystem dependent features
-                    if hasattr(self.ql.os, 'path'):
-                        features += [
-                            'QSetWorkingDir+',
-                            'qXfer:auxv:read+',
-                            'qXfer:exec-file:read+'
-                        ]
-
-                    # process dependent features
-                    if hasattr(self.ql.os, 'pid'):
-                        features.append('qXfer:threads:read+')
+                # process dependent features
+                if hasattr(self.ql.os, 'pid'):
+                    features.append('qXfer:threads:read+')
 
                 return ';'.join(features)
 
@@ -582,7 +581,7 @@ class QlGdb(QlDebugger):
                     fd = -1
 
                     # files can be opened only where there is an os that supports filesystem
-                    if not self.ql.interpreter and hasattr(self.ql.os, 'path'):
+                    if hasattr(self.ql.os, 'path'):
                         path, flags, mode = params
 
                         path = bytes.fromhex(path).decode(encoding='utf-8')

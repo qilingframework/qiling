@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,6 +9,7 @@ from typing import List
 from unicorn import UcError
 
 sys.path.append("..")
+from qiling.os.stats import QlWinNullStats
 from qiling import Qiling
 from qiling.const import QL_STOP, QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, HANDLE
@@ -180,6 +181,9 @@ class PETest(unittest.TestCase):
         stops = [False, False, False]
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
+
+        # discard strings and api calls stats to gain a bit of speedup
+        ql.os.stats = QlWinNullStats()
 
         # emulate some Windows API
         ql.os.set_api("CreateThread", hook_CreateThread)

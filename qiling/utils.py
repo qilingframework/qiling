@@ -20,9 +20,10 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeV
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
-from qiling.exception import *
+from qiling.arch.models import QL_CPU
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
 from qiling.const import debugger_map, arch_map, os_map, arch_os_map
+from qiling.exception import *
 
 if TYPE_CHECKING:
     from qiling import Qiling
@@ -51,6 +52,7 @@ def os_convert(os: str) -> Optional[QL_OS]:
 
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     alias_map = {
+        'amd64': 'x8664',
         'x86_64':  'x8664',
         'riscv32': 'riscv'
     }
@@ -130,7 +132,7 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     EM_RISCV   = 243
     EM_PPC     = 20
 
-    endianess = {
+    endianness = {
         ELFDATA2LSB: (QL_ENDIAN.EL, 'little'),
         ELFDATA2MSB: (QL_ENDIAN.EB, 'big')
     }
@@ -180,14 +182,14 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
 
     if e_ident[:4] == b'\x7fELF':
         ei_class = e_ident[4]   # arch bits
-        ei_data  = e_ident[5]   # arch endianess
+        ei_data  = e_ident[5]   # arch endianness
         ei_osabi = e_ident[7]
 
         if ei_class in classes:
             machines = classes[ei_class]
 
-            if ei_data in endianess:
-                archendian, endian = endianess[ei_data]
+            if ei_data in endianness:
+                archendian, endian = endianness[ei_data]
 
                 machine = int.from_bytes(e_machine, endian)
 
@@ -293,11 +295,10 @@ def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Opt
 
 
 def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
-    if ostype is QL_OS.WINDOWS:
-        kwargs = {'libcache': libcache}
+    kwargs = {}
 
-    else:
-        kwargs = {}
+    if ostype is QL_OS.WINDOWS:
+        kwargs['libcache'] = libcache
 
     module = {
         QL_OS.LINUX   : r'elf',
@@ -307,7 +308,6 @@ def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
         QL_OS.WINDOWS : r'pe',
         QL_OS.UEFI    : r'pe_uefi',
         QL_OS.DOS     : r'dos',
-        QL_OS.EVM     : r'evm',
         QL_OS.MCU     : r'mcu',
         QL_OS.BLOB    : r'blob'
     }[ostype]
@@ -350,15 +350,18 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
                     return None
 
             # qdb init args are independent and may include any combination of: rr enable, init hook and script
-            for a in args:
-                if a == 'rr':
+            arg_init_hook = []
+            for arg in args:
+                if arg == 'rr':
                     kwargs['rr'] = True
 
-                elif __int_nothrow(a) is not None:
-                    kwargs['init_hook'] = a
+                elif __int_nothrow(arg) is not None:
+                     arg_init_hook.append(arg)
 
                 else:
-                    kwargs['script'] = a
+                    kwargs['script'] = arg
+            else:
+                kwargs['init_hook'] = arg_init_hook
 
         else:
             raise QlErrorOutput('Debugger not supported')
@@ -370,17 +373,17 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
     return None
 
 
-def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
-    # set endianess and thumb mode for arm-based archs
+def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
+    kwargs = {'cputype': cputype}
+
+    # set endianness and thumb mode for arm-based archs
     if archtype is QL_ARCH.ARM:
-        kwargs = {'endian': endian, 'thumb': thumb}
+        kwargs['endian'] = endian
+        kwargs['thumb'] = thumb
 
-    # set endianess for mips arch
+    # set endianness for mips arch
     elif archtype is QL_ARCH.MIPS:
-        kwargs = {'endian': endian}
-
-    else:
-        kwargs = {}
+        kwargs['endian'] = endian
 
     module = {
         QL_ARCH.A8086    : r'x86',
@@ -389,7 +392,6 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
         QL_ARCH.ARM      : r'arm',
         QL_ARCH.ARM64    : r'arm64',
         QL_ARCH.MIPS     : r'mips',
-        QL_ARCH.EVM      : r'evm.evm',
         QL_ARCH.CORTEX_M : r'cortex_m',
         QL_ARCH.RISCV    : r'riscv',
         QL_ARCH.RISCV64  : r'riscv64',
@@ -430,7 +432,7 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
         int_converter = partial(int, base=0)
         config = ConfigParser(converters={'int': int_converter})
 
-        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        qiling_home = Path(inspect.getfile(profile_setup)).parent
         os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
         # read default profile first

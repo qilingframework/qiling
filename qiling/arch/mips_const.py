@@ -39,6 +39,8 @@ reg_map = {
     "r30": UC_MIPS_REG_30,
     "r31": UC_MIPS_REG_31,
 
+    # aliases
+    "pc": UC_MIPS_REG_PC,
     "zero": UC_MIPS_REG_ZERO,
     "at": UC_MIPS_REG_AT,
     "v0": UC_MIPS_REG_V0,
@@ -69,52 +71,14 @@ reg_map = {
     "k1": UC_MIPS_REG_K1,
     "gp": UC_MIPS_REG_GP,
     "sp": UC_MIPS_REG_SP,
+    "fp": UC_MIPS_REG_FP,
     "s8": UC_MIPS_REG_S8,
     "ra": UC_MIPS_REG_RA,
-    "status": UC_MIPS_REG_INVALID,
-    "lo": UC_MIPS_REG_LO,
+
     "hi": UC_MIPS_REG_HI,
-    "badvaddr": UC_MIPS_REG_INVALID,
-    "cause": UC_MIPS_REG_INVALID,
-    "pc": UC_MIPS_REG_PC
-}
+    "lo": UC_MIPS_REG_LO,
 
-reg_map_afpr128 = {
     "cp0_config3":   UC_MIPS_REG_CP0_CONFIG3,
-    "cp0_userlocal": UC_MIPS_REG_CP0_USERLOCAL
-}
-
-reg_map_fpu = {
-    "f0":  UC_MIPS_REG_F0,
-    "f1":  UC_MIPS_REG_F1,
-    "f2":  UC_MIPS_REG_F2,
-    "f3":  UC_MIPS_REG_F3,
-    "f4":  UC_MIPS_REG_F4,
-    "f5":  UC_MIPS_REG_F5,
-    "f6":  UC_MIPS_REG_F6,
-    "f7":  UC_MIPS_REG_F7,
-    "f8":  UC_MIPS_REG_F8,
-    "f9":  UC_MIPS_REG_F9,
-    "f10": UC_MIPS_REG_F10,
-    "f11": UC_MIPS_REG_F11,
-    "f12": UC_MIPS_REG_F12,
-    "f13": UC_MIPS_REG_F13,
-    "f14": UC_MIPS_REG_F14,
-    "f15": UC_MIPS_REG_F15,
-    "f16": UC_MIPS_REG_F16,
-    "f17": UC_MIPS_REG_F17,
-    "f18": UC_MIPS_REG_F18,
-    "f19": UC_MIPS_REG_F19,
-    "f20": UC_MIPS_REG_F20,
-    "f21": UC_MIPS_REG_F21,
-    "f22": UC_MIPS_REG_F22,
-    "f23": UC_MIPS_REG_F23,
-    "f24": UC_MIPS_REG_F24,
-    "f25": UC_MIPS_REG_F25,
-    "f26": UC_MIPS_REG_F26,
-    "f27": UC_MIPS_REG_F27,
-    "f28": UC_MIPS_REG_F28,
-    "f29": UC_MIPS_REG_F29,
-    "f30": UC_MIPS_REG_F30,
-    "f31": UC_MIPS_REG_F31
+    "cp0_userlocal": UC_MIPS_REG_CP0_USERLOCAL,
+    "cp0_status":    UC_MIPS_REG_CP0_STATUS
 }

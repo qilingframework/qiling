@@ -42,7 +42,7 @@ def main(input_file, enable_trace=False):
     addr = ql.mem.search("HTTP_COOKIE=uid=1234&password=".encode())
     ql.target_addr = addr[0]
 
-    main_addr = ql.os.elf_entry
+    main_addr = ql.loader.elf_entry
     ql.hook_address(callback=start_afl, address=main_addr)
 
     try:

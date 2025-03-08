@@ -18,14 +18,20 @@ from qiling.os.macos.events.macos import QlMacOSEvManager
 from qiling.os.macos.events.macos_policy import QlMacOSPolicy
 from qiling.os.macos.events.macos_structs import mac_policy_list_t
 from qiling.os.macos.structs import kmod_info_t, POINTER64
+from qiling.os.posix.syscall.abi import arm
+
 
 class QlOsMacos(QlOsPosix):
     type = QL_OS.MACOS
 
     def __init__(self, ql: Qiling):
-        super(QlOsMacos, self).__init__(ql)
+        super().__init__(ql)
 
-        self.ql = ql
+        # NOTE: it appears that MacOS only supports Intel arch, but we put this
+        # here anyway for completion
+        if ql.arch.type is QL_ARCH.ARM64:
+            self.syscall_abi = arm.QlAArch64MacOS(ql.arch)
+
         self.fcall = QlFunctionCall(ql, intel.macosx64(ql.arch))
 
         self.ql.counter = 0

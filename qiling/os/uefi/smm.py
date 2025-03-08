@@ -8,7 +8,6 @@ from unicorn.x86_const import *
 from qiling import Qiling
 from qiling.os.const import POINTER
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.uefi import utils
 from qiling.os.uefi.context import SmmContext
 from qiling.os.uefi.protocols.EfiSmmCpuProtocol import EFI_SMM_SAVE_STATE_REGISTER
 from qiling.os.uefi.protocols.EfiSmmSwDispatch2Protocol import EFI_SMM_SW_REGISTER_CONTEXT, EFI_SMM_SW_CONTEXT
@@ -19,46 +18,46 @@ class SaveStateArea:
     #
     # see: Intel SDM vol. 3 chapter 30.4.1.1
     offsets = {
-        EFI_SMM_SAVE_STATE_REGISTER.GDTBASE    : 0x7E8C,
-        EFI_SMM_SAVE_STATE_REGISTER.IDTBASE    : 0x7E94,
-        EFI_SMM_SAVE_STATE_REGISTER.LDTBASE    : 0x7E9C,
+        EFI_SMM_SAVE_STATE_REGISTER.GDTBASE:  0x7E8C,
+        EFI_SMM_SAVE_STATE_REGISTER.IDTBASE:  0x7E94,
+        EFI_SMM_SAVE_STATE_REGISTER.LDTBASE:  0x7E9C,
         EFI_SMM_SAVE_STATE_REGISTER.GDTLIMIT: 0x7DD0,
         EFI_SMM_SAVE_STATE_REGISTER.IDTLIMIT: 0x7DD8,
         EFI_SMM_SAVE_STATE_REGISTER.LDTLIMIT: 0x7DD4,
-        # EFI_SMM_SAVE_STATE_REGISTER.LDTINFO    : ?,
+        # EFI_SMM_SAVE_STATE_REGISTER.LDTINFO: ?,
 
-        EFI_SMM_SAVE_STATE_REGISTER.ES        : 0x7FA8,
-        EFI_SMM_SAVE_STATE_REGISTER.CS        : 0x7FAC,
-        EFI_SMM_SAVE_STATE_REGISTER.SS        : 0x7FB0,
-        EFI_SMM_SAVE_STATE_REGISTER.DS        : 0x7FB4,
-        EFI_SMM_SAVE_STATE_REGISTER.FS        : 0x7FB8,
-        EFI_SMM_SAVE_STATE_REGISTER.GS        : 0x7FBC,
+        EFI_SMM_SAVE_STATE_REGISTER.ES:       0x7FA8,
+        EFI_SMM_SAVE_STATE_REGISTER.CS:       0x7FAC,
+        EFI_SMM_SAVE_STATE_REGISTER.SS:       0x7FB0,
+        EFI_SMM_SAVE_STATE_REGISTER.DS:       0x7FB4,
+        EFI_SMM_SAVE_STATE_REGISTER.FS:       0x7FB8,
+        EFI_SMM_SAVE_STATE_REGISTER.GS:       0x7FBC,
         EFI_SMM_SAVE_STATE_REGISTER.LDTR_SEL: 0x7FC0,
-        EFI_SMM_SAVE_STATE_REGISTER.TR_SEL    : 0x7FC4,
-        EFI_SMM_SAVE_STATE_REGISTER.DR7        : 0x7FC8,
-        EFI_SMM_SAVE_STATE_REGISTER.DR6        : 0x7FD0,
-        EFI_SMM_SAVE_STATE_REGISTER.R8        : 0x7F54,
-        EFI_SMM_SAVE_STATE_REGISTER.R9        : 0x7F4C,
-        EFI_SMM_SAVE_STATE_REGISTER.R10        : 0x7F44,
-        EFI_SMM_SAVE_STATE_REGISTER.R11        : 0x7F3C,
-        EFI_SMM_SAVE_STATE_REGISTER.R12        : 0x7F34,
-        EFI_SMM_SAVE_STATE_REGISTER.R13        : 0x7F2C,
-        EFI_SMM_SAVE_STATE_REGISTER.R14        : 0x7F24,
-        EFI_SMM_SAVE_STATE_REGISTER.R15        : 0x7F1C,
-        EFI_SMM_SAVE_STATE_REGISTER.RAX        : 0x7F5C,
-        EFI_SMM_SAVE_STATE_REGISTER.RBX        : 0x7F74,
-        EFI_SMM_SAVE_STATE_REGISTER.RCX        : 0x7F64,
-        EFI_SMM_SAVE_STATE_REGISTER.RDX        : 0x7F6C,
-        EFI_SMM_SAVE_STATE_REGISTER.RSP        : 0x7F7C,
-        EFI_SMM_SAVE_STATE_REGISTER.RBP        : 0x7F84,
-        EFI_SMM_SAVE_STATE_REGISTER.RSI        : 0x7F8C,
-        EFI_SMM_SAVE_STATE_REGISTER.RDI        : 0x7F94,
-        EFI_SMM_SAVE_STATE_REGISTER.RIP        : 0x7FD8,
+        EFI_SMM_SAVE_STATE_REGISTER.TR_SEL:   0x7FC4,
+        EFI_SMM_SAVE_STATE_REGISTER.DR7:      0x7FC8,
+        EFI_SMM_SAVE_STATE_REGISTER.DR6:      0x7FD0,
+        EFI_SMM_SAVE_STATE_REGISTER.R8:       0x7F54,
+        EFI_SMM_SAVE_STATE_REGISTER.R9:       0x7F4C,
+        EFI_SMM_SAVE_STATE_REGISTER.R10:      0x7F44,
+        EFI_SMM_SAVE_STATE_REGISTER.R11:      0x7F3C,
+        EFI_SMM_SAVE_STATE_REGISTER.R12:      0x7F34,
+        EFI_SMM_SAVE_STATE_REGISTER.R13:      0x7F2C,
+        EFI_SMM_SAVE_STATE_REGISTER.R14:      0x7F24,
+        EFI_SMM_SAVE_STATE_REGISTER.R15:      0x7F1C,
+        EFI_SMM_SAVE_STATE_REGISTER.RAX:      0x7F5C,
+        EFI_SMM_SAVE_STATE_REGISTER.RBX:      0x7F74,
+        EFI_SMM_SAVE_STATE_REGISTER.RCX:      0x7F64,
+        EFI_SMM_SAVE_STATE_REGISTER.RDX:      0x7F6C,
+        EFI_SMM_SAVE_STATE_REGISTER.RSP:      0x7F7C,
+        EFI_SMM_SAVE_STATE_REGISTER.RBP:      0x7F84,
+        EFI_SMM_SAVE_STATE_REGISTER.RSI:      0x7F8C,
+        EFI_SMM_SAVE_STATE_REGISTER.RDI:      0x7F94,
+        EFI_SMM_SAVE_STATE_REGISTER.RIP:      0x7FD8,
 
-        EFI_SMM_SAVE_STATE_REGISTER.RFLAGS    : 0x7FE8,
-        EFI_SMM_SAVE_STATE_REGISTER.CR0        : 0x7FF8,
-        EFI_SMM_SAVE_STATE_REGISTER.CR3        : 0x7FF0,
-        EFI_SMM_SAVE_STATE_REGISTER.CR4        : 0x7E40
+        EFI_SMM_SAVE_STATE_REGISTER.RFLAGS:   0x7FE8,
+        EFI_SMM_SAVE_STATE_REGISTER.CR0:      0x7FF8,
+        EFI_SMM_SAVE_STATE_REGISTER.CR3:      0x7FF0,
+        EFI_SMM_SAVE_STATE_REGISTER.CR4:      0x7E40
     }
 
     def __init__(self, ql: Qiling):
@@ -89,14 +88,14 @@ class SaveStateArea:
 
 class SmmEnv:
     SSA_REG_MAP = {
-        UC_X86_REG_ES    : (4, EFI_SMM_SAVE_STATE_REGISTER.ES),
-        UC_X86_REG_CS    : (4, EFI_SMM_SAVE_STATE_REGISTER.CS),
-        UC_X86_REG_SS    : (4, EFI_SMM_SAVE_STATE_REGISTER.SS),
-        UC_X86_REG_DS    : (4, EFI_SMM_SAVE_STATE_REGISTER.DS),
-        UC_X86_REG_FS    : (4, EFI_SMM_SAVE_STATE_REGISTER.FS),
-        UC_X86_REG_GS    : (4, EFI_SMM_SAVE_STATE_REGISTER.GS),
-        UC_X86_REG_R8    : (8, EFI_SMM_SAVE_STATE_REGISTER.R8),
-        UC_X86_REG_R9    : (8, EFI_SMM_SAVE_STATE_REGISTER.R9),
+        UC_X86_REG_ES     : (4, EFI_SMM_SAVE_STATE_REGISTER.ES),
+        UC_X86_REG_CS     : (4, EFI_SMM_SAVE_STATE_REGISTER.CS),
+        UC_X86_REG_SS     : (4, EFI_SMM_SAVE_STATE_REGISTER.SS),
+        UC_X86_REG_DS     : (4, EFI_SMM_SAVE_STATE_REGISTER.DS),
+        UC_X86_REG_FS     : (4, EFI_SMM_SAVE_STATE_REGISTER.FS),
+        UC_X86_REG_GS     : (4, EFI_SMM_SAVE_STATE_REGISTER.GS),
+        UC_X86_REG_R8     : (8, EFI_SMM_SAVE_STATE_REGISTER.R8),
+        UC_X86_REG_R9     : (8, EFI_SMM_SAVE_STATE_REGISTER.R9),
         UC_X86_REG_R10    : (8, EFI_SMM_SAVE_STATE_REGISTER.R10),
         UC_X86_REG_R11    : (8, EFI_SMM_SAVE_STATE_REGISTER.R11),
         UC_X86_REG_R12    : (8, EFI_SMM_SAVE_STATE_REGISTER.R12),
@@ -214,23 +213,23 @@ class SmmEnv:
 
         self.enter()
 
-        DispatchHandle    = args['DispatchHandle']
-        Context            = heap.alloc(EFI_SMM_SW_REGISTER_CONTEXT.sizeof())
-        CommBuffer        = heap.alloc(EFI_SMM_SW_CONTEXT.sizeof())
-        CommBufferSize    = heap.alloc(ql.arch.pointersize)
+        DispatchHandle = args['DispatchHandle']
+        Context        = heap.alloc(EFI_SMM_SW_REGISTER_CONTEXT.sizeof())
+        CommBuffer     = heap.alloc(EFI_SMM_SW_CONTEXT.sizeof())
+        CommBufferSize = heap.alloc(ql.arch.pointersize)
 
         # setup Context
-        args['RegisterContext'].saveTo(ql, Context)
+        args['RegisterContext'].save_to(ql.mem, Context)
 
         # setup CommBuffer
-        SmmSwContext = EFI_SMM_SW_CONTEXT()
-        SmmSwContext.SwSmiCpuIndex = cpu
-        SmmSwContext.CommandPort = idx
-        SmmSwContext.DataPort = 0
-        SmmSwContext.saveTo(ql, CommBuffer)
+        EFI_SMM_SW_CONTEXT(
+            SwSmiCpuIndex = cpu,
+            CommandPort = idx,
+            DataPort = 0
+        ).save_to(ql.mem, CommBuffer)
 
         # setup CommBufferSize
-        utils.ptr_write64(ql, CommBufferSize, SmmSwContext.sizeof())
+        ql.mem.write_ptr(CommBufferSize, EFI_SMM_SW_CONTEXT.sizeof(), 8)
 
         # clean up handler resources
         def __cleanup(ql: Qiling):

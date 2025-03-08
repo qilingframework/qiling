@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from .ProcessorBind import *
+from .ProcessorBind import UINT32, UINT64, STRUCT, ENUM
+
 
 # @see: MdePkg\Include\Uefi\UefiMultiPhase.h
 class EFI_TABLE_HEADER(STRUCT):
     _fields_ = [
-        ('Signature',    UINT64),
-        ('Revision',    UINT32),
-        ('HeaderSize',    UINT32),
-        ('CRC32',        UINT32),
-        ('Reserved',    UINT32)
+        ('Signature',  UINT64),
+        ('Revision',   UINT32),
+        ('HeaderSize', UINT32),
+        ('CRC32',      UINT32),
+        ('Reserved',   UINT32)
     ]
+
 
 class EFI_RESET_TYPE(ENUM):
     _members_ = [
@@ -22,6 +24,7 @@ class EFI_RESET_TYPE(ENUM):
         'EfiResetShutdown',
         'EfiResetPlatformSpecific',
     ]
+
 
 class EFI_MEMORY_TYPE(ENUM):
     _members_ = [
@@ -42,6 +45,7 @@ class EFI_MEMORY_TYPE(ENUM):
         'EfiPersistentMemory',
         'EfiMaxMemoryType'
     ]
+
 
 __all__ = [
     'EFI_TABLE_HEADER',

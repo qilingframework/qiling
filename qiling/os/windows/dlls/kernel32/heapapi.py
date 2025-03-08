@@ -3,9 +3,36 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from qiling import Qiling
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from qiling.os.windows.api import *
-from qiling.os.windows.fncc import *
+from qiling.os.windows.const import HEAP_ZERO_MEMORY
+from qiling.os.windows.fncc import STDCALL, winsdkapi
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.os.memory import QlMemoryManager
+
+
+def __zero_mem(mem: QlMemoryManager, ptr: int, size: int) -> None:
+    """Zero a memory range, but avoid hogging to much on host resources.
+    """
+
+    # go by page granularity
+    npages, remainder = divmod(size, mem.pagesize)
+
+    if npages:
+        zeros = b'\x00' * mem.pagesize
+
+        for _ in range(npages):
+            mem.write(ptr, zeros)
+            ptr += len(zeros)
+
+    if remainder:
+        mem.write(ptr, b'\x00' * remainder)
+
 
 # HANDLE HeapCreate(
 #   DWORD  flOptions,
@@ -33,9 +60,15 @@ def hook_HeapCreate(ql: Qiling, address: int, params):
     'dwBytes' : SIZE_T
 })
 def hook_HeapAlloc(ql: Qiling, address: int, params):
+    dwFlags = params["dwFlags"]
     dwBytes = params["dwBytes"]
 
-    return ql.os.heap.alloc(dwBytes)
+    ptr = ql.os.heap.alloc(dwBytes)
+
+    if ptr and (dwFlags & HEAP_ZERO_MEMORY):
+        __zero_mem(ql.mem, ptr, dwBytes)
+
+    return ptr
 
 # SIZE_T HeapSize(
 #   HANDLE  hHeap,

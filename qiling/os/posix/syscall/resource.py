@@ -20,16 +20,16 @@ from qiling import Qiling
 
 def __getrlimit_common(ql: Qiling, res: int, rlim: int) -> int:
     RLIMIT_STACK = 3
+
     if res == RLIMIT_STACK:
-        if ql.arch.bits == 64:
-            stack_size = int(ql.os.profile.get("OS64", "stack_size"), 16)
-        elif ql.arch.bits == 32:
-            stack_size = int(ql.os.profile.get("OS32", "stack_size"), 16)
+        stack_size = ql.os.profile.getint(f"OS{ql.arch.bits}", "stack_size")
         rlimit = (stack_size, -1)
+
     else:
         rlimit = resource.getrlimit(res)
-    
-    ql.mem.write(rlim, ql.packs(rlimit[0]) + ql.packs(rlimit[1]))
+
+    ql.mem.write_ptr(rlim + 0 * ql.arch.pointersize, rlimit[0], signed=True)
+    ql.mem.write_ptr(rlim + 1 * ql.arch.pointersize, rlimit[1], signed=True)
 
     return 0
 
@@ -41,7 +41,11 @@ def ql_syscall_getrlimit(ql: Qiling, res: int, rlim: int):
 
 def ql_syscall_setrlimit(ql: Qiling, res: int, rlim: int):
     # maybe we can nop the setrlimit
-    tmp_rlim = (ql.unpack32s(ql.mem.read(rlim, 4)), ql.unpack32s(ql.mem.read(rlim + 4, 4)))
+    tmp_rlim = (
+        ql.mem.read_ptr(rlim + 0 * 4, 4, signed=True),
+        ql.mem.read_ptr(rlim + 1 * 4, 4, signed=True)
+    )
+
     resource.setrlimit(res, tmp_rlim)
 
     return 0
@@ -51,7 +55,10 @@ def ql_syscall_prlimit64(ql: Qiling, pid: int, res: int, new_limit: int, old_lim
     if pid == 0 and new_limit == 0:
         try:
             rlim = resource.getrlimit(res)
-            ql.mem.write(old_limit, ql.packs(rlim[0]) + ql.packs(rlim[1]))
+
+            ql.mem.write_ptr(old_limit + 0 * ql.arch.pointersize, rlim[0], signed=True)
+            ql.mem.write_ptr(old_limit + 1 * ql.arch.pointersize, rlim[1], signed=True)
+
             return 0
         except:
             return -1

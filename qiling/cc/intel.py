@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
 from unicorn.x86_const import (
@@ -8,7 +8,7 @@ from unicorn.x86_const import (
     UC_X86_REG_R10
 )
 
-from qiling.cc import QlCommonBaseCC
+from qiling.cc import QlCommonBaseCC, make_arg_list
 
 class QlIntelBaseCC(QlCommonBaseCC):
     """Calling convention base class for Intel-based systems.
@@ -60,7 +60,7 @@ class amd64(QlIntel64):
     First 6 arguments are passed in regs, the rest are passed on the stack.
     """
 
-    _argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10
+    _argregs = make_arg_list(UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_R10, UC_X86_REG_R8, UC_X86_REG_R9)
 
 class ms64(QlIntel64):
     """Default calling convention for Windows and UEFI (x86-64).
@@ -70,7 +70,7 @@ class ms64(QlIntel64):
     to the first arguments passed in regs.
     """
 
-    _argregs = (UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 12
+    _argregs = make_arg_list(UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9)
     _shadow = 4
 
 class macosx64(QlIntel64):
@@ -78,7 +78,7 @@ class macosx64(QlIntel64):
     First 6 arguments are passed in regs, the rest are passed on the stack.
     """
 
-    _argregs = (UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_RCX, UC_X86_REG_R8, UC_X86_REG_R9) + (None, ) * 10
+    _argregs = make_arg_list(UC_X86_REG_RDI, UC_X86_REG_RSI, UC_X86_REG_RDX, UC_X86_REG_RCX, UC_X86_REG_R8, UC_X86_REG_R9)
 
 class cdecl(QlIntel32):
     """Calling convention used by all operating systems (x86).
@@ -87,7 +87,7 @@ class cdecl(QlIntel32):
     The caller is resopnsible to unwind the stack.
     """
 
-    _argregs = (None, ) * 16
+    _argregs = make_arg_list()
 
 class stdcall(QlIntel32):
     """Calling convention used by all operating systems (x86).
@@ -96,7 +96,7 @@ class stdcall(QlIntel32):
     The callee is resopnsible to unwind the stack.
     """
 
-    _argregs = (None, ) * 16
+    _argregs = make_arg_list()
 
     def unwind(self, nslots: int) -> int:
         retaddr = super().unwind(nslots)

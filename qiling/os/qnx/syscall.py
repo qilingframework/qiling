@@ -14,7 +14,7 @@ except ImportError:
 
 from qiling import Qiling
 from qiling.utils import ql_get_module_function
-from qiling.os.posix.const_mapping import _flags_mapping
+from qiling.os.posix.const_mapping import flags_mapping
 from qiling.os.qnx.helpers import get_message_body, QnxConn, ux32s
 from qiling.os.qnx.map_msgtype import map_msgtype
 from qiling.os.qnx.structs import *
@@ -25,7 +25,7 @@ from qiling.os.qnx.const import *
 
 def ql_syscall_channel_create(ql: Qiling, flags, *args, **kw):
     # TODO: Can we ignore the flags?
-    ql.log.debug(f'syscall_channel_create(flags = {_flags_mapping(flags, channel_create_flags)})')
+    ql.log.debug(f'syscall_channel_create(flags = {flags_mapping(flags, channel_create_flags)})')
     # return new Channel Id
     regreturn = ql.os.channel_id
     ql.os.channel_id += 1

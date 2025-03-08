@@ -153,7 +153,6 @@ class R2:
             QL_ARCH.ARM: "arm",
             QL_ARCH.ARM64: "arm",
             QL_ARCH.A8086: "x86",
-            QL_ARCH.EVM: "evm.cs",
             QL_ARCH.CORTEX_M: "arm",
             QL_ARCH.MIPS: "mips",
             QL_ARCH.RISCV: "riscv",
@@ -279,7 +278,7 @@ class R2:
         anibbles = ql.arch.bits // 4
         progress = 0
         for inst in self.dis_nbytes(addr, size):
-            if inst.type.lower() == 'invalid':
+            if inst.type.lower() in ('invalid', 'ill'):
                 break  # stop disasm
             name, offset = self.at(inst.offset, parse=True)
             if filt is None or filt.search(name):

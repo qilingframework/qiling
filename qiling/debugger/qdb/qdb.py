@@ -5,11 +5,11 @@
 
 import cmd
 
-from typing import Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union, List
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
@@ -20,12 +20,36 @@ from .const import color
 from .utils import QDB_MSG, qdb_print
 
 
+def save_reg_dump(func: Callable) -> Callable[..., None]:
+    """Decorator for saving registers dump.
+    """
+
+    def inner(self: 'QlQdb', *args, **kwargs) -> None:
+        self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
+
+        func(self, *args, **kwargs)
+
+    return inner
+
+def check_ql_alive(func: Callable) -> Callable[..., None]:
+    """Decorator for checking whether ql instance is alive.
+    """
+
+    def inner(self: 'QlQdb', *args, **kwargs) -> None:
+        if self.ql is None:
+            qdb_print(QDB_MSG.ERROR, "The program is not being run.")
+        else:
+            func(self, *args, **kwargs)
+
+    return inner
+
+
 class QlQdb(cmd.Cmd, QlDebugger):
     """
     The built-in debugger of Qiling Framework
     """
 
-    def __init__(self, ql: Qiling, init_hook: str = "", rr: bool = False, script: str = "") -> None:
+    def __init__(self, ql: Qiling, init_hook: List[str] = [], rr: bool = False, script: str = "") -> None:
         """
         @init_hook: the entry to be paused at
         @rr: record/replay debugging
@@ -45,9 +69,10 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         super().__init__()
 
-        self.dbg_hook(init_hook)
+        # filter out entry_point of loader if presented
+        self.dbg_hook(list(filter(lambda d: int(d, 0) != self.ql.loader.entry_point, init_hook)))
 
-    def dbg_hook(self, init_hook: str):
+    def dbg_hook(self, init_hook: List[str]):
         """
         initial hook to prepare everything we need
         """
@@ -67,7 +92,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     if bp.hitted:
                         return
 
-                    qdb_print(QDB_MSG.INFO, f"hit breakpoint at 0x{self.cur_addr:08x}")
+                    qdb_print(QDB_MSG.INFO, f"hit breakpoint at {self.cur_addr:#x}")
                     bp.hitted = True
 
                 ql.stop()
@@ -75,18 +100,45 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.ql.hook_code(bp_handler, self.bp_list)
 
-        if self.ql.os.type == QL_OS.BLOB:
-            self.ql.loader.entry_point = self.ql.loader.load_address
-
-        elif init_hook and self.ql.loader.entry_point != int(init_hook, 0):
-            self.do_breakpoint(init_hook)
-
         if self.ql.entry_point:
             self.cur_addr = self.ql.entry_point
         else:
             self.cur_addr = self.ql.loader.entry_point
 
         self.init_state = self.ql.save()
+
+        # stop emulator once interp. have been done emulating
+        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry', None):
+            handler = self.ql.hook_address(lambda ql: ql.stop(), addr_elf_entry)
+        else:
+            handler = self.ql.hook_address(lambda ql: ql.stop(), self.ql.loader.entry_point)
+
+        # suppress logging temporary
+        _verbose = self.ql.verbose
+        self.ql.verbose = QL_VERBOSE.DISABLED
+
+        # init os for integrity of hooks and patches,
+        self.ql.os.run()
+
+        handler.remove()
+
+        # ignore the memory unmap error for now, due to the MIPS memory layout issue
+        try:
+            self.ql.mem.unmap_all()
+        except:
+            pass
+
+        self.ql.restore(self.init_state)
+
+        # resotre logging verbose
+        self.ql.verbose = _verbose
+
+        if self.ql.os.type is QL_OS.BLOB:
+            self.ql.loader.entry_point = self.ql.loader.load_address
+
+        elif init_hook:
+            for each_hook in init_hook:
+                self.do_breakpoint(each_hook)
 
         if self._script:
             run_qdb_script(self, self._script)
@@ -121,14 +173,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if getattr(self.ql.arch, 'is_thumb', False):
             address |= 0b1
 
-        # assume we're running PE if on Windows
-        if self.ql.os.type == QL_OS.WINDOWS:
-            self.ql.count = count
-            self.ql.entry_point = address
-            self.ql.os.run()
-
-        else:
-            self.ql.emu_start(begin=address, end=end, count=count)
+        self.ql.emu_start(begin=address, end=end, count=count)
 
     @contextmanager
     def _save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False):
@@ -138,30 +183,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         saved_states = self.ql.save(reg=reg, mem=mem)
         yield self
         self.ql.restore(saved_states)
-
-    def save_reg_dump(func) -> None:
-        """
-        decorator function for saving register dump
-        """
-
-        def inner(self, *args, **kwargs):
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
-            func(self, *args, **kwargs)
-
-        return inner
-
-    def check_ql_alive(func) -> None:
-        """
-        decorator function for checking ql instance is alive
-        """
-
-        def inner(self, *args, **kwargs):
-            if self.ql is None:
-                qdb_print(QDB_MSG.ERROR, "The program is not being run.")
-            else:
-                func(self, *args, **kwargs)
-
-        return inner
 
     def parseline(self, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
@@ -248,16 +269,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
         prophecy = self.predictor.predict()
 
         if prophecy.going:
+            self.set_breakpoint(prophecy.where, is_temp=True)
+
+        else:
             cur_insn = self.predictor.disasm(self.cur_addr)
             bp_addr = self.cur_addr + cur_insn.size
 
-            if self.ql.arch.type == QL_ARCH.MIPS:
+            if self.ql.arch.type is QL_ARCH.MIPS:
                 bp_addr += cur_insn.size
 
             self.set_breakpoint(bp_addr, is_temp=True)
-
-        else:
-            self.set_breakpoint(prophecy.where, is_temp=True)
 
         self._run()
 
@@ -355,7 +376,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         reg_val = try_read_int(val.strip())
 
         if reg_name in self.ql.arch.regs.save().keys():
-            if reg_val:
+            if reg_val is not None:
                 setattr(self.ql.arch.regs, reg_name, reg_val)
                 self.do_context()
                 qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{(reg_val & 0xfffffff):08x}")
@@ -372,7 +393,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         if self.ql.arch != QL_ARCH.CORTEX_M:
-
             self.ql.restore(self.init_state)
             self.do_context()
 
@@ -463,7 +483,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             reg_n, stk_n = 2, 0
         else:
             if argc > 4:
-                stk_n = argc - 4
+                reg_n, stk_n = 4, argc - 4
             elif argc <= 4:
                 reg_n, stk_n = argc, 0
 
@@ -528,13 +548,29 @@ class QlQdb(cmd.Cmd, QlDebugger):
         args = reg_args + stk_args
         qdb_print(QDB_MSG.INFO, f'args: {args}')
 
-    def do_show(self, *args) -> None:
+    def do_show(self, keyword: Optional[str] = None, *args) -> None:
         """
         show some runtime information
         """
 
-        for info_line in self.ql.mem.get_formatted_mapinfo():
-            qdb_print(QDB_MSG.INFO, info_line)
+        qdb_print(QDB_MSG.INFO, f"Entry point: {self.ql.loader.entry_point:#x}")
+
+        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry', None):
+            qdb_print(QDB_MSG.INFO, f"ELF entry: {addr_elf_entry:#x}")
+
+        info_lines = iter(self.ql.mem.get_formatted_mapinfo())
+
+        # print filed name first
+        qdb_print(QDB_MSG.INFO, next(info_lines))
+
+        # keyword filtering
+        if keyword:
+            lines = filter(lambda line: keyword in line, info_lines)
+        else:
+            lines = info_lines
+
+        for line in lines:
+            qdb_print(QDB_MSG.INFO, line)
 
         qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
         qdb_print(QDB_MSG.INFO, f"Marked symbol: {[{key:hex(val)} for key,val in self.marker.mark_list]}")
