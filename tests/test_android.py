@@ -8,6 +8,7 @@ from collections import defaultdict
 
 sys.path.append("..")
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
 from qiling.os.mapper import QlFsMappedObject
 from qiling.os.posix import syscall
 
@@ -53,7 +54,7 @@ class TestAndroid(unittest.TestCase):
             'ANDROID_ROOT': r'/system'
         }
 
-        ql = Qiling([test_binary], rootfs, env, profile={'OS64': OVERRIDES}, multithread=True)
+        ql = Qiling([test_binary], rootfs, env, profile={'OS64': OVERRIDES}, verbose=QL_VERBOSE.DEBUG, multithread=True)
 
         ql.os.set_syscall("close", my_syscall_close)
         ql.add_fs_mapper("/proc/self/task/2000/maps", Fake_maps(ql))
@@ -70,7 +71,7 @@ class TestAndroid(unittest.TestCase):
             'ANDROID_ROOT': r'/system'
         }
 
-        ql = Qiling([test_binary], rootfs, env, profile={'OS32': OVERRIDES}, multithread=True)
+        ql = Qiling([test_binary], rootfs, env, profile={'OS32': OVERRIDES}, verbose=QL_VERBOSE.DEBUG, multithread=True)
 
         ql.os.set_syscall("close", my_syscall_close)
         ql.add_fs_mapper("/proc/self/task/2000/maps", Fake_maps(ql))

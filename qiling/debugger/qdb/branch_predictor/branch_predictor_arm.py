@@ -6,7 +6,10 @@
 
 
 from .branch_predictor import *
-from ..arch import ArchARM, ArchCORTEX_M
+from ..arch import ArchARM
+from ..misc import read_int
+
+
 
 class BranchPredictorARM(BranchPredictor, ArchARM):
     """
@@ -41,7 +44,7 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                 )
 
     def predict(self, pref_addr=None):
-        prophecy = self.Prophecy()
+        prophecy = Prophecy()
         cur_addr = self.cur_addr if pref_addr is None else pref_addr
         line = self.disasm(cur_addr)
 
@@ -244,8 +247,8 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
             _, r = line.op_str.split(", ")
             prophecy.where = self.read_reg(r)
 
-        if prophecy.where & 1:
-            prophecy.where -= 1
+        if prophecy.where is not None:
+            prophecy.where &= ~0b1
 
         return prophecy
 

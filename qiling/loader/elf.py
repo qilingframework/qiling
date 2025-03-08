@@ -325,39 +325,44 @@ class QlLoaderELF(QlLoader):
         elf_phent = elffile['e_phentsize']
         elf_phnum = elffile['e_phnum']
 
-        if self.ql.arch.bits == 64:
-            elf_hwcap = 0x078bfbfd
-        elif self.ql.arch.bits == 32:
-            elf_hwcap = 0x1fb8d7
+        # for more details on the following values see:
+        # https://github.com/google/cpu_features/blob/main/include/internal/hwcaps.h
+        hwcap_values = {
+            (QL_ARCH.ARM,   QL_ENDIAN.EL, 32): 0x001fb8d7,
+            (QL_ARCH.ARM,   QL_ENDIAN.EB, 32): 0xd7b81f00,
+            (QL_ARCH.ARM64, QL_ENDIAN.EL, 64): 0x078bfbfd
+        }
 
-            if self.ql.arch.endian == QL_ENDIAN.EB:
-                # FIXME: considering this is a 32 bits value, it is not a big-endian version of the
-                # value above like it is meant to be, since the one above has an implied leading zero
-                # byte (i.e. 0x001fb8d7) which the EB value didn't take into account
-                elf_hwcap = 0xd7b81f
+        # determine hwcap value by arch properties; if not found default to 0
+        hwcap = hwcap_values.get((self.ql.arch.type, self.ql.arch.endian, self.ql.arch.bits), 0)
 
         # setup aux vector
-        auxv_entries = (
-            (AUXV.AT_HWCAP, elf_hwcap),
-            (AUXV.AT_PAGESZ, self.ql.mem.pagesize),
-            (AUXV.AT_CLKTCK, 100),
+        auxv_entries = [
             (AUXV.AT_PHDR, elf_phdr),
             (AUXV.AT_PHENT, elf_phent),
             (AUXV.AT_PHNUM, elf_phnum),
-            (AUXV.AT_BASE, interp_address),
+            (AUXV.AT_PAGESZ, self.ql.mem.pagesize),
+        ]
+
+        if interp_path:
+            auxv_entries.append((AUXV.AT_BASE, interp_address))
+
+        auxv_entries.extend([
             (AUXV.AT_FLAGS, 0),
             (AUXV.AT_ENTRY, self.elf_entry),
             (AUXV.AT_UID, self.ql.os.uid),
             (AUXV.AT_EUID, self.ql.os.euid),
             (AUXV.AT_GID, self.ql.os.gid),
             (AUXV.AT_EGID, self.ql.os.egid),
+            (AUXV.AT_CLKTCK, 100),
+            (AUXV.AT_PLATFORM, cpustraddr),
+            (AUXV.AT_HWCAP, hwcap),
             (AUXV.AT_SECURE, 0),
             (AUXV.AT_RANDOM, randstraddr),
             (AUXV.AT_HWCAP2, 0),
             (AUXV.AT_EXECFN, execfn),
-            (AUXV.AT_PLATFORM, cpustraddr),
             (AUXV.AT_NULL, 0)
-        )
+        ])
 
         bytes_before_auxv = len(elf_table)
 
@@ -366,7 +371,13 @@ class QlLoaderELF(QlLoader):
             elf_table.extend(self.ql.pack(key))
             elf_table.extend(self.ql.pack(val))
 
-        new_stack = self.ql.mem.align(new_stack - len(elf_table), 0x10)
+        sp_align = self.ql.arch.pointersize
+
+        # mips requires doubleword alignment
+        if self.ql.arch.type is QL_ARCH.MIPS:
+            sp_align *= 2
+
+        new_stack = self.ql.mem.align(new_stack - len(elf_table), sp_align)
         self.ql.mem.write(new_stack, bytes(elf_table))
 
         self.auxv = new_stack + bytes_before_auxv

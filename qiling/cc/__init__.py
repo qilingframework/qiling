@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 
-from typing import Callable, Sequence, Tuple
+from typing import Callable, Sequence, Tuple, Union
 
 from qiling.arch.arch import QlArch
 
@@ -175,3 +175,9 @@ class QlCommonBaseCC(QlCC):
         si = self._argregs[:nslots].count(None)
 
         self.arch.regs.arch_sp -= (self._shadow + si) * self._asize
+
+
+def make_arg_list(*args, maxargs: int = 16) -> Tuple[Union[int, None]]:
+    assert len(args) <= maxargs
+
+    return args + (None,) * (maxargs - len(args))

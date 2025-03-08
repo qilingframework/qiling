@@ -628,6 +628,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
         if reg:
             saved_states["reg"] = self.arch.regs.save()
 
+            if self.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
+                saved_states["cpr"] = self.arch.cpr.save()
+
         if mem:
             saved_states["mem"] = self.mem.save()
 
@@ -678,6 +681,9 @@ class Qiling(QlCoreHooks, QlCoreStructs):
 
         if "reg" in saved_states:
             self.arch.regs.restore(saved_states["reg"])
+
+            if self.arch.type in (QL_ARCH.ARM, QL_ARCH.ARM64):
+                self.arch.cpr.restore(saved_states["cpr"])
 
         if "hw" in saved_states:
             self.hw.restore(saved_states['hw'])

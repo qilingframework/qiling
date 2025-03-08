@@ -85,9 +85,9 @@ def ql_syscall___sysctl(ql: Qiling, name: int, namelen: int, old: int, oldlenp: 
                 ql.log.warning("Unknown oid name!")
 
             for i, v in enumerate(out_vecs):
-                ql.mem.write_ptr(old + i * 4, v, 32, signed=True)
+                ql.mem.write_ptr(old + i * 4, v, 4, signed=True)
 
-            ql.mem.write_ptr(oldlenp, out_len, 32, signed=True)
+            ql.mem.write_ptr(oldlenp, out_len, 4, signed=True)
 
         return -ENOENT
 
@@ -97,7 +97,7 @@ def ql_syscall___sysctl(ql: Qiling, name: int, namelen: int, old: int, oldlenp: 
                 return -1
 
             # Ignore oldlenp check.
-            ql.mem.write_ptr(old, FREEBSD_OSRELDATE, 32, signed=True)
+            ql.mem.write_ptr(old, FREEBSD_OSRELDATE, 4, signed=True)
 
             return 0
     return 0

@@ -5,11 +5,11 @@
 
 import cmd
 
-from typing import Optional, Tuple, Union, List
+from typing import Callable, Optional, Tuple, Union, List
 from contextlib import contextmanager
 
 from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_STATE, QL_VERBOSE
+from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
 from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
@@ -18,6 +18,30 @@ from .misc import parse_int, Breakpoint, TempBreakpoint, try_read_int
 from .const import color
 
 from .utils import QDB_MSG, qdb_print
+
+
+def save_reg_dump(func: Callable) -> Callable[..., None]:
+    """Decorator for saving registers dump.
+    """
+
+    def inner(self: 'QlQdb', *args, **kwargs) -> None:
+        self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
+
+        func(self, *args, **kwargs)
+
+    return inner
+
+def check_ql_alive(func: Callable) -> Callable[..., None]:
+    """Decorator for checking whether ql instance is alive.
+    """
+
+    def inner(self: 'QlQdb', *args, **kwargs) -> None:
+        if self.ql is None:
+            qdb_print(QDB_MSG.ERROR, "The program is not being run.")
+        else:
+            func(self, *args, **kwargs)
+
+    return inner
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
@@ -160,30 +184,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         yield self
         self.ql.restore(saved_states)
 
-    def save_reg_dump(func) -> None:
-        """
-        decorator function for saving register dump
-        """
-
-        def inner(self, *args, **kwargs):
-            self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
-            func(self, *args, **kwargs)
-
-        return inner
-
-    def check_ql_alive(func) -> None:
-        """
-        decorator function for checking ql instance is alive
-        """
-
-        def inner(self, *args, **kwargs):
-            if self.ql is None:
-                qdb_print(QDB_MSG.ERROR, "The program is not being run.")
-            else:
-                func(self, *args, **kwargs)
-
-        return inner
-
     def parseline(self, line: str) -> Tuple[Optional[str], Optional[str], str]:
         """
         Parse the line into a command name and a string containing
@@ -269,16 +269,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
         prophecy = self.predictor.predict()
 
         if prophecy.going:
+            self.set_breakpoint(prophecy.where, is_temp=True)
+
+        else:
             cur_insn = self.predictor.disasm(self.cur_addr)
             bp_addr = self.cur_addr + cur_insn.size
 
-            if self.ql.arch.type == QL_ARCH.MIPS:
+            if self.ql.arch.type is QL_ARCH.MIPS:
                 bp_addr += cur_insn.size
 
             self.set_breakpoint(bp_addr, is_temp=True)
-
-        else:
-            self.set_breakpoint(prophecy.where, is_temp=True)
 
         self._run()
 

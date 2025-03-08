@@ -6,8 +6,10 @@
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
-from qiling.arch.x86_utils import GDTManager, SegmentManager86
+from qiling.arch.x86_utils import GDTManager, SegmentManager64
+from qiling.cc import intel
 from qiling.const import QL_OS
+from qiling.os.fcall import QlFunctionCall
 from qiling.os.posix.posix import QlOsPosix
 
 
@@ -15,7 +17,9 @@ class QlOsFreebsd(QlOsPosix):
     type = QL_OS.FREEBSD
 
     def __init__(self, ql):
-        super(QlOsFreebsd, self).__init__(ql)
+        super().__init__(ql)
+
+        self.fcall = QlFunctionCall(ql, intel.amd64(ql.arch))
 
         self.load()
 
@@ -23,7 +27,7 @@ class QlOsFreebsd(QlOsPosix):
         gdtm = GDTManager(self.ql)
 
         # setup gdt and segments selectors
-        segm = SegmentManager86(self.ql.arch, gdtm)
+        segm = SegmentManager64(self.ql.arch, gdtm)
         segm.setup_cs_ds_ss_es(0, 4 << 30)
 
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
