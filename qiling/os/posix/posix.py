@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import NR_OPEN, errors
+from qiling.os.posix.const import NR_OPEN, NSIG, errors
 from qiling.os.posix.msq import QlMsq
 from qiling.os.posix.shm import QlShm
 from qiling.os.posix.syscall.abi import QlSyscallABI, arm, intel, mips, ppc, riscv
@@ -49,7 +49,6 @@ class QlOsPosix(QlOs):
 
     def __init__(self, ql: Qiling):
         super().__init__(ql)
-        self.sigaction_act = [0] * 256
 
         conf = self.profile['KERNEL']
         self.uid = self.euid = conf.getint('uid')
@@ -92,6 +91,11 @@ class QlOsPosix(QlOs):
 
         self._shm = QlShm()
         self._msq = QlMsq()
+        self._sig = [None] * NSIG
+
+        # a bitmap representing the blocked signals. a set bit at index i means signal i is blocked.
+        # note that SIGKILL and SIGSTOP cannot be blocked.
+        self.blocked_signals = 0
 
     def __get_syscall_mapper(self, archtype: QL_ARCH):
         qlos_path = f'.os.{self.type.name.lower()}.map_syscall'
@@ -264,3 +268,7 @@ class QlOsPosix(QlOs):
     @property
     def msq(self):
         return self._msq
+
+    @property
+    def sig(self):
+        return self._sig

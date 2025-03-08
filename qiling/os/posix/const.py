@@ -17,6 +17,9 @@ THREAD_EVENT_EXIT_GROUP_EVENT = 6
 # File Open Limits
 NR_OPEN = 1024
 
+# number of signals
+NSIG = 32
+
 SOCK_TYPE_MASK = 0x0f
 
 class linux_x86_socket_types(Enum):

@@ -152,6 +152,22 @@ def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
 
 
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
+    if sig not in range(NSIG):
+        return -1   # EINVAL
+
+    if pid > 0 and pid != ql.os.pid:
+        return -1   # ESRCH
+
+    sigaction = ql.os.sig[sig]
+
+    # sa_handler is:
+    #     SIG_DFL for the default action.
+    #     SIG_IGN to ignore this signal.
+    #     handler pointer
+
+    # if sa_flags & SA_SIGINFO:
+    #   call sa_sigaction instead of sa_handler
+
     return 0
 
 
