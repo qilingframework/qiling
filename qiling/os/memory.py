@@ -57,7 +57,7 @@ class QlMemoryManager:
             addr += 1
             c = self.read(addr, 1)
 
-        return ret.decode()
+        return ret.decode('latin1')
 
     def __write_string(self, addr: int, s: str, encoding: str):
         self.write(addr, bytes(s, encoding) + b'\x00')

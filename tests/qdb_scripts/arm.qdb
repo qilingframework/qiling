@@ -1,6 +1,6 @@
 # This line is demonstrate comment in qdb script
 
-x/10wx 0x7ff3cee4
+x/10xw 0x7ff3cee4
 x $sp
 x $sp + 0x10
 x/5i 0x047ba9e0

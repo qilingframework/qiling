@@ -7,7 +7,7 @@ import io
 import os
 
 from enum import IntEnum
-from typing import AnyStr, Optional, Sequence, Mapping, Tuple
+from typing import Any, AnyStr, Optional, Sequence, Mapping, Tuple
 
 from elftools.common.utils import preserve_stream_pos
 from elftools.elf.constants import P_FLAGS, SH_FLAGS
@@ -701,3 +701,15 @@ class QlLoaderELF(QlLoader):
                 elfdata_mapping.extend(sec.data())
 
         return bytes(elfdata_mapping)
+
+    def save(self) -> Mapping[str, Any]:
+        saved = super().save()
+
+        saved['brk_address'] = self.brk_address
+
+        return saved
+
+    def restore(self, saved_state: Mapping[str, Any]):
+        self.brk_address = saved_state['brk_address']
+
+        super().restore(saved_state)
