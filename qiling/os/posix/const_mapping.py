@@ -57,7 +57,9 @@ def get_open_flags_class(archtype: QL_ARCH, ostype: QL_OS) -> Union[Type[Flag], 
 
         QL_OS.MACOS: {
             QL_ARCH.X86:   macos_x86_open_flags,
-            QL_ARCH.X8664: macos_x86_open_flags
+            QL_ARCH.X8664: macos_x86_open_flags,
+            QL_ARCH.ARM: macos_arm_open_flags,
+            QL_ARCH.ARM64: macos_arm_open_flags
         },
 
         QL_OS.WINDOWS: {
