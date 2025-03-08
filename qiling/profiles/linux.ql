@@ -18,7 +18,8 @@ stack_address = 0x7ff0d000
 stack_size = 0x30000
 load_address = 0x56555000
 interp_address = 0x047ba000
-mmap_address = 0x90000000
+# used to be 0x90000000, but changed to comply with MIPS reserved areas
+mmap_address = 0x01000000
 
 
 [KERNEL]

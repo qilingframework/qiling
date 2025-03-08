@@ -152,7 +152,10 @@ reg_map_cr = {
     "cr1": UC_X86_REG_CR1,
     "cr2": UC_X86_REG_CR2,
     "cr3": UC_X86_REG_CR3,
-    "cr4": UC_X86_REG_CR4,
+    "cr4": UC_X86_REG_CR4
+}
+
+reg_map_cr_64 = {
     "cr8": UC_X86_REG_CR8
 }
 
@@ -207,7 +210,10 @@ reg_map_xmm = {
     "xmm4":  UC_X86_REG_XMM4,
     "xmm5":  UC_X86_REG_XMM5,
     "xmm6":  UC_X86_REG_XMM6,
-    "xmm7":  UC_X86_REG_XMM7,
+    "xmm7":  UC_X86_REG_XMM7
+}
+
+reg_map_xmm_64 = {
     "xmm8":  UC_X86_REG_XMM8,
     "xmm9":  UC_X86_REG_XMM9,
     "xmm10": UC_X86_REG_XMM10,
@@ -243,6 +249,9 @@ reg_map_ymm = {
     "ymm5":  UC_X86_REG_YMM5,
     "ymm6":  UC_X86_REG_YMM6,
     "ymm7":  UC_X86_REG_YMM7,
+}
+
+reg_map_ymm_64 = {
     "ymm8":  UC_X86_REG_YMM8,
     "ymm9":  UC_X86_REG_YMM9,
     "ymm10": UC_X86_REG_YMM10,

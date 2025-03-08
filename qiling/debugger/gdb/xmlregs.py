@@ -19,8 +19,7 @@ from qiling.arch.arm64_const import (
     reg_map_fp as arm64_reg_map_fp
 )
 from qiling.arch.mips_const import (
-    reg_map as mips_regs_gpr,
-    reg_map_fpu as mips_regs_fpu
+    reg_map as mips_regs_gpr
 )
 from qiling.arch.x86_const import (
     reg_map_32 as x86_regs_32,
@@ -136,7 +135,7 @@ class QlGdbFeatures:
             QL_ARCH.ARM:      dict(**arm_regs, **arm_regs_vfp, **arm_regs_q, **arm_regs_s),
             QL_ARCH.CORTEX_M: arm_regs,
             QL_ARCH.ARM64:    dict(**arm64_regs, **arm64_regs_v, **arm64_reg_map_fp),
-            QL_ARCH.MIPS:     dict(**mips_regs_gpr, **mips_regs_fpu)
+            QL_ARCH.MIPS:     dict(**mips_regs_gpr)
         }[archtype]
 
         regsinfo = sorted(QlGdbFeatures.__walk_xml_regs(xmltree))

@@ -246,10 +246,15 @@ class QlOs:
             self.ql.emu_stop()
 
     def emu_error(self):
-        self.ql.log.error(f'CPU Context:')
+        self.ql.log.error('CPU Context:')
+
         for reg in self.ql.arch.regs.register_mapping:
-            if isinstance(reg, str):
-                self.ql.log.error(f'{reg}\t: {self.ql.arch.regs.read(reg):#x}')
+            try:
+                value = f'{self.ql.arch.regs.read(reg):#x}'
+            except UcError:
+                value = 'n/a'
+
+            self.ql.log.error(f'{reg}\t: {value}')
 
         pc = self.ql.arch.regs.arch_pc
 

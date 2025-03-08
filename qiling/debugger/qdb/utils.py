@@ -4,34 +4,37 @@
 #
 
 from __future__ import annotations
-from typing import Callable, Optional, Mapping, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Mapping, Tuple, Type
 
 from capstone import CsInsn
 
-from qiling import Qiling
 from qiling.const import QL_ARCH
 
-from .context import Context
-
 from .render import (
-        ContextRenderX86,
-        ContextRenderX8664,
-        ContextRenderARM,
-        ContextRenderCORTEX_M,
-        ContextRenderMIPS
-        )
+    ContextRender,
+    ContextRenderX86,
+    ContextRenderX8664,
+    ContextRenderARM,
+    ContextRenderCORTEX_M,
+    ContextRenderMIPS
+)
 
 from .branch_predictor import (
-        BranchPredictorX86,
-        BranchPredictorX8664,
-        BranchPredictorARM,
-        BranchPredictorCORTEX_M,
-        BranchPredictorMIPS,
-        )
+    BranchPredictor,
+    BranchPredictorX86,
+    BranchPredictorX8664,
+    BranchPredictorARM,
+    BranchPredictorCORTEX_M,
+    BranchPredictorMIPS,
+)
 
 from .const import color, QDB_MSG
 
-    
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from .qdb import QlQdb
+
 
 def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
     """
@@ -51,15 +54,13 @@ def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
 
     print(color_coated)
 
-"""
-
-    class Marker provide the ability for marking an address as a more easier rememberable alias
-
-"""
 
 def setup_address_marker():
 
     class Marker:
+        """provide the ability to mark an address as a more easier rememberable alias
+        """
+
         def __init__(self):
             self._mark_list = {}
 
@@ -111,43 +112,45 @@ def setup_address_marker():
 
     return Marker()
 
-"""
 
-    helper functions for setting proper branch predictor and context render depending on different arch
-
-"""
-
-def setup_branch_predictor(ql):
-    """
-    setup BranchPredictor correspondingly
+# helper functions for setting proper branch predictor and context render depending on different arch
+def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
+    """Setup BranchPredictor according to arch.
     """
 
-    return {
-            QL_ARCH.X86: BranchPredictorX86,
-            QL_ARCH.X8664: BranchPredictorX8664,
-            QL_ARCH.ARM: BranchPredictorARM,
-            QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
-            QL_ARCH.MIPS: BranchPredictorMIPS,
-            }.get(ql.arch.type)(ql)
+    preds: Dict[QL_ARCH, Type[BranchPredictor]] = {
+        QL_ARCH.X86:      BranchPredictorX86,
+        QL_ARCH.X8664:    BranchPredictorX8664,
+        QL_ARCH.ARM:      BranchPredictorARM,
+        QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
+        QL_ARCH.MIPS:     BranchPredictorMIPS
+    }
 
-def setup_context_render(ql, predictor):
+    p = preds[ql.arch.type]
+
+    return p(ql)
+
+def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRender:
+    """Setup context render according to arch.
     """
-    setup context render correspondingly
-    """
 
-    return {
-            QL_ARCH.X86: ContextRenderX86,
-            QL_ARCH.X8664: ContextRenderX8664,
-            QL_ARCH.ARM: ContextRenderARM,
-            QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
-            QL_ARCH.MIPS: ContextRenderMIPS,
-            }.get(ql.arch.type)(ql, predictor)
+    rends: Dict[QL_ARCH, Type[ContextRender]] = {
+        QL_ARCH.X86:      ContextRenderX86,
+        QL_ARCH.X8664:    ContextRenderX8664,
+        QL_ARCH.ARM:      ContextRenderARM,
+        QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
+        QL_ARCH.MIPS:     ContextRenderMIPS
+    }
 
-def run_qdb_script(qdb, filename: str) -> None:
+    r = rends[ql.arch.type]
+
+    return r(ql, predictor)
+
+def run_qdb_script(qdb: QlQdb, filename: str) -> None:
     with open(filename) as fd:
         for line in iter(fd.readline, ""):
 
-            # skip commented and empty line 
+            # skip commented and empty line
             if line.startswith("#") or line == "\n":
                 continue
 
@@ -159,17 +162,12 @@ def run_qdb_script(qdb, filename: str) -> None:
                 func()
 
 
-"""
+class SnapshotManager:
+    """for functioning differential snapshot
 
-    For supporting Qdb features like:
+    Supports Qdb features like:
     1. record/replay debugging
     2. memory access in gdb-style
-
-"""
-
-class SnapshotManager:
-    """
-    for functioning differential snapshot
     """
 
     class State:
@@ -178,7 +176,7 @@ class SnapshotManager:
         """
 
         def __init__(self, saved_state):
-            self.reg, self.ram = SnapshotManager.transform(saved_state)
+            self.reg, self.ram, self.xreg = SnapshotManager.transform(saved_state)
 
     class DiffedState:
         """
@@ -186,7 +184,7 @@ class SnapshotManager:
         """
 
         def __init__(self, diffed_st):
-            self.reg, self.ram = diffed_st
+            self.reg, self.ram, self.xreg = diffed_st
 
     @staticmethod
     def transform(st):
@@ -194,18 +192,17 @@ class SnapshotManager:
         transform saved context into binary set
         """
 
-        reg = st["reg"] if "reg" in st else st[0]
-
-        if "mem" not in st:
-            return (reg, st[1])
+        reg  = st.get("reg", {})
+        mem  = st.get("mem", [])
+        xreg = st.get("cpr") or st.get("msr") or {}
 
         ram = []
-        for mem_seg in st["mem"]["ram"]:
+        for mem_seg in mem["ram"]:
             lbound, ubound, perms, label, raw_bytes = mem_seg
             rb_set = {(idx, val) for idx, val in enumerate(raw_bytes)}
             ram.append((lbound, ubound, perms, label, rb_set))
 
-        return (reg, ram)
+        return (reg, ram, xreg)
 
     def __init__(self, ql):
         self.ql = ql
@@ -258,16 +255,17 @@ class SnapshotManager:
         # prev_st = self.layers.pop()
         diffed_reg = self.diff_reg(before_st.reg, after_st.reg)
         diffed_ram = self.diff_ram(before_st.ram, after_st.ram)
+        diffed_xreg = self.diff_reg(before_st.xreg, after_st.xreg)
         # diffed_reg = self.diff_reg(prev_st.reg, cur_st.reg)
         # diffed_ram = self.diff_ram(prev_st.ram, cur_st.ram)
-        return self.DiffedState((diffed_reg, diffed_ram))
+        return self.DiffedState((diffed_reg, diffed_ram, diffed_xreg))
 
     def snapshot(func):
         """
         decorator function for saving differential context on certian qdb command
         """
 
-        def magic(self, *args, **kwargs):
+        def magic(self: QlQdb, *args, **kwargs):
             if self.rr:
                 # save State before execution
                 p_st = self.rr._save()
@@ -297,8 +295,25 @@ class SnapshotManager:
         for reg_name, reg_value in prev_st.reg.items():
             cur_st.reg[reg_name] = reg_value
 
-        to_be_restored = {"reg": cur_st.reg}
+        for reg_name, reg_value in prev_st.xreg.items():
+            cur_st.xreg[reg_name] = reg_value
 
+        to_be_restored = {
+            "reg": cur_st.reg,
+
+            # though we have arch-specific context to restore, we want to keep this arch-agnostic.
+            # one way to work around that is to include 'xreg' both as msr (intel) and cpr (arm).
+            # only the relevant one will be picked up while the other one will be discarded
+            "msr": cur_st.xreg,
+            "cpr": cur_st.xreg
+        }
+
+        # FIXME: not sure how this one even works. while curr_st is a fresh qiling snapshot,
+        # prev_st is a DiffedState which does not hold a complete state but only a diff between
+        # two points which seem to be unrelated here.
+        #
+        # this code only patches current memory content with the diff between points a and b while
+        # we may be already be at point c.
         if getattr(prev_st, "ram", None) and prev_st.ram != cur_st.ram:
 
             ram = []
@@ -314,12 +329,9 @@ class SnapshotManager:
                         bs = bytes(dict(sorted(cur_rb_dict.items())).values())
                         ram.append((*cur_others, bs))
 
-            to_be_restored.update({"mem": {"ram": ram, "mmio": {}}})
+            to_be_restored["mem"] = {
+                "ram": ram,
+                "mmio": {}
+            }
 
         self.ql.restore(to_be_restored)
-
-
-
-
-if __name__ == "__main__":
-    pass

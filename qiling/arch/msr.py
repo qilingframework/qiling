@@ -3,7 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from unicorn import Uc
+from __future__ import annotations
+
+import weakref
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from unicorn import Uc
 
 
 class QlMsrManager:
@@ -11,7 +18,7 @@ class QlMsrManager:
     """
 
     def __init__(self, uc: Uc) -> None:
-        self.uc = uc
+        self.uc: Uc = weakref.proxy(uc)
 
     def read(self, msr: int) -> int:
         """Read a model-specific register value.

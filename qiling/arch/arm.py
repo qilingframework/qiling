@@ -13,6 +13,7 @@ from keystone import Ks, KS_ARCH_ARM, KS_MODE_ARM, KS_MODE_THUMB, KS_MODE_BIG_EN
 from qiling import Qiling
 from qiling.arch.arch import QlArch
 from qiling.arch import arm_const
+from qiling.arch.cpr import QlCprManager
 from qiling.arch.models import ARM_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.const import QL_ARCH, QL_ENDIAN
@@ -69,6 +70,17 @@ class QlArchARM(QlArch):
     def endian(self) -> QL_ENDIAN:
         return QL_ENDIAN.EB if self.regs.cpsr & (1 << 9) else QL_ENDIAN.EL
 
+    @cached_property
+    def cpr(self) -> QlCprManager:
+        """Coprocessor Registers.
+        """
+
+        regs_map = dict(
+            **arm_const.reg_cpr
+        )
+
+        return QlCprManager(self.uc, regs_map)
+
     @property
     def effective_pc(self) -> int:
         """Get effective PC value, taking Thumb mode into account.
@@ -119,6 +131,6 @@ class QlArchARM(QlArch):
 
     def enable_vfp(self) -> None:
         # set full access to cp10 and cp11
-        self.regs.c1_c0_2 = self.regs.c1_c0_2 | (0b11 << 20) | (0b11 << 22)
+        self.cpr.CPACR |= (0b11 << 20) | (0b11 << 22)
 
-        self.regs.fpexc = (1 << 30)
+        self.regs.fpexc = (0b1 << 30)

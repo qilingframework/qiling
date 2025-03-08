@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-
-from qiling.cc import QlCommonBaseCC
 
 from unicorn.riscv_const import (
     UC_RISCV_REG_A0, UC_RISCV_REG_A1, UC_RISCV_REG_A2,
     UC_RISCV_REG_A3, UC_RISCV_REG_A4, UC_RISCV_REG_A5
 )
+
+from qiling.cc import QlCommonBaseCC, make_arg_list
+
 
 class riscv(QlCommonBaseCC):
     """Default calling convention for RISCV
@@ -15,7 +16,7 @@ class riscv(QlCommonBaseCC):
     """
 
     _retreg = UC_RISCV_REG_A0
-    _argregs = (UC_RISCV_REG_A0, UC_RISCV_REG_A1, UC_RISCV_REG_A2, UC_RISCV_REG_A3, UC_RISCV_REG_A4, UC_RISCV_REG_A5) + (None, ) * 10
+    _argregs = make_arg_list(UC_RISCV_REG_A0, UC_RISCV_REG_A1, UC_RISCV_REG_A2, UC_RISCV_REG_A3, UC_RISCV_REG_A4, UC_RISCV_REG_A5)
 
     @staticmethod
     def getNumSlots(argbits: int):

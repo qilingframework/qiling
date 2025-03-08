@@ -8,9 +8,8 @@ from typing import List
 
 from unicorn import UcError
 
-from qiling.os.stats import QlWinNullStats
-
 sys.path.append("..")
+from qiling.os.stats import QlWinNullStats
 from qiling import Qiling
 from qiling.const import QL_STOP, QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, HANDLE

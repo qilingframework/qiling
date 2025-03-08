@@ -6,6 +6,7 @@
 import http.client
 import platform
 import re
+import socket
 import sys
 import os
 import threading
@@ -16,8 +17,8 @@ from typing import List
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import *
-from qiling.exception import *
+from qiling.arch.models import X86_CPU_MODEL
+from qiling.const import QL_VERBOSE, QL_INTERCEPT
 from qiling.os.filestruct import ql_file
 from qiling.os.stats import QlOsNullStats
 
@@ -76,7 +77,7 @@ class ELFTest(unittest.TestCase):
 
                 logged.extend(content.decode().splitlines())
 
-        ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_multithreading'], X86_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling([fr'{X86_LINUX_ROOTFS}/bin/x86_multithreading'], X86_LINUX_ROOTFS, cputype=X86_CPU_MODEL.INTEL_HASWELL, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
         ql.os.stats = QlOsNullStats()
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
@@ -114,7 +115,7 @@ class ELFTest(unittest.TestCase):
 
                 logged.extend(content.decode().splitlines())
 
-        ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_multithreading'], X64_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling([fr'{X64_LINUX_ROOTFS}/bin/x8664_multithreading'], X64_LINUX_ROOTFS, cputype=X86_CPU_MODEL.INTEL_HASWELL, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
         ql.os.stats = QlOsNullStats()
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
@@ -557,6 +558,26 @@ class ELFTest(unittest.TestCase):
         conn = http.client.HTTPConnection('localhost', PORT, timeout=10)
         conn.request('GET', '/')
 
+        # libc uses statx to query stdout stats, but fails because 'stdout' is not a valid path
+        # on the hosting paltform. it prints out the "Server started" message, but stdout is not
+        # found and the message is kept buffered in.
+        #
+        # later on, picohttpd dups the client socket into stdout fd and uses ordinary printf to
+        # send data out. however, when the "successful" message is sent, it is sent along with
+        # the buffered message, which arrives first and raises a http.client.BadStatusLine exception
+        # as it reads as a malformed http response.
+        #
+        # here we first peek at the incoming buffer to see whether we got a surplus prefix message.
+        # in case we have, we discard it first and only then read the http response
+
+        # look for the http response header
+        incoming = conn.sock.recv(96, socket.MSG_PEEK)
+        surplus = incoming.find(b'HTTP/1.1')
+
+        # if incoming buffer has a surplus prefix, discard it
+        if surplus > 0:
+            conn.sock.recv(surplus)
+
         response = conn.getresponse()
         feedback = response.read()
         self.assertEqual('httpd_test_successful', feedback.decode())
@@ -576,6 +597,14 @@ class ELFTest(unittest.TestCase):
         conn = http.client.HTTPConnection('localhost', PORT, timeout=10)
         conn.request('GET', '/')
 
+        # look for the http response header
+        incoming = conn.sock.recv(96, socket.MSG_PEEK)
+        surplus = incoming.find(b'HTTP/1.1')
+
+        # if incoming buffer has a surplus prefix, discard it
+        if surplus > 0:
+            conn.sock.recv(surplus)
+
         response = conn.getresponse()
         feedback = response.read()
         self.assertEqual('httpd_test_successful', feedback.decode())
@@ -592,22 +621,20 @@ class ELFTest(unittest.TestCase):
 
         time.sleep(1)
 
-        # armeb libc uses statx to query stdout stats, but fails because 'stdout' is not a valid
-        # path on the hosting paltform. it prints out the "Server started" message, but stdout is
-        # not found and the message is kept buffered in.
-        #
-        # later on, picohttpd dups the client socket into stdout fd and uses ordinary printf to
-        # send data out. however, when the "successful" message is sent, it is sent along with
-        # the buffered message, which arrives first and raises a http.client.BadStatusLine exception
-        # as it reads as a malformed http response.
-        #
-        # here we use a raw 'recv' method instead of 'getresponse' to work around that.
-
         conn = http.client.HTTPConnection('localhost', PORT, timeout=10)
         conn.request('GET', '/')
 
-        feedback = conn.sock.recv(96).decode()
-        self.assertTrue(feedback.endswith('httpd_test_successful'))
+        # look for the http response header
+        incoming = conn.sock.recv(96, socket.MSG_PEEK)
+        surplus = incoming.find(b'HTTP/1.1')
+
+        # if incoming buffer has a surplus prefix, discard it
+        if surplus > 0:
+            conn.sock.recv(surplus)
+
+        response = conn.getresponse()
+        feedback = response.read()
+        self.assertEqual('httpd_test_successful', feedback.decode())
 
 
 if __name__ == "__main__":

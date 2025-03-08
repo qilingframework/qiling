@@ -148,6 +148,7 @@ class NestedCounter:
 #
 # Bear in mind that only one task can be picked to emulate at
 # the same time.
+@ucsubclass
 class MultiTaskUnicorn(Uc):
 
     def __init__(self, arch: int, mode: int, cpu: Optional[int], interval: Optional[int] = 100):

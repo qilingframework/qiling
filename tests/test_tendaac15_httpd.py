@@ -47,22 +47,19 @@ class ELFTest(unittest.TestCase):
             sock.listen(1)
 
             data = bytearray()
+            connection, _ = sock.accept()
+            try:
+                while True:
+                    data += connection.recv(1024)
 
-            while True:
-                connection, _ = sock.accept()
+                    if b"lan.webiplansslen" in data:
+                        connection.send(b'192.168.170.169')
+                    else:
+                        break
 
-                try:
-                    while True:
-                        data += connection.recv(1024)
-
-                        if b"lan.webiplansslen" in data:
-                            connection.send(b'192.168.170.169')
-                        else:
-                            break
-
-                        data.clear()
-                finally:
-                    connection.close()
+                    data.clear()
+            finally:
+                connection.close()
 
         def patcher(ql: Qiling):
             br0_addr = ql.mem.search(b'br0\x00')
@@ -74,7 +71,7 @@ class ELFTest(unittest.TestCase):
             ql = Qiling(["../examples/rootfs/arm_tendaac15/bin/httpd"], "../examples/rootfs/arm_tendaac15", verbose=QL_VERBOSE.DEBUG)
             ql.add_fs_mapper("/dev/urandom", "/dev/urandom")
             ql.hook_address(patcher, ql.loader.elf_entry)
-            ql.run()
+            ql.run(count=825000)
 
         if __name__ == "__main__":
             threads = [
@@ -103,7 +100,9 @@ class ELFTest(unittest.TestCase):
             response = conn.getresponse()
 
             self.assertIn(b"Please update your documents to reflect the new location.", response.read())
-
+            for th in threads:
+                th.join(timeout=20.0)
+                self.assertFalse(th.is_alive())
 
 if __name__ == "__main__":
     unittest.main()
