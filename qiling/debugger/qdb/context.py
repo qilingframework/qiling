@@ -57,27 +57,30 @@ class Context:
         """Helper function for disassembling.
         """
 
-        md = self.ql.arch.disassembler
-        md.detail = detail
-
         insn_bytes = self.read_insn(address)
         insn = None
 
         if insn_bytes:
+            md = self.ql.arch.disassembler
+            md.detail = detail
+
             insn = next(md.disasm(insn_bytes, address, 1), None)
 
         return insn or InvalidInsn(insn_bytes, address)
 
-    def disasm_lite(self, address: int) -> Tuple:
+    def disasm_lite(self, address: int) -> Tuple[int, int, str, str]:
         """Helper function for light disassembling, when details are not required.
-        """
 
-        md = self.ql.arch.disassembler
+        Returns:
+            A tuple of: instruction address, size, mnemonic and operands
+        """
 
         insn_bytes = self.read_insn(address)
         insn = None
 
         if insn_bytes:
+            md = self.ql.arch.disassembler
+
             insn = next(md.disasm_lite(insn_bytes, address, 1), None)
 
         return insn or tuple()

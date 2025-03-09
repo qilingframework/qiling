@@ -136,20 +136,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.init_state = self.ql.save()
 
-        # make sure emulator stops once interpreter is done running and it reaches
-        # the program entry point
+        # the interpreter has to be emulated, but this is not interesting for most of the users.
+        # here we start emulating from interpreter's entry point while making sure the emulator
+        # stops once it reaches the program entry point
         entry = getattr(self.ql.loader, 'elf_entry', self.ql.loader.entry_point) & ~0b1
         self.set_breakpoint(entry, is_temp=True)
 
-        # temporarily suppress logging to let it fast-forward
-        _verbose = self.ql.verbose
-        self.ql.verbose = QL_VERBOSE.DISABLED
-
-        # init os for integrity of hooks and patches
-        self.ql.os.run()
-
-        # resotre logging verbose
-        self.ql.verbose = _verbose
+        # init os for integrity of hooks and patches while temporarily suppress logging to let it
+        # fast-forward
+        with self.__set_temp(self.ql, 'verbose', QL_VERBOSE.DISABLED):
+            self.ql.os.run()
 
         if self.ql.os.type is QL_OS.BLOB:
             self.ql.loader.entry_point = self.ql.loader.load_address
@@ -194,7 +190,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         helper function for fetching specific context by emulating instructions
         """
-        saved_states = self.ql.save(reg=True, mem=True)
+        saved_states = self.ql.save(reg=True, mem=False)
         yield self
         self.ql.restore(saved_states)
 
@@ -208,7 +204,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # remove potential leading or trailing spaces
         line = line.strip()
 
-        # skip commented and empty line
+        # skip commented and empty lines
         if not line or line.startswith("#"):
             return None, None, line
 
@@ -293,12 +289,12 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """Go to next instruction, stepping over function calls.
         """
 
-        curr_insn = self.predictor.disasm(self.cur_addr)
-        next_insn = self.cur_addr + curr_insn.size
+        addr, size, _, _ = self.predictor.disasm_lite(self.cur_addr)
+        next_insn = addr + size
 
         # make sure to include delay slot when branching in mips
         if self.ql.arch.type is QL_ARCH.MIPS and self.predictor.is_branch():
-            next_insn += curr_insn.size
+            next_insn += size
 
         self.set_breakpoint(next_insn, is_temp=True)
 
@@ -560,7 +556,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # affect one of the reg arguments values
         if self.ql.arch.type is QL_ARCH.MIPS:
             slot_addr = self.cur_addr + self.ql.arch.pointersize
-            op_str = self.predictor.disasm(slot_addr).op_str
+            _, _, _, op_str = self.predictor.disasm_lite(slot_addr)
             operands = op_str.split(',')
 
             reg_args = ('$a0', '$a1', '$a2', '$a3')
