@@ -28,6 +28,9 @@ class Breakpoint:
     """Dummy class for breakpoints.
     """
 
+    # monotonically increasing index counter
+    _counter = 0
+
     def __init__(self, addr: int, temp: bool = False):
         """Initialize a breakpoint object.
 
@@ -37,9 +40,12 @@ class Breakpoint:
             get removed after they get hit for the first time
         """
 
+        self.index = Breakpoint._counter
+        Breakpoint._counter += 1
+
         self.addr = addr
         self.temp = temp
-        self.hit = False
+        self.enabled = True
 
 
 def read_int(s: str, /) -> int:

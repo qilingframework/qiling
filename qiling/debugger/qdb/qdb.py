@@ -8,7 +8,7 @@ from __future__ import annotations
 import cmd
 import sys
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, List
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
 
 from qiling.const import QL_OS, QL_ARCH, QL_VERBOSE
@@ -70,6 +70,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.ql = ql
         self.prompt = f"{color.RED}(qdb) {color.RESET}"
         self._script = script
+        self.last_addr: int = -1
         self.bp_list: Dict[int, Breakpoint] = {}
         self.marker = Marker()
 
@@ -103,30 +104,28 @@ class QlQdb(cmd.Cmd, QlDebugger):
         initial hook to prepare everything we need
         """
 
-        # self.ql.loader.entry_point  # ld.so
-        # self.ql.loader.elf_entry    # .text of binary
-
         def __bp_handler(ql: Qiling, address: int, size: int):
-            if address in self.bp_list:
+            if (address in self.bp_list) and (address != self.last_addr):
                 bp = self.bp_list[address]
 
-                if bp.temp:
-                    # remove temp breakpoint once hit
-                    self.del_breakpoint(bp)
+                if bp.enabled:
+                    if bp.temp:
+                        # temp breakpoint: remove once hit
+                        self.del_breakpoint(bp)
 
-                else:
-                    if bp.hit:
-                        return
+                    else:
+                        qdb_print(QDB_MSG.INFO, f'hit breakpoint at {self.cur_addr:#x}')
 
-                    qdb_print(QDB_MSG.INFO, f'hit breakpoint at {self.cur_addr:#x}')
-                    bp.hit = True
+                    # flush unicorn translation block to avoid resuming execution from next
+                    # basic block
+                    self.ql.arch.uc.ctl_flush_tb()
 
-                # flush unicorn translation block to avoid resuming execution from next
-                # basic block
-                self.ql.arch.uc.ctl_flush_tb()
+                    ql.stop()
+                    self.do_context()
 
-                ql.stop()
-                self.do_context()
+            # this is used to prevent breakpoints be hit more than once in a row. without
+            # it we would not be able to proceed after hitting a breakpoint
+            self.last_addr = address
 
         self.ql.hook_code(__bp_handler)
 
@@ -343,17 +342,28 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.rr.restore()
         self.do_context()
 
+        # we did not really amualte anything going backwards, so we manually
+        # updating last address
+        self.last_addr = self.cur_addr
+
     def set_breakpoint(self, address: int, is_temp: bool = False) -> None:
         """[internal] Add or update an existing breakpoint.
         """
 
         self.bp_list[address] = Breakpoint(address, is_temp)
 
-    def del_breakpoint(self, bp: Breakpoint) -> None:
+    def del_breakpoint(self, bp: Union[int, Breakpoint]) -> None:
         """[internal] Remove an existing breakpoint.
 
         The caller is responsible to make sure the breakpoint exists.
         """
+
+        if isinstance(bp, int):
+            try:
+                bp = next(b for b in self.bp_list.values() if b.addr == bp)
+            except StopIteration:
+                qdb_print(QDB_MSG.ERROR, f'No breakpoint number {bp}.')
+                return
 
         del self.bp_list[bp.addr]
 
@@ -557,6 +567,8 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
             # find out whether one of the argument registers gets modified in the dealy slot
             if any(a in operands[0] for a in reg_args):
+                last = self.last_addr
+
                 dst_reg = operands[0].strip('$')
                 reg_idx = int(dst_reg.strip('a'))
 
@@ -565,7 +577,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
                     qdb._run(slot_addr, count=1)
                     real_val = self.ql.arch.regs.read(dst_reg)
 
+                # update argument value with the calculated one
                 fargs[reg_idx] = real_val
+
+                # we don't want that to count as emulation, so restore last address
+                self.last_addr = last
 
         nibbles = self.ql.arch.pointersize * 2
 
