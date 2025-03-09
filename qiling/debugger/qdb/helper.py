@@ -174,7 +174,7 @@ class CommandHelper(Context):
         m = re.match(r'(?:/(?P<n>\d+)?(?P<f>[oxdutfacis])?(?P<u>[bhwg])?)?\s*(?P<target>.+)?', line)
 
         # there should be always a match, at least for target, but let's be on the safe side
-        if m is not None:
+        if m is None:
             raise ValueError('unexpected examine command syntax')
 
         n = m['n'] or self.x_defaults['n']
