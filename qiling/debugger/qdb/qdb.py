@@ -658,17 +658,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         except:
             qdb_print(QDB_MSG.ERROR, "something went wrong ...")
 
-    def do_quit(self, *args: str) -> bool:
+    def do_quit(self, *args: str) -> None:
         """
         exit Qdb and stop running qiling instance
         """
 
         self.ql.stop()
 
-        if self._script:
-            return True
-
-        sys.exit()
+        sys.exit(0)
 
     def do_EOF(self, *args: str) -> None:
         """
