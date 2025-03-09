@@ -39,6 +39,13 @@ class DebuggerTest(unittest.TestCase):
             r'qdb_scripts/arm.qdb'
         )
 
+    def test_qdb_arm_hello_static(self):
+        self.__test_common(
+            r'/bin/arm_hello_static',
+            r'../examples/rootfs/arm_linux',
+            r'qdb_scripts/arm_static.qdb'
+        )
+
     def test_qdb_x86_hello(self):
         self.__test_common(
             r'/bin/x86_hello',
