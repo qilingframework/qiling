@@ -80,7 +80,8 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
             return value
 
         # get operands. target address is always the rightmost one
-        *operands, target = (__parse_op(op) for op in insn.operands)
+        if insn.operands:
+            *operands, target = insn.operands
 
         if insn.mnemonic in unconditional:
             going = True
@@ -88,9 +89,9 @@ class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
         elif insn.mnemonic in conditional:
             predict = conditional[insn.mnemonic]
 
-            going = predict(*operands)
+            going = predict(*(__parse_op(op) for op in operands))
 
         if going:
-            where = target
+            where = __parse_op(target)
 
         return Prophecy(going, where)
