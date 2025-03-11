@@ -459,6 +459,8 @@ class QlPrettyFlag(Flag):
 #          open flags          #
 ################################
 
+FLAG_UNSUPPORTED = -1
+
 class macos_x86_open_flags(QlPrettyFlag):
     O_RDONLY    = 0x000000
     O_WRONLY    = 0x000001
@@ -473,8 +475,8 @@ class macos_x86_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000800
     O_NOCTTY    = 0x020000
     O_DIRECTORY = 0x100000
-    O_BINARY    = 0x000000
-    O_LARGEFILE = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
+    O_LARGEFILE = FLAG_UNSUPPORTED
 
 
 class linux_x86_open_flags(QlPrettyFlag):
@@ -491,8 +493,8 @@ class linux_x86_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000080
     O_NOCTTY    = 0x000100
     O_DIRECTORY = 0x010000
-    O_BINARY    = 0x000000
-    O_LARGEFILE = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
+    O_LARGEFILE = FLAG_UNSUPPORTED
 
 
 class linux_arm_open_flags(QlPrettyFlag):
@@ -509,7 +511,7 @@ class linux_arm_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000080
     O_NOCTTY    = 0x000100
     O_DIRECTORY = 0x004000
-    O_BINARY    = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
     O_LARGEFILE = 0x020000
 
 
@@ -527,7 +529,7 @@ class linux_mips_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000400
     O_NOCTTY    = 0x000800
     O_DIRECTORY = 0x010000
-    O_BINARY    = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
     O_LARGEFILE = 0x002000
 
 
@@ -545,8 +547,8 @@ class linux_riscv_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000080
     O_NOCTTY    = 0x000100
     O_DIRECTORY = 0x010000
-    O_BINARY    = 0x000000
-    O_LARGEFILE = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
+    O_LARGEFILE = FLAG_UNSUPPORTED
 
 
 class linux_ppc_open_flags(QlPrettyFlag):
@@ -563,7 +565,7 @@ class linux_ppc_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000080
     O_NOCTTY    = 0x000100
     O_DIRECTORY = 0x004000
-    O_BINARY    = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
     O_LARGEFILE = 0x010000
 
 
@@ -581,26 +583,26 @@ class freebsd_x86_open_flags(QlPrettyFlag):
     O_EXCL      = 0x000800
     O_NOCTTY    = 0x008000
     O_DIRECTORY = 0x20000
-    O_BINARY    = 0x000000
-    O_LARGEFILE = 0x000000
+    O_BINARY    = FLAG_UNSUPPORTED
+    O_LARGEFILE = FLAG_UNSUPPORTED
 
 
 class windows_x86_open_flags(QlPrettyFlag):
     O_RDONLY    = 0x000000
     O_WRONLY    = 0x000001
     O_RDWR      = 0x000002
-    O_NONBLOCK  = 0x000000
+    O_NONBLOCK  = FLAG_UNSUPPORTED
     O_APPEND    = 0x000008
-    O_ASYNC     = 0x000000
-    O_SYNC      = 0x000000
-    O_NOFOLLOW  = 0x000000
+    O_ASYNC     = FLAG_UNSUPPORTED
+    O_SYNC      = FLAG_UNSUPPORTED
+    O_NOFOLLOW  = FLAG_UNSUPPORTED
     O_CREAT     = 0x000100
     O_TRUNC     = 0x000200
     O_EXCL      = 0x000400
-    O_NOCTTY    = 0x000000
-    O_DIRECTORY = 0x000000
+    O_NOCTTY    = FLAG_UNSUPPORTED
+    O_DIRECTORY = FLAG_UNSUPPORTED
     O_BINARY    = 0x008000
-    O_LARGEFILE = 0x000000
+    O_LARGEFILE = FLAG_UNSUPPORTED
 
 
 class qnx_arm_open_flags(QlPrettyFlag):
@@ -611,13 +613,13 @@ class qnx_arm_open_flags(QlPrettyFlag):
     O_APPEND    = 0x00008
     O_ASYNC     = 0x10000
     O_SYNC      = 0x00020
-    O_NOFOLLOW  = 0x000000
+    O_NOFOLLOW  = FLAG_UNSUPPORTED
     O_CREAT     = 0x00100
     O_TRUNC     = 0x00200
     O_EXCL      = 0x00400
     O_NOCTTY    = 0x00800
-    O_DIRECTORY = 0x000000
-    O_BINARY    = 0x000000
+    O_DIRECTORY = FLAG_UNSUPPORTED
+    O_BINARY    = FLAG_UNSUPPORTED
     O_LARGEFILE = 0x08000
 
 
