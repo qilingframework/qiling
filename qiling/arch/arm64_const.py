@@ -68,9 +68,7 @@ reg_map = {
     "pc": UC_ARM64_REG_PC,
     "lr": UC_ARM64_REG_LR,
     "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
-    "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
     "pstate": UC_ARM64_REG_PSTATE,
-    "cpsr": UC_ARM64_REG_PSTATE,  # alias for `pstate`
 }
 
 reg_map_b = {
