@@ -115,6 +115,35 @@ def make_peb(archbits: int):
 
     return PEB
 
+class NT_TIB(struct.BaseStruct):
+    '''
+    _NT_TIB structure
+
+    Below output is from Windows RS4
+    0: kd> dt _NT_TIB
+    nt!_NT_TIB
+        +0x000 ExceptionList    : Ptr64 _EXCEPTION_REGISTRATION_RECORD
+        +0x008 StackBase        : Ptr64 Void
+        +0x010 StackLimit       : Ptr64 Void
+        +0x018 SubSystemTib     : Ptr64 Void
+        +0x020 FiberData        : Ptr64 Void
+        +0x020 Version          : Uint4B
+        +0x028 ArbitraryUserPointer : Ptr64 Void
+        +0x030 Self             : Ptr64 _NT_TIB
+    '''
+
+    _fields_ = (
+        ('ExceptionList',           ctypes.c_void_p),
+        ('StackBase',               ctypes.c_void_p),
+        ('StackLimit',              ctypes.c_void_p),
+        ('SubSystemTib',            ctypes.c_void_p),
+        ('FiberData',               ctypes.c_void_p),
+        ('Version',                 ctypes.c_uint * 4),
+        ('ArbitraryUserPointer',    ctypes.c_void_p),
+        ('Self',                    ctypes.c_void_p),
+    )
+
+
 
 # https://learn.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-_unicode_string
 @lru_cache(maxsize=2)
@@ -242,6 +271,660 @@ class KUSER_SHARED_DATA(struct.BaseStructEL):
         # pad structure to expected structure size
         ('_padding0', ctypes.c_uint8 * 0x2F8)
     )
+
+class KTHREAD(struct.BaseStruct):
+    '''
+    Definition for 64-bit KTHREAD structure
+    '''
+
+    _fields_ = (
+        ('Header',              ctypes.c_void_p),   # Supposed to be DISPATCHER_HEADER64
+        ('CycleTime',           ctypes.c_uint64),
+        ('QuantumTarget',       ctypes.c_uint64),
+        ('InitialStack',        ctypes.c_void_p),   # Supposed to be POINTER64
+        ('StackLimit',          ctypes.c_void_p),   # Supposed to be POINTER64
+        ('KernelStack',         ctypes.c_void_p),   # Supposed to be POINTER64
+        ('ThreadLock',          ctypes.c_uint64),
+        ('WaitRegister',        ctypes.c_uint8),
+        ('Running',             ctypes.c_uint8),
+        ('Alerted',             ctypes.c_uint8),
+        ('MiscFlags',           ctypes.c_uint32),
+        ('ApcState',            ctypes.c_void_p),   # Supposed to be KAPC_STATE64
+        ('DeferredProcessor',   ctypes.c_uint32),
+        ('ApcQueueLock',        ctypes.c_uint64),
+        ('WaitStatus',          ctypes.c_int64),
+        ('WaitBlockList',       ctypes.c_void_p),   # Supposed to be POINTER64
+        ('WaitListEntry',       ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('Queue',               ctypes.c_void_p),   # Supposed to be POINTER64
+        ('Teb',                 ctypes.c_void_p),   # Supposed to be POINTER64
+        ('Timer',               ctypes.c_void_p),   # Supposed to be KTIMER64
+        ('ThreadFlags',         ctypes.c_int32),
+        ('Spare0',              ctypes.c_uint32),
+        ('WaitBlock',           ctypes.c_void_p),   # Supposed to be KWAIT_BLOCK64 * 4
+        ('QueueListEntry',      ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('TrapFrame',           ctypes.c_void_p),   # Supposed to be POINTER64
+        ('FirstArgument',       ctypes.c_void_p),   # Supposed to be POINTER64
+        ('CallbackStack',       ctypes.c_void_p),   # Supposed to be POINTER64
+        ('ApcStateIndex',       ctypes.c_uint8),
+        ('BasePriority',        ctypes.c_char),
+        ('PriorityDecrement',   ctypes.c_char),
+        ('Preempted',           ctypes.c_uint8),
+        ('AdjustReason',        ctypes.c_uint8),
+        ('AdjustIncrement',     ctypes.c_char),
+        ('PreviousMode',        ctypes.c_char),
+        ('Saturation',          ctypes.c_char),
+        ('SystemCallNumber',    ctypes.c_uint32),
+        ('FreezeCount',         ctypes.c_uint32),
+        ('UserAffinity',        ctypes.c_void_p),   # Supposed to be GROUP_AFFINITY64
+        ('Process',             ctypes.c_void_p),   # Supposed to be POINTER64
+        ('Affinity',            ctypes.c_void_p),   # Supposed to be GROUP_AFFINITY64
+        ('IdealProcessor',      ctypes.c_uint32),
+        ('UserIdealProcessor',  ctypes.c_uint32),
+        ('ApcStatePointer',     ctypes.c_void_p),   # Supposed to be POINTER 64 * 2
+        ('SavedApcState',       ctypes.c_void_p),   # Supposed to be KAPC_STATE64
+        ('Win32Thread',         ctypes.c_void_p),   # Supposed to be POINTER64
+        ('StackBase',           ctypes.c_void_p),   # Supposed to be POINTER64
+        ('SuspendApc',          ctypes.c_void_p),   # Supposed to be KAPC64
+        ('SuspendSemaphore',    ctypes.c_void_p),   # Supposed to be KSEMAPHORE64
+        ('ThreadListEntry',     ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('MutantListHead',      ctypes.c_void_p),   # Supposed to be LIST_ENTRY64
+        ('SListFaultAddress',   ctypes.c_void_p),   # Supposed to be POINTER64
+        ('ReadOperationCount',  ctypes.c_int64),
+        ('WriteOperationCount', ctypes.c_int64),
+        ('OtherOperationCount', ctypes.c_int64),
+        ('ReadTransferCount',   ctypes.c_int64),
+        ('WriteTransferCount',  ctypes.c_int64),
+        ('OtherTransferCount',  ctypes.c_int64),
+        ('ThreadCounters',      ctypes.c_void_p),   # Supposed to be POINTER64
+        ('XStateSave',          ctypes.c_void_p)
+    )   # Supposed to be POINTER64
+
+class KNODE(struct.BaseStruct):
+    '''
+    Below output is from Windows 10 RS4
+    ntdll!_KNODE
+        +0x000 IdleNonParkedCpuSet : Uint8B
+        +0x008 IdleSmtSet       : Uint8B
+        +0x010 IdleCpuSet       : Uint8B
+        +0x040 DeepIdleSet      : Uint8B
+        +0x048 IdleConstrainedSet : Uint8B
+        +0x050 NonParkedSet     : Uint8B
+        +0x058 NonIsrTargetedSet : Uint8B
+        +0x060 ParkLock         : Int4B
+        +0x064 Seed             : Uint4B
+        +0x080 SiblingMask      : Uint4B
+        +0x088 Affinity         : _GROUP_AFFINITY
+        +0x088 AffinityFill     : [10] UChar
+        +0x092 NodeNumber       : Uint2B
+        +0x094 PrimaryNodeNumber : Uint2B
+        +0x096 Stride           : UChar
+        +0x097 Spare0           : UChar
+        +0x098 SharedReadyQueueLeaders : Uint8B
+        +0x0a0 ProximityId      : Uint4B
+        +0x0a4 Lowest           : Uint4B
+        +0x0a8 Highest          : Uint4B
+        +0x0ac MaximumProcessors : UChar
+        +0x0ad Flags            : _flags
+        +0x0ae Spare10          : UChar
+        +0x0b0 HeteroSets       : [5] _KHETERO_PROCESSOR_SET
+        +0x128 PpmConfiguredQosSets : [4] Uint8B
+    '''
+
+    _fields_ = (
+        ('IdleNonParkedCpuSet',     ctypes.c_uint8),
+        ('IdleSmtSet',              ctypes.c_uint8),
+        ('IdleCpuSet',              ctypes.c_uint8),
+        ('DeepIdleSet',             ctypes.c_uint8),
+        ('IdleConstrainedSet',      ctypes.c_uint8),
+        ('NonParkedSet',            ctypes.c_uint8),
+        ('NonIsrTargetedSet',       ctypes.c_uint8),
+        ('ParkLock',                ctypes.c_int),
+        ('Seed',                    ctypes.c_uint),
+        ('SiblingMask',             ctypes.c_uint),
+        ('Affinity',                ctypes.c_void_p),
+        ('AffinityFill',            ctypes.c_char * 10),
+        ('NodeNumber',              ctypes.c_uint),
+        ('PrimaryNodeNumber',       ctypes.c_uint),
+        ('Stride',                  ctypes.c_char),
+        ('Spare0',                  ctypes.c_char),
+        ('SharedReadyQueueLeaders', ctypes.c_uint8),
+        ('ProximityId',             ctypes.c_uint),
+        ('Lowest',                  ctypes.c_uint),
+        ('Highest',                 ctypes.c_uint),
+        ('MaximumProcessors',       ctypes.c_char),
+        ('Flags',                   ctypes.c_void_p),
+        ('Spare10',                 ctypes.c_char),
+        ('HeteroSets',              ctypes.c_void_p),
+        ('PpmConfiguredQosSets',    ctypes.c_uint8 * 8)
+    )
+
+
+class KPRCB(struct.BaseStruct):
+    '''
+    Definition for 64-bit KPRCB structure
+
+    Windows 10 RS4
+    ntdll!_KPRCB
+   +0x000 MxCsr            : Uint4B
+   +0x004 LegacyNumber     : UChar
+   +0x005 ReservedMustBeZero : UChar
+   +0x006 InterruptRequest : UChar
+   +0x007 IdleHalt         : UChar
+   +0x008 CurrentThread    : Ptr64 _KTHREAD
+   +0x010 NextThread       : Ptr64 _KTHREAD
+   +0x018 IdleThread       : Ptr64 _KTHREAD
+   +0x020 NestingLevel     : UChar
+   +0x021 ClockOwner       : UChar
+   +0x022 PendingTickFlags : UChar
+   +0x022 PendingTick      : Pos 0, 1 Bit
+   +0x022 PendingBackupTick : Pos 1, 1 Bit
+   +0x023 IdleState        : UChar
+   +0x024 Number           : Uint4B
+   +0x028 RspBase          : Uint8B
+   +0x030 PrcbLock         : Uint8B
+   +0x038 PriorityState    : Ptr64 Char
+   +0x040 CpuType          : Char
+   +0x041 CpuID            : Char
+   +0x042 CpuStep          : Uint2B
+   +0x042 CpuStepping      : UChar
+   +0x043 CpuModel         : UChar
+   +0x044 MHz              : Uint4B
+   +0x048 HalReserved      : [8] Uint8B
+   +0x088 MinorVersion     : Uint2B
+   +0x08a MajorVersion     : Uint2B
+   +0x08c BuildType        : UChar
+   +0x08d CpuVendor        : UChar
+   +0x08e CoresPerPhysicalProcessor : UChar
+   +0x08f LogicalProcessorsPerCore : UChar
+   +0x090 PrcbPad04        : [6] Uint8B
+   +0x0c0 ParentNode       : Ptr64 _KNODE
+   +0x0c8 GroupSetMember   : Uint8B
+   +0x0d0 Group            : UChar
+   +0x0d1 GroupIndex       : UChar
+   +0x0d2 PrcbPad05        : [2] UChar
+   +0x0d4 InitialApicId    : Uint4B
+   +0x0d8 ScbOffset        : Uint4B
+   +0x0dc ApicMask         : Uint4B
+   +0x0e0 AcpiReserved     : Ptr64 Void
+   +0x0e8 CFlushSize       : Uint4B
+   +0x0ec PrcbFlags        : _KPRCBFLAG
+   +0x0f0 TrappedSecurityDomain : Uint8B
+   +0x0f8 BpbState         : UChar
+   +0x0f8 BpbCpuIdle       : Pos 0, 1 Bit
+   +0x0f8 BpbFlushRsbOnTrap : Pos 1, 1 Bit
+   +0x0f8 BpbIbpbOnReturn  : Pos 2, 1 Bit
+   +0x0f8 BpbIbpbOnTrap    : Pos 3, 1 Bit
+   +0x0f8 BpbStateReserved : Pos 4, 4 Bits
+   +0x0f9 BpbFeatures      : UChar
+   +0x0f9 BpbClearOnIdle   : Pos 0, 1 Bit
+   +0x0f9 BpbEnabled       : Pos 1, 1 Bit
+   +0x0f9 BpbSmep          : Pos 2, 1 Bit
+   +0x0f9 BpbFeaturesReserved : Pos 3, 5 Bits
+   +0x0fa BpbCurrentSpecCtrl : UChar
+   +0x0fb BpbKernelSpecCtrl : UChar
+   +0x0fc BpbNmiSpecCtrl   : UChar
+   +0x0fd BpbUserSpecCtrl  : UChar
+   +0x0fe BpbPad           : [2] UChar
+   +0x0f0 PrcbPad11        : [2] Uint8B
+   +0x100 ProcessorState   : _KPROCESSOR_STATE
+   +0x6c0 ExtendedSupervisorState : Ptr64 _XSAVE_AREA_HEADER
+   +0x6c8 ProcessorSignature : Uint4B
+   +0x6cc PrcbPad11a       : Uint4B
+   +0x6d0 PrcbPad12        : [4] Uint8B
+   +0x6f0 LockQueue        : [17] _KSPIN_LOCK_QUEUE
+   +0x800 PPLookasideList  : [16] _PP_LOOKASIDE_LIST
+   +0x900 PPNxPagedLookasideList : [32] _GENERAL_LOOKASIDE_POOL
+   +0x1500 PPNPagedLookasideList : [32] _GENERAL_LOOKASIDE_POOL
+   +0x2100 PPPagedLookasideList : [32] _GENERAL_LOOKASIDE_POOL
+   +0x2d00 PrcbPad20        : Uint8B
+   +0x2d08 DeferredReadyListHead : _SINGLE_LIST_ENTRY
+   +0x2d10 MmPageFaultCount : Int4B
+   +0x2d14 MmCopyOnWriteCount : Int4B
+   +0x2d18 MmTransitionCount : Int4B
+   +0x2d1c MmDemandZeroCount : Int4B
+   +0x2d20 MmPageReadCount  : Int4B
+   +0x2d24 MmPageReadIoCount : Int4B
+   +0x2d28 MmDirtyPagesWriteCount : Int4B
+   +0x2d2c MmDirtyWriteIoCount : Int4B
+   +0x2d30 MmMappedPagesWriteCount : Int4B
+   +0x2d34 MmMappedWriteIoCount : Int4B
+   +0x2d38 KeSystemCalls    : Uint4B
+   +0x2d3c KeContextSwitches : Uint4B
+   +0x2d40 PrcbPad40        : Uint4B
+   +0x2d44 CcFastReadNoWait : Uint4B
+   +0x2d48 CcFastReadWait   : Uint4B
+   +0x2d4c CcFastReadNotPossible : Uint4B
+   +0x2d50 CcCopyReadNoWait : Uint4B
+   +0x2d54 CcCopyReadWait   : Uint4B
+   +0x2d58 CcCopyReadNoWaitMiss : Uint4B
+   +0x2d5c IoReadOperationCount : Int4B
+   +0x2d60 IoWriteOperationCount : Int4B
+   +0x2d64 IoOtherOperationCount : Int4B
+   +0x2d68 IoReadTransferCount : _LARGE_INTEGER
+   +0x2d70 IoWriteTransferCount : _LARGE_INTEGER
+   +0x2d78 IoOtherTransferCount : _LARGE_INTEGER
+   +0x2d80 PacketBarrier    : Int4B
+   +0x2d84 TargetCount      : Int4B
+   +0x2d88 IpiFrozen        : Uint4B
+   +0x2d8c PrcbPad30        : Uint4B
+   +0x2d90 IsrDpcStats      : Ptr64 Void
+   +0x2d98 DeviceInterrupts : Uint4B
+   +0x2d9c LookasideIrpFloat : Int4B
+   +0x2da0 InterruptLastCount : Uint4B
+   +0x2da4 InterruptRate    : Uint4B
+   +0x2da8 LastNonHrTimerExpiration : Uint8B
+   +0x2db0 PrcbPad35        : [2] Uint8B
+   +0x2dc0 InterruptObjectPool : _SLIST_HEADER
+   +0x2dd0 PrcbPad41        : [6] Uint8B
+   +0x2e00 DpcData          : [2] _KDPC_DATA
+   +0x2e50 DpcStack         : Ptr64 Void
+   +0x2e58 MaximumDpcQueueDepth : Int4B
+   +0x2e5c DpcRequestRate   : Uint4B
+   +0x2e60 MinimumDpcRate   : Uint4B
+   +0x2e64 DpcLastCount     : Uint4B
+   +0x2e68 ThreadDpcEnable  : UChar
+   +0x2e69 QuantumEnd       : UChar
+   +0x2e6a DpcRoutineActive : UChar
+   +0x2e6b IdleSchedule     : UChar
+   +0x2e6c DpcRequestSummary : Int4B
+   +0x2e6c DpcRequestSlot   : [2] Int2B
+   +0x2e6c NormalDpcState   : Int2B
+   +0x2e6e ThreadDpcState   : Int2B
+   +0x2e6c DpcNormalProcessingActive : Pos 0, 1 Bit
+   +0x2e6c DpcNormalProcessingRequested : Pos 1, 1 Bit
+   +0x2e6c DpcNormalThreadSignal : Pos 2, 1 Bit
+   +0x2e6c DpcNormalTimerExpiration : Pos 3, 1 Bit
+   +0x2e6c DpcNormalDpcPresent : Pos 4, 1 Bit
+   +0x2e6c DpcNormalLocalInterrupt : Pos 5, 1 Bit
+   +0x2e6c DpcNormalSpare   : Pos 6, 10 Bits
+   +0x2e6c DpcThreadActive  : Pos 16, 1 Bit
+   +0x2e6c DpcThreadRequested : Pos 17, 1 Bit
+   +0x2e6c DpcThreadSpare   : Pos 18, 14 Bits
+   +0x2e70 LastTimerHand    : Uint4B
+   +0x2e74 LastTick         : Uint4B
+   +0x2e78 ClockInterrupts  : Uint4B
+   +0x2e7c ReadyScanTick    : Uint4B
+   +0x2e80 InterruptObject  : [256] Ptr64 Void
+   +0x3680 TimerTable       : _KTIMER_TABLE
+   +0x5880 DpcGate          : _KGATE
+   +0x5898 PrcbPad52        : Ptr64 Void
+   +0x58a0 CallDpc          : _KDPC
+   +0x58e0 ClockKeepAlive   : Int4B
+   +0x58e4 PrcbPad60        : [2] UChar
+   +0x58e6 NmiActive        : Uint2B
+   +0x58e8 DpcWatchdogPeriod : Int4B
+   +0x58ec DpcWatchdogCount : Int4B
+   +0x58f0 KeSpinLockOrdering : Int4B
+   +0x58f4 DpcWatchdogProfileCumulativeDpcThreshold : Uint4B
+   +0x58f8 CachedPtes       : Ptr64 Void
+   +0x5900 WaitListHead     : _LIST_ENTRY
+   +0x5910 WaitLock         : Uint8B
+   +0x5918 ReadySummary     : Uint4B
+   +0x591c AffinitizedSelectionMask : Int4B
+   +0x5920 QueueIndex       : Uint4B
+   +0x5924 PrcbPad75        : [3] Uint4B
+   +0x5930 TimerExpirationDpc : _KDPC
+   +0x5970 ScbQueue         : _RTL_RB_TREE
+   +0x5980 DispatcherReadyListHead : [32] _LIST_ENTRY
+   +0x5b80 InterruptCount   : Uint4B
+   +0x5b84 KernelTime       : Uint4B
+   +0x5b88 UserTime         : Uint4B
+   +0x5b8c DpcTime          : Uint4B
+   +0x5b90 InterruptTime    : Uint4B
+   +0x5b94 AdjustDpcThreshold : Uint4B
+   +0x5b98 DebuggerSavedIRQL : UChar
+   +0x5b99 GroupSchedulingOverQuota : UChar
+   +0x5b9a DeepSleep        : UChar
+   +0x5b9b PrcbPad80        : UChar
+   +0x5b9c DpcTimeCount     : Uint4B
+   +0x5ba0 DpcTimeLimit     : Uint4B
+   +0x5ba4 PeriodicCount    : Uint4B
+   +0x5ba8 PeriodicBias     : Uint4B
+   +0x5bac AvailableTime    : Uint4B
+   +0x5bb0 KeExceptionDispatchCount : Uint4B
+   +0x5bb4 ReadyThreadCount : Uint4B
+   +0x5bb8 ReadyQueueExpectedRunTime : Uint8B
+   +0x5bc0 StartCycles      : Uint8B
+   +0x5bc8 TaggedCyclesStart : Uint8B
+   +0x5bd0 TaggedCycles     : [2] Uint8B
+   +0x5be0 GenerationTarget : Uint8B
+   +0x5be8 AffinitizedCycles : Uint8B
+   +0x5bf0 ImportantCycles  : Uint8B
+   +0x5bf8 UnimportantCycles : Uint8B
+   +0x5c00 DpcWatchdogProfileSingleDpcThreshold : Uint4B
+   +0x5c04 MmSpinLockOrdering : Int4B
+   +0x5c08 CachedStack      : Ptr64 Void
+   +0x5c10 PageColor        : Uint4B
+   +0x5c14 NodeColor        : Uint4B
+   +0x5c18 NodeShiftedColor : Uint4B
+   +0x5c1c SecondaryColorMask : Uint4B
+   +0x5c20 PrcbPad81        : [7] UChar
+   +0x5c27 TbFlushListActive : UChar
+   +0x5c28 PrcbPad82        : [2] Uint8B
+   +0x5c38 CycleTime        : Uint8B
+   +0x5c40 Cycles           : [4] [2] Uint8B
+   +0x5c80 CcFastMdlReadNoWait : Uint4B
+   +0x5c84 CcFastMdlReadWait : Uint4B
+   +0x5c88 CcFastMdlReadNotPossible : Uint4B
+   +0x5c8c CcMapDataNoWait  : Uint4B
+   +0x5c90 CcMapDataWait    : Uint4B
+   +0x5c94 CcPinMappedDataCount : Uint4B
+   +0x5c98 CcPinReadNoWait  : Uint4B
+   +0x5c9c CcPinReadWait    : Uint4B
+   +0x5ca0 CcMdlReadNoWait  : Uint4B
+   +0x5ca4 CcMdlReadWait    : Uint4B
+   +0x5ca8 CcLazyWriteHotSpots : Uint4B
+   +0x5cac CcLazyWriteIos   : Uint4B
+   +0x5cb0 CcLazyWritePages : Uint4B
+   +0x5cb4 CcDataFlushes    : Uint4B
+   +0x5cb8 CcDataPages      : Uint4B
+   +0x5cbc CcLostDelayedWrites : Uint4B
+   +0x5cc0 CcFastReadResourceMiss : Uint4B
+   +0x5cc4 CcCopyReadWaitMiss : Uint4B
+   +0x5cc8 CcFastMdlReadResourceMiss : Uint4B
+   +0x5ccc CcMapDataNoWaitMiss : Uint4B
+   +0x5cd0 CcMapDataWaitMiss : Uint4B
+   +0x5cd4 CcPinReadNoWaitMiss : Uint4B
+   +0x5cd8 CcPinReadWaitMiss : Uint4B
+   +0x5cdc CcMdlReadNoWaitMiss : Uint4B
+   +0x5ce0 CcMdlReadWaitMiss : Uint4B
+   +0x5ce4 CcReadAheadIos   : Uint4B
+   +0x5ce8 MmCacheTransitionCount : Int4B
+   +0x5cec MmCacheReadCount : Int4B
+   +0x5cf0 MmCacheIoCount   : Int4B
+   +0x5cf4 PrcbPad91        : Uint4B
+   +0x5cf8 MmInternal       : Ptr64 Void
+   +0x5d00 PowerState       : _PROCESSOR_POWER_STATE
+   +0x5f00 HyperPte         : Ptr64 Void
+   +0x5f08 ScbList          : _LIST_ENTRY
+   +0x5f18 ForceIdleDpc     : _KDPC
+   +0x5f58 DpcWatchdogDpc   : _KDPC
+   +0x5f98 DpcWatchdogTimer : _KTIMER
+   +0x5fd8 Cache            : [5] _CACHE_DESCRIPTOR
+   +0x6014 CacheCount       : Uint4B
+   +0x6018 CachedCommit     : Uint4B
+   +0x601c CachedResidentAvailable : Uint4B
+   +0x6020 WheaInfo         : Ptr64 Void
+   +0x6028 EtwSupport       : Ptr64 Void
+   +0x6030 ExSaPageArray    : Ptr64 Void
+   +0x6038 KeAlignmentFixupCount : Uint4B
+   +0x603c PrcbPad95        : Uint4B
+   +0x6040 HypercallPageList : _SLIST_HEADER
+   +0x6050 StatisticsPage   : Ptr64 Uint8B
+   +0x6058 PrcbPad85        : [5] Uint8B
+   +0x6080 HypercallCachedPages : Ptr64 Void
+   +0x6088 VirtualApicAssist : Ptr64 Void
+   +0x6090 PackageProcessorSet : _KAFFINITY_EX
+   +0x6138 PackageId        : Uint4B
+   +0x613c PrcbPad86        : Uint4B
+   +0x6140 SharedReadyQueueMask : Uint8B
+   +0x6148 SharedReadyQueue : Ptr64 _KSHARED_READY_QUEUE
+   +0x6150 SharedQueueScanOwner : Uint4B
+   +0x6154 ScanSiblingIndex : Uint4B
+   +0x6158 CoreProcessorSet : Uint8B
+   +0x6160 ScanSiblingMask  : Uint8B
+   +0x6168 LLCMask          : Uint8B
+   +0x6170 CacheProcessorMask : [5] Uint8B
+   +0x6198 ProcessorProfileControlArea : Ptr64 _PROCESSOR_PROFILE_CONTROL_AREA
+   +0x61a0 ProfileEventIndexAddress : Ptr64 Void
+   +0x61a8 DpcWatchdogProfile : Ptr64 Ptr64 Void
+   +0x61b0 DpcWatchdogProfileCurrentEmptyCapture : Ptr64 Ptr64 Void
+   +0x61b8 SchedulerAssist  : Ptr64 Void
+   +0x61c0 SynchCounters    : _SYNCH_COUNTERS
+   +0x6278 PrcbPad94        : Uint8B
+   +0x6280 FsCounters       : _FILESYSTEM_DISK_COUNTERS
+   +0x6290 VendorString     : [13] UChar
+   +0x629d PrcbPad100       : [3] UChar
+   +0x62a0 FeatureBits      : Uint8B
+   +0x62a8 UpdateSignature  : _LARGE_INTEGER
+   +0x62b0 PteBitCache      : Uint8B
+   +0x62b8 PteBitOffset     : Uint4B
+   +0x62bc PrcbPad105       : Uint4B
+   +0x62c0 Context          : Ptr64 _CONTEXT
+   +0x62c8 ContextFlagsInit : Uint4B
+   +0x62cc PrcbPad115       : Uint4B
+   +0x62d0 ExtendedState    : Ptr64 _XSAVE_AREA
+   +0x62d8 IsrStack         : Ptr64 Void
+   +0x62e0 EntropyTimingState : _KENTROPY_TIMING_STATE
+   +0x6430 PrcbPad110       : Uint8B
+   +0x6438 PrcbPad111       : [7] Uint8B
+   +0x6470 AbSelfIoBoostsList : _SINGLE_LIST_ENTRY
+   +0x6478 AbPropagateBoostsList : _SINGLE_LIST_ENTRY
+   +0x6480 AbDpc            : _KDPC
+   +0x64c0 IoIrpStackProfilerCurrent : _IOP_IRP_STACK_PROFILER
+   +0x6514 IoIrpStackProfilerPrevious : _IOP_IRP_STACK_PROFILER
+   +0x6568 SecureFault      : _KSECURE_FAULT_INFORMATION
+   +0x6578 PrcbPad120       : Uint8B
+   +0x6580 LocalSharedReadyQueue : _KSHARED_READY_QUEUE
+   +0x67f0 PrcbPad125       : [2] Uint8B
+   +0x6800 TimerExpirationTraceCount : Uint4B
+   +0x6804 PrcbPad127       : Uint4B
+   +0x6808 TimerExpirationTrace : [16] _KTIMER_EXPIRATION_TRACE
+   +0x6908 PrcbPad128       : [7] Uint8B
+   +0x6940 Mailbox          : Ptr64 _REQUEST_MAILBOX
+   +0x6948 PrcbPad130       : [7] Uint8B
+   +0x6980 SelfmapLockHandle : [4] _KLOCK_QUEUE_HANDLE
+   +0x69e0 PrcbPad135       : [1184] UChar
+   +0x6e80 KernelDirectoryTableBase : Uint8B
+   +0x6e88 RspBaseShadow    : Uint8B
+   +0x6e90 UserRspShadow    : Uint8B
+   +0x6e98 ShadowFlags      : Uint4B
+   +0x6e9c VerwSelector     : Uint2B
+   +0x6e9e PrcbPad139       : Uint2B
+   +0x6ea0 PrcbPad140       : [508] Uint8B
+   +0x7e80 RequestMailbox   : [1] _REQUEST_MAILBOX
+    '''
+
+    # We need a native pointer so that we can write the address of _KTREAD structure
+    native_type = struct.get_native_type(64)
+    pointer_type = native_type
+
+    _fields_ = (
+        ('MxCsr',                       ctypes.c_ulong),
+        ('Number',                      ctypes.c_ushort),
+        ('LegacyNumber',                ctypes.c_char),
+        ('ReservedMustBeZero',          ctypes.c_char),
+        ('InterruptRequest',            ctypes.c_bool),
+        ('IdleHalt',                    ctypes.c_bool),
+        ('CurrentThread',               pointer_type),          # _KTHREAD
+        ('NextThread',                  pointer_type),          # _KTHREAD
+        ('IdleThread',                  pointer_type),          # _KTHREAD
+        ('NestingLevel',                ctypes.c_char),
+        ('ClockOwner',                  ctypes.c_char),
+        ('PendingTickFlags',            ctypes.c_char),
+        ('PendingTick',                 ctypes.c_void_p),       # POS 0 : BIT 1
+        ('PendingBackupTick',           ctypes.c_void_p),       # POS 1 : BIT 1
+        ('IdleState',                   ctypes.c_char),
+        ('Number',                      ctypes.c_uint),
+        ('RspBase',                     ctypes.c_uint8),
+        ('PrcbLock',                    ctypes.c_uint8),
+        ('PriorityState',               ctypes.c_char_p),
+        ('CpuType',                     ctypes.c_char),
+        ('CpuStep',                     ctypes.c_uint),
+        ('CpuStepping',                 ctypes.c_char),
+        ('CpuModel',                    ctypes.c_char),
+        ('MHz',                         ctypes.c_uint),
+        ('HalReserved',                 ctypes.c_uint8 * 8),
+        ('MinorVersion',                ctypes.c_uint),
+        ('MajorVersion',                ctypes.c_uint),
+        ('BuildType',                   ctypes.c_char),
+        ('CpuVendor',                   ctypes.c_char),
+        ('CoresPerPhysicalProcessor',   ctypes.c_char),
+        ('LogicalProcessorPerCore',     ctypes.c_char),
+        ('PrcbPad04',                   ctypes.c_uint8 * 6),
+        ('ParentNode',                  pointer_type),            # _KNODE
+        ('_padding0',                   ctypes.c_uint8 * 0x7DC0)    # 0x7E80 (request mailbox) - 0xC0 (parent node)
+    )
+
+class KPCR(struct.BaseStruct):
+    '''
+    Defintion for 64-bit KPCR structure.
+
+    Windows 10 RS4
+    nt!_KPCR
+        +0x000 NtTib            : _NT_TIB
+        +0x000 GdtBase          : Ptr64 _KGDTENTRY64
+        +0x008 TssBase          : Ptr64 _KTSS64
+        +0x010 UserRsp          : Uint8B
+        +0x018 Self             : Ptr64 _KPCR
+        +0x020 CurrentPrcb      : Ptr64 _KPRCB
+        +0x028 LockArray        : Ptr64 _KSPIN_LOCK_QUEUE
+        +0x030 Used_Self        : Ptr64 Void
+        +0x038 IdtBase          : Ptr64 _KIDTENTRY64
+        +0x040 Unused           : [2] Uint8B
+        +0x050 Irql             : UChar
+        +0x051 SecondLevelCacheAssociativity : UChar
+        +0x052 ObsoleteNumber   : UChar
+        +0x053 Fill0            : UChar
+        +0x054 Unused0          : [3] Uint4B
+        +0x060 MajorVersion     : Uint2B
+        +0x062 MinorVersion     : Uint2B
+        +0x064 StallScaleFactor : Uint4B
+        +0x068 Unused1          : [3] Ptr64 Void
+        +0x080 KernelReserved   : [15] Uint4B
+        +0x0bc SecondLevelCacheSize : Uint4B
+        +0x0c0 HalReserved      : [16] Uint4B
+        +0x100 Unused2          : Uint4B
+        +0x108 KdVersionBlock   : Ptr64 Void
+        +0x110 Unused3          : Ptr64 Void
+        +0x118 PcrAlign1        : [24] Uint4B
+        +0x180 Prcb             : _KPRCB
+    '''
+
+    # Get 64-bit native_type
+    native_type = struct.get_native_type(64)
+    pointer_type = native_type
+
+    _fields_ = (
+        ('NtTib',                           NT_TIB),
+        ('GdtBase',                         ctypes.c_void_p),       # _KGDTENTRY64
+        ('TssBase',                         ctypes.c_void_p),       # _KTSS64
+        ('UserRsp',                         ctypes.c_uint8),
+        ('Self',                            pointer_type),          # _KPCR
+        ('CurrentPrcb',                     pointer_type),          # _KPRCB
+        ('LockArray',                       ctypes.c_void_p),       # _KSPIN_LOCK_QUEUE
+        ('UsedSelf',                        ctypes.c_void_p),       
+        ('IdtBase',                         ctypes.c_void_p),       # This is meant to be a KIDTENTRY64 pointer
+        ('Unused',                          ctypes.c_ulong),        # [0x2]
+        ('Irql',                            ctypes.c_void_p),       # This is meant to be a KIRQL structure
+        ('SecondLevelCacheAssociativity',   ctypes.c_char),
+        ('ObsoleteNumber',                  ctypes.c_char),
+        ('Fill0',                           ctypes.c_char),
+        ('Unused0',                         ctypes.c_ulong),        # [0x3]
+        ('MajorVersion',                    ctypes.c_ushort),
+        ('MinorVersion',                    ctypes.c_ushort),
+        ('StallScaleFactor',                ctypes.c_ulong),
+        ('Unused1',                         ctypes.c_void_p),       # [0x3]
+        ('KernelReserved',                  ctypes.c_ulong),        # [0x0F]
+        ('SecondLevelCacheSize',            ctypes.c_ulong),
+        ('HalReserved',                     ctypes.c_ulong),        # [0x10]
+        ('Unused2',                         ctypes.c_ulong),
+        ('KdVersionBlock',                  ctypes.c_void_p),
+        ('Unused3',                         ctypes.c_void_p),
+        ('PcrAlign1',                       ctypes.c_ulong),        # [0x18]
+        ('Prcb',                            pointer_type))          # _KPRCB
+
+
+class KPROCESS(struct.BaseStruct):
+    '''
+    Defintion for KPROCESS 64
+
+    Windows 10 RS4
+    ntdll!_KPROCESS
+        +0x000 Header           : _DISPATCHER_HEADER
+        +0x018 ProfileListHead  : _LIST_ENTRY
+        +0x028 DirectoryTableBase : Uint8B
+        +0x030 ThreadListHead   : _LIST_ENTRY
+        +0x040 ProcessLock      : Uint4B
+        +0x044 ProcessTimerDelay : Uint4B
+        +0x048 DeepFreezeStartTime : Uint8B
+        +0x050 Affinity         : _KAFFINITY_EX
+        +0x0f8 ReadyListHead    : _LIST_ENTRY
+        +0x108 SwapListEntry    : _SINGLE_LIST_ENTRY
+        +0x110 ActiveProcessors : _KAFFINITY_EX
+        +0x1b8 AutoAlignment    : Pos 0, 1 Bit
+        +0x1b8 DisableBoost     : Pos 1, 1 Bit
+        +0x1b8 DisableQuantum   : Pos 2, 1 Bit
+        +0x1b8 DeepFreeze       : Pos 3, 1 Bit
+        +0x1b8 TimerVirtualization : Pos 4, 1 Bit
+        +0x1b8 CheckStackExtents : Pos 5, 1 Bit
+        +0x1b8 CacheIsolationEnabled : Pos 6, 1 Bit
+        +0x1b8 PpmPolicy        : Pos 7, 3 Bits
+        +0x1b8 ActiveGroupsMask : Pos 10, 20 Bits
+        +0x1b8 VaSpaceDeleted   : Pos 30, 1 Bit
+        +0x1b8 ReservedFlags    : Pos 31, 1 Bit
+        +0x1b8 ProcessFlags     : Int4B
+        +0x1bc BasePriority     : Char
+        +0x1bd QuantumReset     : Char
+        +0x1be Visited          : Char
+        +0x1bf Flags            : _KEXECUTE_OPTIONS
+        +0x1c0 ThreadSeed       : [20] Uint4B
+        +0x210 IdealNode        : [20] Uint2B
+        +0x238 IdealGlobalNode  : Uint2B
+        +0x23a Spare1           : Uint2B
+        +0x23c StackCount       : _KSTACK_COUNT
+        +0x240 ProcessListEntry : _LIST_ENTRY
+        +0x250 CycleTime        : Uint8B
+        +0x258 ContextSwitches  : Uint8B
+        +0x260 SchedulingGroup  : Ptr64 _KSCHEDULING_GROUP
+        +0x268 FreezeCount      : Uint4B
+        +0x26c KernelTime       : Uint4B
+        +0x270 UserTime         : Uint4B
+        +0x274 ReadyTime        : Uint4B
+        +0x278 UserDirectoryTableBase : Uint8B
+        +0x280 AddressPolicy    : UChar
+        +0x281 Spare2           : [71] UChar
+        +0x2c8 InstrumentationCallback : Ptr64 Void
+        +0x2d0 SecureState      : <unnamed-tag>
+    '''
+    _fields_ = (
+        ('Header',              ctypes.c_void_p),
+        ('ProfileListHead',     ctypes.c_void_p),
+        ('DirectoryTableBase',  ctypes.c_uint8),
+        ('ThreadListHead',      ctypes.c_void_p),
+        ('ProcessLock',         ctypes.c_uint),
+        ('ProcessTimerDelay',   ctypes.c_uint),
+        ('DeepFreezeStartTime', ctypes.c_uint8),
+        ('Affinity',            ctypes.c_void_p),
+        ('ReadyListHead',       ctypes.c_void_p),
+        ('SwapListEntry',       ctypes.c_void_p),
+        ('ActiveProcessors',    ctypes.c_void_p),
+        ('AutoAlignment',       ctypes.c_int, 1),
+        ('DisableBoost',        ctypes.c_int, 1),
+        ('DisableQuantum',      ctypes.c_int, 1),
+        ('DeepFreeze',          ctypes.c_int, 1),
+        ('TimerVirtualization', ctypes.c_int, 1),
+        ('CheckStackExtentns',  ctypes.c_int, 1),
+        ('CacheIsolationEnabled', ctypes.c_int, 1),
+        ('PpmPolicy',           ctypes.c_int, 3),
+        ('ActiveGroupsMask',    ctypes.c_int, 20),
+        ('VaSpaceDeleted',      ctypes.c_int, 1),
+        ('ReservedFlags',       ctypes.c_int, 1),
+        ('ProcessFlags',        ctypes.c_int),
+        ('BasePriority',        ctypes.c_char),
+        ('QuantumReset',        ctypes.c_char),
+        ('Visited',             ctypes.c_char),
+        ('Flags',               ctypes.c_void_p),
+        ('ThreadSeed',          ctypes.c_uint * 20),
+        ('IdealNode',           ctypes.c_uint * 20),
+        ('IdealGlobalNode',     ctypes.c_uint),
+        ('Spare1',              ctypes.c_uint),
+        ('StackCount',          ctypes.c_void_p),
+        ('ProcessListEntry',    ctypes.c_void_p),
+        ('CycleTime',           ctypes.c_uint8),
+        ('ContextSwitches',     ctypes.c_uint8),
+        ('SchedulingGroup',     ctypes.c_void_p),
+        ('FreezeCount',         ctypes.c_uint),
+        ('KernelTime',          ctypes.c_uint),
+        ('UserTime',            ctypes.c_uint),
+        ('ReadyTime',           ctypes.c_uint),
+        ('UserDirectoryTableBase', ctypes.c_uint8),
+        ('AddressPolicy',       ctypes.c_char),
+        ('Spare2',              ctypes.c_char * 71),
+        ('InstrumentationCallback', ctypes.c_void_p),
+        ('SecureState',         ctypes.c_void_p)
+    )
+
 
 
 def make_list_entry(archbits: int):
@@ -509,19 +1192,6 @@ def make_mdl(archbits: int):
 #         ('WaitListHead', LIST_ENTRY64),
 #     )
 #
-#
-# class DISPATCHER_HEADER32(ctypes.Structure):
-#     _fields_ = (
-#         ('Lock', ctypes.c_int32),
-#         ('SignalState', ctypes.c_int32),
-#         ('WaitListHead', LIST_ENTRY32),
-#         ('Type', ctypes.c_uint8),
-#         ('TimerControlFlags', ctypes.c_uint8),
-#         ('ThreadControlFlags', ctypes.c_uint8),
-#         ('TimerMiscFlags', ctypes.c_uint8),
-#     )
-#
-#
 # class KAPC_STATE64(ctypes.Structure):
 #     _fields_ = (
 #         ('ApcListHead', LIST_ENTRY64 * 2),
@@ -531,17 +1201,6 @@ def make_mdl(archbits: int):
 #         ('UserApcPending', ctypes.c_uint8),
 #     )
 #
-#
-# class KAPC_STATE32(ctypes.Structure):
-#     _fields_ = (
-#         ('ApcListHead', LIST_ENTRY32 * 2),
-#         ('Process', POINTER32),
-#         ('KernelApcInProgress', ctypes.c_uint8),
-#         ('KernelApcPending', ctypes.c_uint8),
-#         ('UserApcPending', ctypes.c_uint8),
-#     )
-#
-#
 # class KTIMER64(ctypes.Structure):
 #     _fields_ = (
 #         ('Header', DISPATCHER_HEADER64),
@@ -550,17 +1209,6 @@ def make_mdl(archbits: int):
 #         ('Dpc', POINTER64),
 #         ('Period', ctypes.c_uint32),
 #     )
-#
-#
-# class KTIMER32(ctypes.Structure):
-#     _fields_ = (
-#         ('Header', DISPATCHER_HEADER32),
-#         ('DueTime', LARGE_INTEGER),
-#         ('TimerListEntry', LIST_ENTRY32),
-#         ('Dpc', POINTER32),
-#         ('Period', ctypes.c_uint32),
-#     )
-#
 #
 # class KWAIT_BLOCK64(ctypes.Structure):
 #     _fields_ = (
@@ -572,19 +1220,6 @@ def make_mdl(archbits: int):
 #         ('WaitType', ctypes.c_uint8),
 #         ('BlockState', ctypes.c_uint8),
 #     )
-#
-#
-# class KWAIT_BLOCK32(ctypes.Structure):
-#     _fields_ = (
-#         ('WaitListEntry', LIST_ENTRY32),
-#         ('Thread', POINTER32),
-#         ('Object', POINTER32),
-#         ('NextWaitBlock', POINTER32),
-#         ('WaitKey', ctypes.c_uint16),
-#         ('WaitType', ctypes.c_uint8),
-#         ('BlockState', ctypes.c_uint8),
-#     )
-#
 #
 # class GROUP_AFFINITY64(ctypes.Structure):
 #     _fields_ = (('Mask', ctypes.c_uint64), ('Group', ctypes.c_uint16),
@@ -617,11 +1252,6 @@ def make_mdl(archbits: int):
 #         ('Inserted', ctypes.c_uint8),
 #     )
 #
-#
-# class KAPC32(ctypes.Structure):
-#     _fields_ = ()
-#
-#
 # class KSEMAPHORE64(ctypes.Structure):
 #     _pack_ = 8
 #     _fields_ = (("Header", DISPATCHER_HEADER64), ("Limit", ctypes.c_int32))
@@ -650,70 +1280,6 @@ def make_mdl(archbits: int):
 #     )
 #
 #
-# class KTHREAD64(ctypes.Structure):
-#     _pack_ = 8
-#     _fields_ = (
-#         ('Header', DISPATCHER_HEADER64),
-#         ('CycleTime', ctypes.c_uint64),
-#         ('QuantumTarget', ctypes.c_uint64),
-#         ('InitialStack', POINTER64),
-#         ('StackLimit', POINTER64),
-#         ('KernelStack', POINTER64),
-#         ('ThreadLock', ctypes.c_uint64),
-#         ('WaitRegister', ctypes.c_uint8),  # _KWAIT_STATUS_REGISTER
-#         ('Running', ctypes.c_uint8),
-#         ('Alerted', ctypes.c_uint8 * 2),
-#         ('MiscFlags', ctypes.c_uint32),
-#         ('ApcState', KAPC_STATE64),
-#         ('DeferredProcessor', ctypes.c_uint32),
-#         ('ApcQueueLock', ctypes.c_uint64),
-#         ('WaitStatus', ctypes.c_int64),
-#         ('WaitBlockList', POINTER64),
-#         ('WaitListEntry', LIST_ENTRY64),
-#         ('Queue', POINTER64),
-#         ('Teb', POINTER64),
-#         ('Timer', KTIMER64),
-#         ('ThreadFlags', ctypes.c_int32),
-#         ('Spare0', ctypes.c_uint32),
-#         ('WaitBlock', KWAIT_BLOCK64 * 4),
-#         ('QueueListEntry', LIST_ENTRY64),
-#         ('TrapFrame', POINTER64),
-#         ('FirstArgument', POINTER64),
-#         ('CallbackStack', POINTER64),
-#         ('ApcStateIndex', ctypes.c_uint8),
-#         ('BasePriority', ctypes.c_char),
-#         ('PriorityDecrement', ctypes.c_char),
-#         ('Preempted', ctypes.c_uint8),
-#         ('AdjustReason', ctypes.c_uint8),
-#         ('AdjustIncrement', ctypes.c_char),
-#         ('PreviousMode', ctypes.c_char),
-#         ('Saturation', ctypes.c_char),
-#         ('SystemCallNumber', ctypes.c_uint32),
-#         ('FreezeCount', ctypes.c_uint32),
-#         ('UserAffinity', GROUP_AFFINITY64),
-#         ('Process', POINTER64),
-#         ('Affinity', GROUP_AFFINITY64),
-#         ('IdealProcessor', ctypes.c_uint32),
-#         ('UserIdealProcessor', ctypes.c_uint32),
-#         ('ApcStatePointer', POINTER64 * 2),
-#         ('SavedApcState', KAPC_STATE64),
-#         ('Win32Thread', POINTER64),
-#         ('StackBase', POINTER64),
-#         ('SuspendApc', KAPC64),
-#         ('SuspendSemaphore', KSEMAPHORE64),
-#         ('ThreadListEntry', LIST_ENTRY64),
-#         ('MutantListHead', LIST_ENTRY64),
-#         ('SListFaultAddress', POINTER64),
-#         ('ReadOperationCount', ctypes.c_int64),
-#         ('WriteOperationCount', ctypes.c_int64),
-#         ('OtherOperationCount', ctypes.c_int64),
-#         ('ReadTransferCount', ctypes.c_int64),
-#         ('WriteTransferCount', ctypes.c_int64),
-#         ('OtherTransferCount', ctypes.c_int64),
-#         ('ThreadCounters', POINTER64),
-#         ('XStateSave', POINTER64))
-
-
 # struct _RTL_PROCESS_MODULE_INFORMATION {
 #     HANDLE Section;
 #     PVOID MappedBase;
