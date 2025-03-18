@@ -45,7 +45,8 @@ class QlArchARM64(QlArch):
             **arm64_const.reg_map_q,
             **arm64_const.reg_map_s,
             **arm64_const.reg_map_w,
-            **arm64_const.reg_map_v
+            **arm64_const.reg_map_v,
+            **arm64_const.reg_map_fp
         )
 
         pc_reg = 'pc'

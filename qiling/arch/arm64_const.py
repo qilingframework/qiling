@@ -68,6 +68,7 @@ reg_map = {
     "pc": UC_ARM64_REG_PC,
     "lr": UC_ARM64_REG_LR,
     "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
+    "pstate": UC_ARM64_REG_PSTATE,
 }
 
 reg_map_b = {
@@ -312,4 +313,9 @@ reg_map_v = {
     "v29": UC_ARM64_REG_V29,
     "v30": UC_ARM64_REG_V30,
     "v31": UC_ARM64_REG_V31
+}
+
+reg_map_fp = {
+    "fpcr": UC_ARM64_REG_FPCR,
+    "fpsr": UC_ARM64_REG_FPSR
 }
