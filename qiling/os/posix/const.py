@@ -481,6 +481,22 @@ class macos_x86_open_flags(QlPrettyFlag):
     O_BINARY    = FLAG_UNSUPPORTED
     O_LARGEFILE = FLAG_UNSUPPORTED
 
+class macos_arm_open_flags(QlPrettyFlag):
+    O_RDONLY    = 0x000000
+    O_WRONLY    = 0x000001
+    O_RDWR      = 0x000002
+    O_NONBLOCK  = 0x000004
+    O_APPEND    = 0x000008
+    O_ASYNC     = 0x000040
+    O_SYNC      = 0x000080
+    O_NOFOLLOW  = 0x000100
+    O_CREAT     = 0x000200
+    O_TRUNC     = 0x000400
+    O_EXCL      = 0x000800
+    O_NOCTTY    = 0x020000
+    O_DIRECTORY = 0x100000
+    O_BINARY    = None
+    O_LARGEFILE = None
 
 class linux_x86_open_flags(QlPrettyFlag):
     O_RDONLY    = 0x000000
