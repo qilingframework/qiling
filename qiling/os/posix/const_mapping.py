@@ -115,11 +115,11 @@ def ql_open_flag_mapping(ql: Qiling, flags: int) -> int:
     # flags names are consistent across all classes, even if they are not supported, to maintain compatibility
     for ef in emul_flags:
         # test whether flag is set, excluding unsupported flags
-        if (ef != FLAG_UNSUPPORTED) and (flags & ef.value):
+        if (ef.value != FLAG_UNSUPPORTED) and (flags & ef.value):
             hf = host_flags[ef.name or '']
 
             # if flag is also supported on the host, set it
-            if hf != FLAG_UNSUPPORTED:
+            if hf.value != FLAG_UNSUPPORTED:
                 ret |= hf.value
 
     # NOTE: not sure why this one is needed
