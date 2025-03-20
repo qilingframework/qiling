@@ -1,25 +1,25 @@
 # break on entry to main
-b 0x5655551d
+b 0x000102e4
 
-# break on call to printf
-b 0x56555542
+# break on call to puts
+b 0x000102ee
 
 # run till main
 c
 
 # show stack entries
-x/8xw $esp
+x/8xw $sp
 
-# run till printf
+# run till puts
 c
 
-# show argument passed to printf
+# show argument passed to puts
 show_args 1
 
 # show instructions passed call till end of function
-x/8i ($eip + 5)
+x/3i ($pc + 4)
 
-# step over call to printf
+# step over call to puts
 n
 
 # step backwards to start of main

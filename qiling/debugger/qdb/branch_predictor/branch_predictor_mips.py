@@ -3,88 +3,95 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Optional
+from capstone.mips import MipsOp, MIPS_OP_REG, MIPS_OP_IMM
 
-
-from .branch_predictor import *
+from .branch_predictor import BranchPredictor, Prophecy
 from ..arch import ArchMIPS
+from ..misc import InvalidInsn
+
 
 class BranchPredictorMIPS(BranchPredictor, ArchMIPS):
+    """Branch Predictor for MIPS 32.
     """
-    predictor for MIPS
-    """
 
-    def __init__(self, ql):
-        super().__init__(ql)
-        ArchMIPS.__init__(self)
-        self.CODE_END = "break"
-        self.INST_SIZE = 4
-
-    @staticmethod
-    def signed_val(val: int) -> int:
-        """
-        signed value convertion
-        """
-
-        def is_negative(i: int) -> int:
-            """
-            check wether negative value or not
-            """
-
-            return i & (1 << 31)
-
-        return (val-1 << 32) if is_negative(val) else val
-
-    def read_reg(self, reg_name):
-        reg_name = reg_name.strip("$").replace("fp", "s8")
-        return self.signed_val(getattr(self.ql.arch.regs, reg_name))
+    stop = 'break'
 
     def predict(self):
-        prophecy = Prophecy()
-        line = self.disasm(self.cur_addr)
+        insn = self.disasm(self.cur_addr, True)
 
-        if line.mnemonic == self.CODE_END: # indicates program extied
-            prophecy.where = True
-            return prophecy
+        going = False
+        where = 0
 
-        prophecy.where = self.cur_addr + self.INST_SIZE
-        if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
+        # invalid instruction; nothing to predict
+        if isinstance(insn, InvalidInsn):
+            return Prophecy(going, where)
 
-            # make sure at least delay slot executed
-            prophecy.where += self.INST_SIZE
+        unconditional = ('j', 'jr', 'jal', 'jalr', 'b', 'bl', 'bal')
 
-            # get registers or memory address from op_str
-            targets = [
-                    self.read_reg(each)
-                    if '$' in each else read_int(each)
-                    for each in line.op_str.split(", ")
-                    ]
+        conditional = {
+            'beq'   : lambda r0, r1: r0 == r1,  # branch on equal
+            'bne'   : lambda r0, r1: r0 != r1,  # branch on not equal
+            'blt'   : lambda r0, r1: r0 < r1,   # branch on r0 less than r1
+            'bgt'   : lambda r0, r1: r0 > r1,   # branch on r0 greater than r1
+            'ble'   : lambda r0, r1: r0 <= r1,  # branch on r0 less than or equal to r1
+            'bge'   : lambda r0, r1: r0 >= r1,  # branch on r0 greater than or equal to r1
 
-            prophecy.going = {
-                    "j"       : (lambda _: True),             # unconditional jump
-                    "jr"      : (lambda _: True),             # unconditional jump
-                    "jal"     : (lambda _: True),             # unconditional jump
-                    "jalr"    : (lambda _: True),             # unconditional jump
-                    "b"       : (lambda _: True),             # unconditional branch
-                    "bl"      : (lambda _: True),             # unconditional branch
-                    "bal"     : (lambda _: True),             # unconditional branch
-                    "beq"     : (lambda r0, r1, _: r0 == r1), # branch on equal
-                    "bne"     : (lambda r0, r1, _: r0 != r1), # branch on not equal
-                    "blt"     : (lambda r0, r1, _: r0 < r1),  # branch on r0 less than r1
-                    "bgt"     : (lambda r0, r1, _: r0 > r1),  # branch on r0 greater than r1
-                    "ble"     : (lambda r0, r1, _: r0 <= r1), # brach on r0 less than or equal to r1
-                    "bge"     : (lambda r0, r1, _: r0 >= r1), # branch on r0 greater than or equal to r1
-                    "beqz"    : (lambda r, _: r == 0),        # branch on equal to zero
-                    "bnez"    : (lambda r, _: r != 0),        # branch on not equal to zero
-                    "bgtz"    : (lambda r, _: r > 0),         # branch on greater than zero
-                    "bltz"    : (lambda r, _: r < 0),         # branch on less than zero
-                    "bltzal"  : (lambda r, _: r < 0),         # branch on less than zero and link
-                    "blez"    : (lambda r, _: r <= 0),        # branch on less than or equal to zero
-                    "bgez"    : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
-                    "bgezal"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero and link
-                    }.get(line.mnemonic)(*targets)
+            'beqz'  : lambda r: r == 0,         # branch on equal to zero
+            'bnez'  : lambda r: r != 0,         # branch on not equal to zero
+            'bgtz'  : lambda r: r > 0,          # branch on greater than zero
+            'bltz'  : lambda r: r < 0,          # branch on less than zero
+            'bltzal': lambda r: r < 0,          # branch on less than zero and link
+            'blez'  : lambda r: r <= 0,         # branch on less than or equal to zero
+            'bgez'  : lambda r: r >= 0,         # branch on greater than or equal to zero
+            'bgezal': lambda r: r >= 0          # branch on greater than or equal to zero and link
+        }
 
-            if prophecy.going:
-                # target address is always the rightmost one
-                prophecy.where = targets[-1]
+        def __as_signed(val: int) -> int:
+            """Get the signed integer representation of a given value.
+            """
 
-        return prophecy
+            msb = 0b1 << 31
+
+            return (val & ~msb) - (val & msb)
+
+        def __read_reg(reg: int) -> Optional[int]:
+            """Read register value where register is provided as a Unicorn constant.
+            """
+
+            # name will be None in case of an illegal or unknown register
+            name = insn.reg_name(reg)
+
+            return name and __as_signed(self.read_reg(self.unalias(name)))
+
+        def __parse_op(op: MipsOp) -> Optional[int]:
+            """Parse an operand and return its value.
+            """
+
+            if op.type == MIPS_OP_REG:
+                value = __read_reg(op.reg)
+
+            elif op.type == MIPS_OP_IMM:
+                value = op.imm
+
+            else:
+                raise RuntimeError(f'unexpected operand type: {op.type}')
+
+            return value
+
+        # get operands. target address is always the rightmost one
+        if insn.operands:
+            *operands, target = insn.operands
+
+        if insn.mnemonic in unconditional:
+            going = True
+
+        elif insn.mnemonic in conditional:
+            predict = conditional[insn.mnemonic]
+
+            going = predict(*(__parse_op(op) for op in operands))
+
+        if going:
+            where = __parse_op(target)
+
+        return Prophecy(going, where)

@@ -3,43 +3,55 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import cmd
+from __future__ import annotations
 
-from typing import Callable, Optional, Tuple, Union, List
+import cmd
+import sys
+
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, List, Union
 from contextlib import contextmanager
 
-from qiling import Qiling
-from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN, QL_VERBOSE
+from qiling.const import QL_OS, QL_ARCH, QL_VERBOSE
 from qiling.debugger import QlDebugger
 
-from .utils import setup_context_render, setup_branch_predictor, setup_address_marker, SnapshotManager, run_qdb_script
-from .memory import setup_memory_Manager
-from .misc import parse_int, Breakpoint, TempBreakpoint, try_read_int
 from .const import color
+from .helper import setup_command_helper
+from .misc import Breakpoint, try_read_int
+from .render.render import RARROW
+from .utils import setup_context_render, setup_branch_predictor, Marker, SnapshotManager, QDB_MSG, qdb_print
 
-from .utils import QDB_MSG, qdb_print
+
+if TYPE_CHECKING:
+    from qiling import Qiling
 
 
-def save_reg_dump(func: Callable) -> Callable[..., None]:
-    """Decorator for saving registers dump.
+def save_regs(func: Callable) -> Callable[..., None]:
+    """Save registers before running a certain functionality so we can display
+    the registers diff.
     """
 
     def inner(self: 'QlQdb', *args, **kwargs) -> None:
-        self._saved_reg_dump = dict(filter(lambda d: isinstance(d[0], str), self.ql.arch.regs.save().items()))
+        self.render.prev_regs = self.render.get_regs()
 
         func(self, *args, **kwargs)
 
     return inner
 
-def check_ql_alive(func: Callable) -> Callable[..., None]:
-    """Decorator for checking whether ql instance is alive.
+def liveness_check(func: Callable) -> Callable[..., None]:
+    """Decorator for checking whether the program is alive.
     """
 
     def inner(self: 'QlQdb', *args, **kwargs) -> None:
         if self.ql is None:
-            qdb_print(QDB_MSG.ERROR, "The program is not being run.")
-        else:
-            func(self, *args, **kwargs)
+            qdb_print(QDB_MSG.ERROR, 'no active emulation')
+            return
+
+        if self.predictor.has_ended():
+            qdb_print(QDB_MSG.ERROR, 'the program has ended')
+            return
+
+        # proceed to functionality
+        func(self, *args, **kwargs)
 
     return inner
 
@@ -56,14 +68,14 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         self.ql = ql
-        self.prompt = f"{color.BOLD}{color.RED}Qdb> {color.END}"
-        self._saved_reg_dump = None
+        self.prompt = f"{color.RED}(qdb) {color.RESET}"
         self._script = script
-        self.bp_list = {}
-        self.marker = setup_address_marker()
+        self.last_addr: int = -1
+        self.bp_list: Dict[int, Breakpoint] = {}
+        self.marker = Marker()
 
         self.rr = SnapshotManager(ql) if rr else None
-        self.mm = setup_memory_Manager(ql)
+        self.helper = setup_command_helper(ql)
         self.predictor = setup_branch_predictor(ql)
         self.render = setup_context_render(ql, self.predictor)
 
@@ -72,33 +84,50 @@ class QlQdb(cmd.Cmd, QlDebugger):
         # filter out entry_point of loader if presented
         self.dbg_hook(list(filter(lambda d: int(d, 0) != self.ql.loader.entry_point, init_hook)))
 
+    def run_qdb_script(self, filename: str) -> None:
+        with open(filename, 'r', encoding='latin') as fd:
+            for line in fd.readlines():
+                command, arg, _ = self.parseline(line)
+
+                if command is None:
+                    continue
+
+                func = getattr(self, f"do_{command}")
+
+                if arg:
+                    func(arg)
+                else:
+                    func()
+
     def dbg_hook(self, init_hook: List[str]):
         """
         initial hook to prepare everything we need
         """
 
-        # self.ql.loader.entry_point  # ld.so
-        # self.ql.loader.elf_entry    # .text of binary
+        def __bp_handler(ql: Qiling, address: int, size: int):
+            if (address in self.bp_list) and (address != self.last_addr):
+                bp = self.bp_list[address]
 
-        def bp_handler(ql, address, size, bp_list):
+                if bp.enabled:
+                    if bp.temp:
+                        # temp breakpoint: remove once hit
+                        self.del_breakpoint(bp)
 
-            if (bp := self.bp_list.get(address, None)):
+                    else:
+                        qdb_print(QDB_MSG.INFO, f'hit breakpoint at {self.cur_addr:#x}')
 
-                if isinstance(bp, TempBreakpoint):
-                    # remove TempBreakpoint once hitted
-                    self.del_breakpoint(bp)
+                    # flush unicorn translation block to avoid resuming execution from next
+                    # basic block
+                    self.ql.arch.uc.ctl_flush_tb()
 
-                else:
-                    if bp.hitted:
-                        return
+                    ql.stop()
+                    self.do_context()
 
-                    qdb_print(QDB_MSG.INFO, f"hit breakpoint at {self.cur_addr:#x}")
-                    bp.hitted = True
+            # this is used to prevent breakpoints be hit more than once in a row. without
+            # it we would not be able to proceed after hitting a breakpoint
+            self.last_addr = address
 
-                ql.stop()
-                self.do_context()
-
-        self.ql.hook_code(bp_handler, self.bp_list)
+        self.ql.hook_code(__bp_handler)
 
         if self.ql.entry_point:
             self.cur_addr = self.ql.entry_point
@@ -107,31 +136,16 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.init_state = self.ql.save()
 
-        # stop emulator once interp. have been done emulating
-        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry', None):
-            handler = self.ql.hook_address(lambda ql: ql.stop(), addr_elf_entry)
-        else:
-            handler = self.ql.hook_address(lambda ql: ql.stop(), self.ql.loader.entry_point)
+        # the interpreter has to be emulated, but this is not interesting for most of the users.
+        # here we start emulating from interpreter's entry point while making sure the emulator
+        # stops once it reaches the program entry point
+        entry = getattr(self.ql.loader, 'elf_entry', self.ql.loader.entry_point) & ~0b1
+        self.set_breakpoint(entry, is_temp=True)
 
-        # suppress logging temporary
-        _verbose = self.ql.verbose
-        self.ql.verbose = QL_VERBOSE.DISABLED
-
-        # init os for integrity of hooks and patches,
-        self.ql.os.run()
-
-        handler.remove()
-
-        # ignore the memory unmap error for now, due to the MIPS memory layout issue
-        try:
-            self.ql.mem.unmap_all()
-        except:
-            pass
-
-        self.ql.restore(self.init_state)
-
-        # resotre logging verbose
-        self.ql.verbose = _verbose
+        # init os for integrity of hooks and patches while temporarily suppress logging to let it
+        # fast-forward
+        with self.__set_temp(self.ql, 'verbose', QL_VERBOSE.DISABLED):
+            self.ql.os.run()
 
         if self.ql.os.type is QL_OS.BLOB:
             self.ql.loader.entry_point = self.ql.loader.load_address
@@ -141,30 +155,26 @@ class QlQdb(cmd.Cmd, QlDebugger):
                 self.do_breakpoint(each_hook)
 
         if self._script:
-            run_qdb_script(self, self._script)
+            self.run_qdb_script(self._script)
         else:
-            self.do_context()
             self.interactive()
 
     @property
     def cur_addr(self) -> int:
-        """
-        getter for current address of qiling instance
+        """Get emulation's current program counter.
         """
 
         return self.ql.arch.regs.arch_pc
 
     @cur_addr.setter
     def cur_addr(self, address: int) -> None:
-        """
-        setter for current address of qiling instance
+        """Set emulation's current program counter.
         """
 
         self.ql.arch.regs.arch_pc = address
 
     def _run(self, address: int = 0, end: int = 0, count: int = 0) -> None:
-        """
-        internal function for emulating instruction
+        """Internal method for advancing emulation on different circumstences.
         """
 
         if not address:
@@ -176,11 +186,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self.ql.emu_start(begin=address, end=end, count=count)
 
     @contextmanager
-    def _save(self, reg=True, mem=True, hw=False, fd=False, cpu_context=False, os=False, loader=False):
+    def save(self):
         """
         helper function for fetching specific context by emulating instructions
         """
-        saved_states = self.ql.save(reg=reg, mem=mem)
+        saved_states = self.ql.save(reg=True, mem=False)
         yield self
         self.ql.restore(saved_states)
 
@@ -191,22 +201,29 @@ class QlQdb(cmd.Cmd, QlDebugger):
         'command' and 'args' may be None if the line couldn't be parsed.
         """
 
+        # remove potential leading or trailing spaces
         line = line.strip()
-        if not line:
+
+        # skip commented and empty lines
+        if not line or line.startswith("#"):
             return None, None, line
-        elif line[0] == '?':
+
+        elif line.startswith('?'):
             line = 'help ' + line[1:]
+
         elif line.startswith('!'):
             if hasattr(self, 'do_shell'):
                 line = 'shell ' + line[1:]
             else:
                 return None, None, line
-        i, n = 0, len(line)
-        while i < n and line[i] in self.identchars: i = i+1
-        cmd, arg = line[:i], line[i:].strip()
-        return cmd, arg, line
 
-    def interactive(self, *args) -> None:
+        i = 0
+        while i < len(line) and line[i] in self.identchars:
+            i += 1
+
+        return line[:i], line[i:], line
+
+    def interactive(self) -> None:
         """
         initial an interactive interface
         """
@@ -225,10 +242,15 @@ class QlQdb(cmd.Cmd, QlDebugger):
         repeat last command
         """
 
-        if (lastcmd := getattr(self, "do_" + self.lastcmd, None)):
-            return lastcmd()
+        if self.lastcmd:
+            command, *arguments = self.lastcmd.split()
 
-    def do_run(self, *args) -> None:
+            lastcmd = getattr(self, f'do_{command}', None)
+
+            if lastcmd:
+                lastcmd(*arguments)
+
+    def do_run(self, *args: str) -> None:
         """
         launch qiling instance
         """
@@ -236,134 +258,151 @@ class QlQdb(cmd.Cmd, QlDebugger):
         self._run()
 
     @SnapshotManager.snapshot
-    @save_reg_dump
-    @check_ql_alive
-    def do_step_in(self, step: str = '', *args) -> Optional[bool]:
+    @save_regs
+    @liveness_check
+    def do_step_in(self, *args: str) -> None:
+        """Go to next instruction, stepping into function calls.
         """
-        execute one instruction at a time, will enter subroutine
-        """
-        prophecy = self.predictor.predict()
 
-        if prophecy.where is True:
-            qdb_print(QDB_MSG.INFO, 'program exited due to code end hitted')
-            self.do_context()
-            return False
+        steps, *_ = args or ('',)
+        steps = try_read_int(steps)
 
-        step = 1 if step == '' else int(step)
+        if steps is None:
+            steps = 1
 
-        # make sure follow branching
-        if prophecy.going is True and self.ql.arch.type == QL_ARCH.MIPS:
-            step += 1
+        qdb_print(QDB_MSG.INFO, f'stepping {steps} steps from {self.cur_addr:#x}')
 
-        self._run(count=step)
+        # make sure to include delay slot when branching in mips
+        if self.ql.arch.type is QL_ARCH.MIPS:
+            prophecy = self.predictor.predict()
+
+            if prophecy.going:
+                steps += 1
+
+        self._run(count=steps)
         self.do_context()
 
     @SnapshotManager.snapshot
-    @save_reg_dump
-    @check_ql_alive
-    def do_step_over(self, *args) -> Optional[bool]:
+    @save_regs
+    @liveness_check
+    def do_step_over(self, *args: str) -> None:
+        """Go to next instruction, stepping over function calls.
         """
-        execute one instruction at a time, but WON't enter subroutine
-        """
 
-        prophecy = self.predictor.predict()
+        addr, size, _, _ = self.predictor.disasm_lite(self.cur_addr)
+        next_insn = addr + size
 
-        if prophecy.going:
-            self.set_breakpoint(prophecy.where, is_temp=True)
+        # make sure to include delay slot when branching in mips
+        if self.ql.arch.type is QL_ARCH.MIPS and self.predictor.is_branch():
+            next_insn += size
 
-        else:
-            cur_insn = self.predictor.disasm(self.cur_addr)
-            bp_addr = self.cur_addr + cur_insn.size
-
-            if self.ql.arch.type is QL_ARCH.MIPS:
-                bp_addr += cur_insn.size
-
-            self.set_breakpoint(bp_addr, is_temp=True)
+        self.set_breakpoint(next_insn, is_temp=True)
 
         self._run()
 
     @SnapshotManager.snapshot
-    @parse_int
-    def do_continue(self, address: Optional[int] = None) -> None:
+    @save_regs
+    @liveness_check
+    def do_continue(self, *args: str) -> None:
+        """Continue execution from specified address, or from current one if
+        not specified.
         """
-        continue execution from current address if not specified
-        """
+
+        address, *_ = args or ('',)
+        address = try_read_int(address)
 
         if address is None:
             address = self.cur_addr
 
-        qdb_print(QDB_MSG.INFO, f"continued from 0x{address:08x}")
+        qdb_print(QDB_MSG.INFO, f'continuing from {address:#010x}')
 
         self._run(address)
 
-    def do_backward(self, *args) -> None:
-        """
-        step barkward if it's possible, option rr should be enabled and previous instruction must be executed before
+    def do_backward(self, *args: str) -> None:
+        """Step backwards to the previous location.
+
+        This operation requires the rr option to be enabled and having a progress
+        of at least one instruction
         """
 
-        if self.rr:
-            if len(self.rr.layers) == 0 or not isinstance(self.rr.layers[-1], self.rr.DiffedState):
-                qdb_print(QDB_MSG.ERROR, "there is no way back !!!")
+        if self.rr is None:
+            qdb_print(QDB_MSG.ERROR, 'rr was not enabled')
+            return
 
-            else:
-                qdb_print(QDB_MSG.INFO, "step backward ~")
-                self.rr.restore()
-                self.do_context()
-        else:
-            qdb_print(QDB_MSG.ERROR, f"the option rr yet been set !!!")
+        if not self.rr.layers:
+            qdb_print(QDB_MSG.ERROR, 'there are no snapshots yet')
+            return
+
+        qdb_print(QDB_MSG.INFO, 'stepping backwards')
+
+        self.rr.restore()
+        self.do_context()
+
+        # we did not really amualte anything going backwards, so we manually
+        # updating last address
+        self.last_addr = self.cur_addr
 
     def set_breakpoint(self, address: int, is_temp: bool = False) -> None:
-        """
-        internal function for placing breakpoint
-        """
-
-        bp = TempBreakpoint(address) if is_temp else Breakpoint(address)
-
-        self.bp_list.update({address: bp})
-
-    def del_breakpoint(self, bp: Union[Breakpoint, TempBreakpoint]) -> None:
-        """
-        internal function for removing breakpoint
+        """[internal] Add or update an existing breakpoint.
         """
 
-        self.bp_list.pop(bp.addr, None)
+        self.bp_list[address] = Breakpoint(address, is_temp)
 
-    @parse_int
-    def do_breakpoint(self, address: Optional[int] = None) -> None:
+    def del_breakpoint(self, bp: Union[int, Breakpoint]) -> None:
+        """[internal] Remove an existing breakpoint.
+
+        The caller is responsible to make sure the breakpoint exists.
         """
-        set breakpoint on specific address
+
+        if isinstance(bp, int):
+            try:
+                bp = next(b for b in self.bp_list.values() if b.addr == bp)
+            except StopIteration:
+                qdb_print(QDB_MSG.ERROR, f'No breakpoint number {bp}.')
+                return
+
+        del self.bp_list[bp.addr]
+
+    def do_breakpoint(self, *args: str) -> None:
+        """Set a breakpoint on a specific address, or current one if not specified.
         """
+
+        address, *_ = args
+        address = try_read_int(address)
 
         if address is None:
             address = self.cur_addr
 
         self.set_breakpoint(address)
 
-        qdb_print(QDB_MSG.INFO, f"Breakpoint at 0x{address:08x}")
+        qdb_print(QDB_MSG.INFO, f"breakpoint set at {address:#010x}")
 
-    @parse_int
-    def do_disassemble(self, address: Optional[int] = None) -> None:
+    def do_disassemble(self, *args: str) -> None:
+        """Disassemble a few instructions starting from specified address.
         """
-        disassemble instructions from address specified
+
+        address, *_ = args
+        address = try_read_int(address)
+
+        if address is None:
+            address = self.cur_addr
+
+        self.do_examine(f'x/{self.render.disasm_num * 2}i {address}')
+
+    def do_examine(self, line: str) -> None:
+        """Examine memory.
+
+        Usage: x/nfu target (all arguments are optional)
+        Where:
+            n - number of units to read
+            f - format specifier
+            u - unit type
         """
 
         try:
-            context_asm(self.ql, address)
-        except:
-            qdb_print(QDB_MSG.ERROR)
-
-    def do_examine(self, line: str) -> None:
-
-        """
-        Examine memory: x/FMT ADDRESS.
-        format letter: o(octal), x(hex), d(decimal), u(unsigned decimal), t(binary), f(float), a(address), i(instruction), c(char), s(string) and z(hex, zero padded on the left)
-        size letter: b(byte), h(halfword), w(word), g(giant, 8 bytes)
-        e.g. x/4wx 0x41414141 , print 4 word size begin from address 0x41414141 in hex
-        """
-
-        if type(err_msg := self.mm.parse(line)) is str:
-            qdb_print(QDB_MSG.ERROR, err_msg)
-
+            self.helper.handle_examine(line)
+        except (KeyError, ValueError, SyntaxError) as ex:
+            qdb_print(QDB_MSG.ERROR, ex)
 
     def do_set(self, line: str) -> None:
         """
@@ -371,192 +410,202 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         # set $a = b
 
-        reg, val = line.split("=")
-        reg_name = reg.strip().strip("$")
-        reg_val = try_read_int(val.strip())
-
-        if reg_name in self.ql.arch.regs.save().keys():
-            if reg_val is not None:
-                setattr(self.ql.arch.regs, reg_name, reg_val)
-                self.do_context()
-                qdb_print(QDB_MSG.INFO, f"set register {reg_name} to 0x{(reg_val & 0xfffffff):08x}")
-
-            else:
-                qdb_print(QDB_MSG.ERROR, f"error parsing input: {reg_val} as integer value")
-
+        try:
+            reg, value = self.helper.handle_set(line)
+        except (KeyError, ValueError, SyntaxError) as ex:
+            qdb_print(QDB_MSG.ERROR, ex)
         else:
-            qdb_print(QDB_MSG.ERROR, f"invalid register: {reg_name}")
+            qdb_print(QDB_MSG.INFO, f"{reg} set to {value:#010x}")
 
-    def do_start(self, *args) -> None:
+    def do_start(self, *args: str) -> None:
         """
         restore qiling instance context to initial state
         """
 
-        if self.ql.arch != QL_ARCH.CORTEX_M:
+        if self.ql.arch.type is QL_ARCH.CORTEX_M:
             self.ql.restore(self.init_state)
             self.do_context()
 
-    def do_context(self, *args) -> None:
+    def do_context(self, *args: str) -> None:
         """
         display context information for current location
         """
 
-        self.render.context_reg(self._saved_reg_dump)
+        self.render.context_reg()
         self.render.context_stack()
         self.render.context_asm()
 
-    def do_jump(self, loc: str, *args) -> None:
+    def do_jump(self, *args: str) -> None:
         """
         seek to where ever valid location you want
         """
 
-        sym = self.marker.get_symbol(loc)
-        addr = sym if sym is not None else try_read_int(loc)
+        loc, *_ = args
+        addr = self.marker.get_address(loc)
+
+        if addr is None:
+            addr = try_read_int(loc)
+
+            if addr is None:
+                qdb_print(QDB_MSG.ERROR, 'seek target should be a symbol or an address')
+                return
 
         # check validation of the address to be seeked
-        if self.ql.mem.is_mapped(addr, 4):
-            if sym:
-                qdb_print(QDB_MSG.INFO, f"seek to {loc} @ 0x{addr:08x} ...")
-            else:
-                qdb_print(QDB_MSG.INFO, f"seek to 0x{addr:08x} ...")
+        if not self.ql.mem.is_mapped(addr, 4):
+            qdb_print(QDB_MSG.ERROR, f'seek target is unreachable: {addr:#010x}')
+            return
 
-            self.cur_addr = addr
-            self.do_context()
+        qdb_print(QDB_MSG.INFO, f'seeking to {addr:#010x} ...')
 
-        else:
-            qdb_print(QDB_MSG.ERROR, f"the address to be seeked isn't mapped")
+        self.cur_addr = addr
+        self.do_context()
 
-    def do_mark(self, args=""):
+    def do_mark(self, *args: str):
         """
         mark a user specified address as a symbol
         """
 
-        args = args.split()
-        if len(args) == 0:
+        if not args:
             loc = self.cur_addr
-            sym_name = self.marker.mark_only_loc(loc)
+            sym = self.marker.mark(loc)
 
         elif len(args) == 1:
-            if (loc := try_read_int(args[0])):
-                sym_name = self.marker.mark_only_loc(loc)
+            addr, *_ = args
+            loc = try_read_int(addr)
 
-            else:
+            if loc is None:
                 loc = self.cur_addr
-                sym_name = args[0]
-                if (err := self.marker.mark(sym_name, loc)):
-                    qdb_print(QDB_MSG.ERROR, err)
+                sym = args[0]
+
+                if not self.marker.mark(loc, sym):
+                    qdb_print(QDB_MSG.ERROR, f"duplicated symbol name: {sym} at address: {loc:#010x}")
                     return
 
-        elif len(args) == 2:
-            sym_name, addr = args
-            if (loc := try_read_int(addr)):
-                self.marker.mark(sym_name, loc)
             else:
+                sym = self.marker.mark(loc)
+
+        elif len(args) == 2:
+            sym, addr = args
+            loc = try_read_int(addr)
+
+            if loc is None:
                 qdb_print(QDB_MSG.ERROR, f"unable to mark symbol at address: '{addr}'")
                 return
+
+            else:
+                self.marker.mark(loc, sym)
+
         else:
             qdb_print(QDB_MSG.ERROR, "symbol should not be empty ...")
             return
 
-        qdb_print(QDB_MSG.INFO, f"mark symbol '{sym_name}' at address: 0x{loc:08x} ...")
+        qdb_print(QDB_MSG.INFO, f"mark symbol '{sym}' at address: 0x{loc:08x} ...")
 
-    @parse_int
-    def do_show_args(self, argc: int = -1):
+    @staticmethod
+    @contextmanager
+    def __set_temp(obj: object, member: str, value: Any):
+        """A utility context manager that temporarily sets a new value to an
+        object member, only to run a certain functionality. Then the change
+        is reverted.
+        """
+
+        has_member = hasattr(obj, member)
+
+        if has_member:
+            orig = getattr(obj, member)
+            setattr(obj, member, value)
+
+        try:
+            yield
+        finally:
+            if has_member:
+                setattr(obj, member, orig)
+
+    def do_show_args(self, *args: str):
         """
         show arguments of a function call
         default argc is 2 since we don't know the function definition
         """
 
+        argc, *_ = args or ('',)
+        argc = try_read_int(argc)
+
         if argc is None:
-            argc = -1
+            argc = 2
 
-        elif argc > 16:
-            qdb_print(QDB_MSG.ERROR, 'Maximum argc is 16.')
+        if argc > 16:
+            qdb_print(QDB_MSG.ERROR, 'can show up to 16 arguments')
             return
 
-        prophecy = self.predictor.predict()
-        if not prophecy.going:
-            qdb_print(QDB_MSG.ERROR, 'Not on a braching instruction currently.')
+        if not self.predictor.is_fcall():
+            qdb_print(QDB_MSG.ERROR, 'available only on a function call instruction')
             return
 
-        if argc == -1:
-            reg_n, stk_n = 2, 0
-        else:
-            if argc > 4:
-                reg_n, stk_n = 4, argc - 4
-            elif argc <= 4:
-                reg_n, stk_n = argc, 0
+        # the cc methods were designed to access fcall arguments from within the function,
+        # and therefore assume a return address is on the stack (in relevant archs), so they
+        # skip it. when we are just about to call a function the return address is not yet
+        # there and the arguments, if read off the stack, get messed up.
+        #
+        # here we work around this by temporarily cheating cc to think there is no return
+        # address on the stack, so it does not skip it.
 
-        ptr_size = self.ql.arch.pointersize
+        with QlQdb.__set_temp(self.ql.os.fcall.cc, '_retaddr_on_stack', False):
+            fargs = [self.ql.os.fcall.cc.getRawParam(i) for i in range(argc)]
 
-        reg_args = []
-        arch_type = self.ql.arch.type
-        if arch_type in (QL_ARCH.MIPS, QL_ARCH.ARM, QL_ARCH.CORTEX_M, QL_ARCH.X8664):
+        # mips requires a special handling since the instruction in delay slot might
+        # affect one of the reg arguments values
+        if self.ql.arch.type is QL_ARCH.MIPS:
+            slot_addr = self.cur_addr + self.ql.arch.pointersize
+            _, _, _, op_str = self.predictor.disasm_lite(slot_addr)
+            operands = op_str.split(',')
 
-            reg_idx = None
-            if arch_type == QL_ARCH.MIPS:
-                slot_addr = self.cur_addr + ptr_size
+            reg_args = ('$a0', '$a1', '$a2', '$a3')
 
-                op_str = self.predictor.disasm(slot_addr).op_str
-                # register may be changed due to dealy slot
-                if '$a' in op_str.split(',')[0]:
-                    dst_reg = op_str.split(',')[0].strip('$')
-                    reg_idx = int(dst_reg.strip('a'))
+            # find out whether one of the argument registers gets modified in the dealy slot
+            if any(a in operands[0] for a in reg_args):
+                last = self.last_addr
 
-                    # fetch real value by emulating instruction in delay slot
-                    with self._save() as qdb:
-                        qdb._run(slot_addr, 0, count=1)
-                        real_val = self.ql.arch.regs.read(dst_reg)
+                dst_reg = operands[0].strip('$')
+                reg_idx = int(dst_reg.strip('a'))
 
-                reg_names = [f'a{d}'for d in range(reg_n)]
-                if reg_idx != None:
-                    reg_names.pop(reg_idx)
+                # fetch real value by emulating instruction in delay slot
+                with self.save() as qdb:
+                    qdb._run(slot_addr, count=1)
+                    real_val = self.ql.arch.regs.read(dst_reg)
 
-            elif arch_type in (QL_ARCH.ARM, QL_ARCH.CORTEX_M):
-                reg_names = [f'r{d}'for d in range(reg_n)]
+                # update argument value with the calculated one
+                fargs[reg_idx] = real_val
 
-            elif arch_type == QL_ARCH.X8664:
-                reg_names = ('rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9')[:reg_n]
+                # we don't want that to count as emulation, so restore last address
+                self.last_addr = last
 
-            reg_args = [self.ql.arch.regs.read(reg_name) for reg_name in reg_names]
-            if reg_idx != None:
-                reg_args.insert(reg_idx, real_val)
+        nibbles = self.ql.arch.pointersize * 2
 
-            reg_args = list(map(hex, reg_args))
+        for i, a in enumerate(fargs):
+            deref = self.render.get_deref(a)
 
-        elif arch_type == QL_ARCH.X86:
-            stk_n = 2 if argc == -1 else argc
+            if isinstance(deref, int):
+                deref_str = f'{deref:#0{nibbles + 2}x}'
 
-        # read arguments on stack
-        if stk_n >= 0:
-            shadow_n = 0
-            base_offset = self.ql.arch.regs.arch_sp
+            elif isinstance(deref, str):
+                deref_str = f'"{deref}"'
 
-            if arch_type in (QL_ARCH.X86, QL_ARCH.X8664):
-                # shadow 1 pointer size for return address
-                shadow_n = 1
+            else:
+                deref_str = ''
 
-            elif arch_type == QL_ARCH.MIPS:
-                # shadow 4 pointer size for mips
-                shadow_n = 4
+            qdb_print(QDB_MSG.INFO, f'arg{i}: {a:#0{nibbles + 2}x}{f" {RARROW} {deref_str}" if deref_str else ""}')
 
-            base_offset = self.ql.arch.regs.arch_sp + shadow_n * ptr_size
-            stk_args = [self.ql.mem.read(base_offset+offset*ptr_size, ptr_size) for offset in range(stk_n)]
-            endian = 'little' if self.ql.arch.endian == QL_ENDIAN.EL else 'big'
-            stk_args = list(map(hex, map(lambda x: int.from_bytes(x, endian), stk_args)))
-
-        args = reg_args + stk_args
-        qdb_print(QDB_MSG.INFO, f'args: {args}')
-
-    def do_show(self, keyword: Optional[str] = None, *args) -> None:
+    def do_show(self, *args: str) -> None:
         """
         show some runtime information
         """
 
-        qdb_print(QDB_MSG.INFO, f"Entry point: {self.ql.loader.entry_point:#x}")
+        keyword, *_ = args or ('',)
 
-        if addr_elf_entry := getattr(self.ql.loader, 'elf_entry', None):
-            qdb_print(QDB_MSG.INFO, f"ELF entry: {addr_elf_entry:#x}")
+        qdb_print(QDB_MSG.INFO, f"Entry point: {self.ql.loader.entry_point:#010x}")
+
+        if hasattr(self.ql.loader, 'elf_entry'):
+            qdb_print(QDB_MSG.INFO, f"ELF entry point: {self.ql.loader.elf_entry:#010x}")
 
         info_lines = iter(self.ql.mem.get_formatted_mapinfo())
 
@@ -565,17 +614,18 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         # keyword filtering
         if keyword:
-            lines = filter(lambda line: keyword in line, info_lines)
+            lines = (line for line in info_lines if keyword in line)
         else:
             lines = info_lines
 
         for line in lines:
             qdb_print(QDB_MSG.INFO, line)
 
-        qdb_print(QDB_MSG.INFO, f"Breakpoints: {[hex(addr) for addr in self.bp_list.keys()]}")
-        qdb_print(QDB_MSG.INFO, f"Marked symbol: {[{key:hex(val)} for key,val in self.marker.mark_list]}")
+        qdb_print(QDB_MSG.INFO, f"Breakpoints: {[f'{addr:#010x}' for addr, bp in self.bp_list.items() if not bp.temp]}")
+        qdb_print(QDB_MSG.INFO, f"Marked symbols: {[{key: f'{addr:#010x}'} for key, addr in self.marker.mark_list]}")
+
         if self.rr:
-            qdb_print(QDB_MSG.INFO, f"Snapshots: {len([st for st in self.rr.layers if isinstance(st, self.rr.DiffedState)])}")
+            qdb_print(QDB_MSG.INFO, f"Snapshots: {len(self.rr.layers)}")
 
     def do_script(self, filename: str) -> None:
         """
@@ -584,7 +634,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
 
         if filename:
-            run_qdb_script(self, filename)
+            self.run_qdb_script(filename)
         else:
             qdb_print(QDB_MSG.ERROR, "parameter filename must be specified")
 
@@ -593,27 +643,35 @@ class QlQdb(cmd.Cmd, QlDebugger):
         run python code
         """
 
+        # allowing arbitrary shell commands is a huge secure problem. until it gets
+        # removed, block shell command in scripts for security reasons
+        if self._script:
+            qdb_print(QDB_MSG.ERROR, 'shell command is not allowed on script')
+            return
+
         try:
             print(eval(*command))
         except:
             qdb_print(QDB_MSG.ERROR, "something went wrong ...")
 
-    def do_quit(self, *args) -> bool:
+    def do_quit(self, *args: str) -> None:
         """
         exit Qdb and stop running qiling instance
         """
 
         self.ql.stop()
-        if self._script:
-            return True
-        exit()
 
-    def do_EOF(self, *args) -> None:
+        sys.exit(0)
+
+    def do_EOF(self, *args: str) -> None:
         """
         handle Ctrl+D
         """
 
-        if input(f"{color.RED}[!] Are you sure about saying good bye ~ ? [Y/n]{color.END} ").strip() == "Y":
+        prompt = f'{color.RED}[!] are you sure you want to quit? [Y/n]{color.END} '
+        answer = input(prompt).strip()
+
+        if not answer or answer.lower() == 'y':
             self.do_quit()
 
     do_r = do_run
@@ -628,7 +686,3 @@ class QlQdb(cmd.Cmd, QlDebugger):
     do_c = do_continue
     do_b = do_breakpoint
     do_dis = do_disassemble
-
-
-if __name__ == "__main__":
-    pass
