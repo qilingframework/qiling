@@ -330,7 +330,7 @@ class QlLoaderELF(QlLoader):
         hwcap_values = {
             (QL_ARCH.ARM,   QL_ENDIAN.EL, 32): 0x001fb8d7,
             (QL_ARCH.ARM,   QL_ENDIAN.EB, 32): 0xd7b81f00,
-            (QL_ARCH.ARM64, QL_ENDIAN.EL, 64): 0x078bfbfd
+            (QL_ARCH.ARM64, QL_ENDIAN.EL, 64): 0x078bfafd
         }
 
         # determine hwcap value by arch properties; if not found default to 0
