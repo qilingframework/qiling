@@ -1,8 +1,8 @@
 # break on entry to main
-b 0x000103fc
+b 0x000102e4
 
 # break on call to puts
-b 0x00010414
+b 0x000102ee
 
 # run till main
 c
@@ -17,7 +17,7 @@ c
 info args 1
 
 # show instructions passed call till end of function
-x/4i ($pc + 4)
+x/3i ($pc + 4)
 
 # step over call to puts
 n

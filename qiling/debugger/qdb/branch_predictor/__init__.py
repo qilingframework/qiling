@@ -4,7 +4,13 @@
 #
 
 from .branch_predictor import BranchPredictor
-from .branch_predictor_x86 import BranchPredictorX86
-from .branch_predictor_mips import BranchPredictorMIPS
 from .branch_predictor_arm import BranchPredictorARM, BranchPredictorCORTEX_M
-from .branch_predictor_x8664 import BranchPredictorX8664
+from .branch_predictor_intel import BranchPredictorX86, BranchPredictorX64
+from .branch_predictor_mips import BranchPredictorMIPS
+
+__all__ = [
+	'BranchPredictor',
+	'BranchPredictorARM', 'BranchPredictorCORTEX_M',
+	'BranchPredictorX86', 'BranchPredictorX64',
+	'BranchPredictorMIPS'
+]

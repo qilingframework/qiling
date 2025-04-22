@@ -28,7 +28,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-capstone = "^4"
+capstone = "^5"
 unicorn = "2.1.3"
 pefile = ">=2022.5.30"
 python-registry = "^1.3.1"
