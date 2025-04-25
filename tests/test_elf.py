@@ -770,7 +770,7 @@ class ELFTest(unittest.TestCase):
         self.assertNotIn("root\n", ql.os.stdout.read().decode("utf-8"))
 
         del ql
-
+    @unittest.skip('See PR')
     def test_elf_linux_x8664_epoll_simple(self):
         # TODO: Get the example in rootfs, see https://github.com/qilingframework/rootfs/pull/35
         # epoll-0 source: https://github.com/maxasm/epoll-c/blob/main/main.c
@@ -783,6 +783,7 @@ class ELFTest(unittest.TestCase):
         ql.run()
         self.assertIn("echo", ql.os.stdout.read().decode("utf-8"))
         del ql
+    @unittest.skip('See PR')
     def test_elf_linux_x8664_epoll_server(self):
         # TODO: https://github.com/qilingframework/rootfs/pull/35 must be merged
         # Source for onestraw server: https://github.com/onestraw/epoll-example
