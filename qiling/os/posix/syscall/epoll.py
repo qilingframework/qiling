@@ -19,23 +19,21 @@ class QlEpollObj:
         # since this isn't directly supported in select.epoll
 
     @property
-    def get_epoll_instance(self):
+    def epoll_instance(self):
         return self._epoll_object
 
     @property
-    def get_eventmask(self, fd):
+    def eventmask(self, fd):
         return self._fds[fd]
 
     @property
-    def get_fds(self):
-        if len(self._fds.keys()) == 0:
-            return []
+    def fds(self):
         return list(self._fds.keys())
 
-    def set_eventmask(self, fd, newmask):
+    def eventmask(self, fd: int, newmask: int):
         # the mask for an FD shouldn't ever be undefined
         # as it is set whenever an FD is added for a QlEpollObj instance
-        newmask = self.get_eventmask() | newmask  # or with new eventmask value
+        newmask = self.eventmask() | newmask  # or with new eventmask value
         self._epoll_object.modify(fd, newmask)
 
     def monitor_fd(self, fd, eventmask):
@@ -49,31 +47,28 @@ class QlEpollObj:
         self._epoll_object.unregister(fd)
 
     def close(self):
-        self.get_epoll_instance.close()
+        self.epoll_instance.close()
 
-    def is_present(self, fd):
-        if fd not in self.get_fds:
-            return 0
-        return 1
+    def is_present(self, fd: int) -> bool:
+        return fd in self.get_fds
 
-'''
+"""
 Recursively checks each epoll instance's 'watched'
 fds for an instance of epoll being watched.
 If a chain of over 5 levels is detected, return
 1, which will return ELOOP in ql_syscall_epoll_wait
-'''
+"""
 def check_epoll_depth(ql_fd_list, epolls_list, depth):
     if depth == 7:
         return 1
     new_epolls_list = []
     flag = 0
     for ent in list(epolls_list):
-        watched = ent.get_fds
+        watched = ent.fds
         for w in watched:
             if isinstance(ql_fd_list[w], QlEpollObj):
-                flag = 1
                 new_epolls_list.append(ql_fd_list[w])
-        if flag:
+        if new_epolls_list:
             check_epoll_depth(ql_fd_list, new_epolls_list, depth + 1)
     return 0
 
@@ -83,17 +78,12 @@ man 7 epoll for more details
 '''
 def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: POINTER):
     # Basic sanity checks first
-    if event != 0:
-        ql_event = ql.unpack32(ql.mem.read(event, 4))  # events list is uint32_t
-    else:
-        ql_event = (
-            0  # event can be null, for example, when deleting a fd from interest list
-        )
+    ql_event = event and ql.mem.read_ptr(event, 4)
     ql_op = ""
     epoll_obj = -1
     try:
         epoll_parent_obj = ql.os.fd[epfd]
-        epoll_obj = epoll_parent_obj.get_epoll_instance
+        epoll_obj = epoll_parent_obj.epoll_instance
     except KeyError as k:
         ql.log.debug("Unable to grab epoll object, something wrong with ql.os.fd!")
         ql.log.debug(k)
@@ -101,8 +91,6 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: POINTER
     try:
         ql_op = EPOLL_OPS[op]
     except KeyError as k:
-        ql.log.debug("Warning, invalid epoll op detected")
-        ql.log.debug(k)
         return EINVAL  # not clear from man page, but to be safe don't support 'undefined' ops.
     """
 	Qiling doesn't check process capabilities right now, so this case isn't explicitly handled yet
@@ -165,9 +153,9 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: POINTER
         ):  # ENOENT op was EPOLL_CTL_MOD or EPOLL_CTL_DEL, and fd is not registered with this epoll instance
             return ENOENT
         # EINVAL op was EPOLL_CTL_MOD and events included EPOLLEXCLUSIVE.
-        if op & EPOLLEXCLUSIVE and fd in epoll_obj.get_fds:
+        if op & EPOLLEXCLUSIVE and fd in epoll_obj.fds:
             return EINVAL  # EINVAL op was EPOLL_CTL_MOD and the EPOLLEXCLUSIVE flag has previously been applied to this epfd, fd pair.
-        epoll_parent_obj.set_eventmask(ql_event)
+        epoll_parent_obj.eventmask(ql_event)
 
     return 0
 
@@ -188,14 +176,14 @@ def ql_syscall_epoll_wait(
 
     try:
         epoll_parent_obj = ql.os.fd[epfd]
-        epoll_obj = epoll_parent_obj.get_epoll_instance
+        epoll_obj = epoll_parent_obj.epoll_instance
         if not isinstance(epoll_parent_obj, QlEpollObj):
             return EINVAL
     except KeyError:
         ql.log.debug(f"FD {epfd} doesn't appear to be a valid epoll file descriptor")
         return EBADF
     try:
-        ql_event = ql.unpack(ql.mem.read(epoll_events, ql.arch.pointersize))
+        ql_event = ql.mem.read_ptr(epoll_events, ql.arch.pointersize)
     except Exception:
         ql.log.debug("Can't read from epoll_events pointer")
         return EFAULT

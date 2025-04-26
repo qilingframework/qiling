@@ -785,19 +785,13 @@ class ELFTest(unittest.TestCase):
         del ql
     @unittest.skip('See PR')
     def test_elf_linux_x8664_epoll_server(self):
-        # TODO: https://github.com/qilingframework/rootfs/pull/35 must be merged
         # Source for onestraw server: https://github.com/onestraw/epoll-example
         # with a slight change to exit after the first request
         def client():
             time.sleep(3) # give time for the server to listen
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             dest = ("127.0.0.1", 8000)
-            try:
-                s.connect(dest)
-            except Exception as e:
-                ql.log.debug('test failed')
-                ql.log.debug(e)
-
+            s.connect(dest)
             test = b"hello world"
             s.send(test)
             s.close()
