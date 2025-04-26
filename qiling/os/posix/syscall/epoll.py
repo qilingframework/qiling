@@ -11,6 +11,7 @@ from qiling.os.filestruct import PersistentQlFile
 from qiling.extensions import pipe
 import sys
 
+
 class QlEpollObj:
     def __init__(self, epoll_object):
         self._epoll_object = epoll_object
@@ -52,12 +53,15 @@ class QlEpollObj:
     def is_present(self, fd: int) -> bool:
         return fd in self.fds
 
+
 """
 Recursively checks each epoll instance's 'watched'
 fds for an instance of epoll being watched.
 If a chain of over 5 levels is detected, return
 1, which will return ELOOP in ql_syscall_epoll_wait
 """
+
+
 def check_epoll_depth(ql_fd_list, epolls_list, depth):
     if depth == 7:
         return 1
@@ -72,10 +76,13 @@ def check_epoll_depth(ql_fd_list, epolls_list, depth):
             check_epoll_depth(ql_fd_list, new_epolls_list, depth + 1)
     return 0
 
-'''
+
+"""
 Modify an existing epoll
 man 7 epoll for more details
-'''
+"""
+
+
 def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: POINTER):
     # Basic sanity checks first
     ql_event = event and ql.mem.read_ptr(event, 4)
@@ -160,10 +167,12 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: POINTER
     return 0
 
 
-'''
+"""
 Wait on an existing epoll for events specified
 earlier. man 7 epoll_wait for more info
-'''
+"""
+
+
 def ql_syscall_epoll_wait(
     ql: Qiling, epfd: int, epoll_events: POINTER, maxevents: int, timeout: int
 ):
@@ -215,6 +224,8 @@ def ql_syscall_epoll_wait(
 Use select.epoll for underlying implementation,
 just as select.poll is used for emulating poll()
 """
+
+
 def ql_syscall_epoll_create1(ql: Qiling, flags: int):
     if flags != select.EPOLL_CLOEXEC and flags != 0:
         return EINVAL
@@ -229,6 +240,8 @@ def ql_syscall_epoll_create1(ql: Qiling, flags: int):
 Almost identical to above, but can't simply wrap
 because of the slightly different prototype
 """
+
+
 def ql_syscall_epoll_create(ql: Qiling, size: int):
     if size < 0:
         return EINVAL

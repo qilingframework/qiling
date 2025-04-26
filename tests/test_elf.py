@@ -12,6 +12,8 @@ import re
 import socket
 import sys
 import time
+import threading
+from ctypes import *
 sys.path.append("..")
 
 from typing import Any, Sequence
@@ -788,10 +790,27 @@ class ELFTest(unittest.TestCase):
         ql.run()
         self.assertIn("echo", ql.os.stdout.read().decode("utf-8"))
         del ql
-    @unittest.skip('See PR')
+    """
+    This tests a simple server that uses epoll
+    to wait for data, then prints it out. It has been
+    modified to exit after data has been received; instead
+    of a typical server operation that reads requests indefinitely.
+
+    It listens on port 8000, and a separate thread is spawned in
+    order to test how the server handles a 'hello world' input.
+    The server prints out whatever it receives, so the assert
+    statement checks the input is present as expected. 
+    """
+    #@unittest.skip('See PR')
     def test_elf_linux_x8664_epoll_server(self):
         # Source for onestraw server: https://github.com/onestraw/epoll-example
-        # with a slight change to exit after the first request
+
+        """
+        FIXME: Without a hook for this syscall, this error fires:
+        TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType
+        """
+        def hook_newfstatat(ql: Qiling, dirfd: int, pathname: POINTER, statbuf: POINTER, flags:int):
+            return 0
         def client():
             time.sleep(3) # give time for the server to listen
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -800,13 +819,12 @@ class ELFTest(unittest.TestCase):
             test = b"hello world"
             s.send(test)
             s.close()
-        # use threads here to test how the server
-        # handles the request
         client_thread = threading.Thread(target=client, daemon=True)
         client_thread.start()
         rootfs = "../examples/rootfs/"
         argv = r"../examples/rootfs/x8664_linux/bin/onestraw-server s".split() # s means 'server mode'
         ql = Qiling(argv, rootfs, multithread=False, verbose=QL_VERBOSE.DEBUG)
+        ql.os.set_syscall("newfstatat",hook_newfstatat, QL_INTERCEPT.CALL)
         ql.os.stdout = pipe.SimpleOutStream(1) # server prints data received to stdout
         ql.filter = '^data:'
         ql.run()
