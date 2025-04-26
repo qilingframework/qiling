@@ -770,14 +770,19 @@ class ELFTest(unittest.TestCase):
         self.assertNotIn("root\n", ql.os.stdout.read().decode("utf-8"))
 
         del ql
+    
+    """
+    This tests a sample binary that (e)polls on stdin
+    and echos back the output. Upon receiving 'stop', it
+    will exit. 
+    """
     @unittest.skip('See PR')
     def test_elf_linux_x8664_epoll_simple(self):
-        # TODO: Get the example in rootfs, see https://github.com/qilingframework/rootfs/pull/35
         # epoll-0 source: https://github.com/maxasm/epoll-c/blob/main/main.c
         rootfs = "../examples/rootfs/x8664_linux"
-        argv = r"../examples/rootfs/x8664_linux/bin/epoll-0".split()
-        ql = qiling.Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
-        ql.os.stdin = pipe.InteractiveInStream(0)
+        argv = r"../examples/rootfs/x8664_linux/bin/x8664_linux_epoll_0".split()
+        ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
+        ql.os.stdin = pipe.SimpleBufferedStream()
         ql.os.stdin.write(b'echo\n')
         ql.os.stdin.write(b"stop\n") # signal to exit gracefully
         ql.run()
@@ -801,7 +806,7 @@ class ELFTest(unittest.TestCase):
         client_thread.start()
         rootfs = "../examples/rootfs/"
         argv = r"../examples/rootfs/x8664_linux/bin/onestraw-server s".split() # s means 'server mode'
-        ql = qiling.Qiling(argv, rootfs, multithread=False, verbose=QL_VERBOSE.DEBUG)
+        ql = Qiling(argv, rootfs, multithread=False, verbose=QL_VERBOSE.DEBUG)
         ql.os.stdout = pipe.SimpleOutStream(1) # server prints data received to stdout
         ql.filter = '^data:'
         ql.run()

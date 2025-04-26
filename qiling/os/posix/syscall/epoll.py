@@ -50,7 +50,7 @@ class QlEpollObj:
         self.epoll_instance.close()
 
     def is_present(self, fd: int) -> bool:
-        return fd in self.get_fds
+        return fd in self.fds
 
 """
 Recursively checks each epoll instance's 'watched'
