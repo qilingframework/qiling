@@ -24,7 +24,7 @@ class QlEpollObj:
         return self._epoll_object
 
     @property
-    def eventmask(self, fd):
+    def eventmask(self, fd: int):
         return self._fds[fd]
 
     @property
@@ -37,13 +37,13 @@ class QlEpollObj:
         newmask = self.eventmask() | newmask  # or with new eventmask value
         self._epoll_object.modify(fd, newmask)
 
-    def monitor_fd(self, fd, eventmask):
+    def monitor_fd(self, fd: int, eventmask: int) -> None:
         self._epoll_object.register(
             fd, eventmask
         )  # tell the epoll object to watch the fd arg, looking for events matching the eventmask
         self._fds[fd] = eventmask
 
-    def delist_fd(self, fd):
+    def delist_fd(self, fd: int) -> None:
         self._fds.pop(fd)
         self._epoll_object.unregister(fd)
 
