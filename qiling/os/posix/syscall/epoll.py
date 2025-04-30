@@ -55,7 +55,10 @@ class QlEpollObj:
     def close(self) -> None:
         self.epoll_instance.close()
 
-    def is_present(self, fd: int) -> bool:
+    def __contains__(self, fd: int) -> bool:
+        """Test whether a specific fd is already being watched by this epoll instance.
+        """
+
         return fd in self.fds
 
 
@@ -142,7 +145,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
     if op == EPOLL_CTL_ADD:
         # can't add an fd that's already being waited on
-        if epoll_parent_obj.is_present(fd):
+        if fd in epoll_parent_obj:
             return -EEXIST
 
         # add to list of fds to be monitored with per-fd eventmask register will actual epoll
@@ -150,14 +153,14 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
         epoll_parent_obj.monitor_fd(fd, ql_event)
 
     elif op == EPOLL_CTL_DEL:
-        if not epoll_parent_obj.is_present(fd):
+        if fd not in epoll_parent_obj:
             return -ENOENT
 
         # remove from fds list and do so in the underlying epoll instance
         epoll_parent_obj.delist_fd(fd)
 
     elif op == EPOLL_CTL_MOD:
-        if not epoll_parent_obj.is_present(fd):
+        if fd not in epoll_parent_obj:
             return -ENOENT
 
         # EINVAL op was EPOLL_CTL_MOD and events included EPOLLEXCLUSIVE.
