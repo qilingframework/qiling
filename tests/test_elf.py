@@ -778,17 +778,17 @@ class ELFTest(unittest.TestCase):
     and echos back the output. Upon receiving 'stop', it
     will exit. 
     """
-    @unittest.skip('See PR')
+    @unittest.skip("TODO: Stdin hijacking doesn't work as expected")
     def test_elf_linux_x8664_epoll_simple(self):
         # epoll-0 source: https://github.com/maxasm/epoll-c/blob/main/main.c
         rootfs = "../examples/rootfs/x8664_linux"
         argv = r"../examples/rootfs/x8664_linux/bin/x8664_linux_epoll_0".split()
         ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
-        ql.os.stdin = pipe.SimpleBufferedStream()
+        #ql.os.stdin = pipe.SimpleInStream(0)
         ql.os.stdin.write(b'echo\n')
         ql.os.stdin.write(b"stop\n") # signal to exit gracefully
         ql.run()
-        self.assertIn("echo", ql.os.stdout.read().decode("utf-8"))
+        self.assertIn("echo\n", ql.os.stdout.read().decode("utf-8"))
         del ql
     """
     This tests a simple server that uses epoll
@@ -806,7 +806,7 @@ class ELFTest(unittest.TestCase):
         # Source for onestraw server: https://github.com/onestraw/epoll-example
 
         """
-        FIXME: Without a hook for this syscall, this error fires:
+        Note: Without a hook for this syscall, this error fires:
         TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType
         """
         def hook_newfstatat(ql: Qiling, dirfd: int, pathname: POINTER, statbuf: POINTER, flags:int):
@@ -821,8 +821,8 @@ class ELFTest(unittest.TestCase):
             s.close()
         client_thread = threading.Thread(target=client, daemon=True)
         client_thread.start()
-        rootfs = "../examples/rootfs/"
-        argv = r"../examples/rootfs/x8664_linux/bin/onestraw-server s".split() # s means 'server mode'
+        rootfs = "../examples/rootfs/x8664_linux_glibc2.39"
+        argv = r"../examples/rootfs/x8664_linux/bin/x8664_onestraw_server s".split() # s means 'server mode'
         ql = Qiling(argv, rootfs, multithread=False, verbose=QL_VERBOSE.DEBUG)
         ql.os.set_syscall("newfstatat",hook_newfstatat, QL_INTERCEPT.CALL)
         ql.os.stdout = pipe.SimpleOutStream(1) # server prints data received to stdout

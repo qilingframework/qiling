@@ -12,7 +12,7 @@ from qiling.os.filestruct import PersistentQlFile
 
 if TYPE_CHECKING:
     from qiling.os.posix.posix import QlFileDes
-
+from qiling.os.posix.posix import QlFileDes
 
 class QlEpollObj:
     def __init__(self, epoll_object: select.epoll):
@@ -38,9 +38,9 @@ class QlEpollObj:
         # the mask for an FD shouldn't ever be undefined
         # as it is set whenever an FD is added for a QlEpollObj instance
 
-        # elicn: don't we need to update self._fds[fd] with the new mask just like in monitor_fd?
-
+        # libumem: resolved elicn feedback
         newmask = self.get_eventmask(fd) | newmask
+        self._fds[fd] = newmask
         self._epoll_object.modify(fd, newmask)
 
     def monitor_fd(self, fd: int, eventmask: int) -> None:
@@ -117,7 +117,8 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     #     If EPOLLONESHOT and EPOLLET are clear and the process has the CAP_BLOCK_SUSPEND capability
 
     # TODO: not sure if qiling supports a way to determine if the target file descriptor is a
-    # directory Check against PersistentQlFile is to ensure that polling stdin, stdout, stderr
+    # directory. 
+    # Here, check against PersistentQlFile is to ensure that polling stdin, stdout, stderr
     # is supported
 
     fd_obj = ql.os.fd[fd]
@@ -203,11 +204,6 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
     if epoll_obj is None:
         return -EBADF
 
-    # elicn: ql_event is not used, not sure why we need that here
-    # try:
-    #     ql_event = ql.mem.read_ptr(epoll_events)
-    # except Exception:
-    #     return -EFAULT
 
     ready_fds = epoll_obj.poll(timeout, maxevents)
 
@@ -221,8 +217,7 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
 
         data = ql.pack32(interest_mask) + ql.pack(fd)
         offset = len(data) * i
-
-        # elicn: maybe we need to use ql_event instead of epoll_events here..?
+        # Resolved elicn remark, ql_event was dead code
         ql.mem.write(epoll_events + offset, data)
 
     return len(ready_fds)
