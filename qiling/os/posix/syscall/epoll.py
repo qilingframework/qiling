@@ -1,18 +1,17 @@
+from __future__ import annotations
+
 import select
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, KeysView
 
-from qiling import *
-from qiling.const import *
 from qiling.os.posix.const import *
-from qiling.os.const import *
-from qiling.os.filestruct import ql_file
-from qiling.os.filestruct import PersistentQlFile
+from qiling.os.filestruct import PersistentQlFile, ql_file
 
 
 if TYPE_CHECKING:
+    from qiling import Qiling
     from qiling.os.posix.posix import QlFileDes
-from qiling.os.posix.posix import QlFileDes
+
 
 class QlEpollObj:
     def __init__(self, epoll_object: select.epoll):
@@ -24,8 +23,8 @@ class QlEpollObj:
         self._fds: Dict[int, int] = {}
 
     @property
-    def fds(self) -> List[int]:
-        return list(self._fds.keys())
+    def fds(self) -> KeysView[int]:
+        return self._fds.keys()
 
     @property
     def epoll_instance(self) -> select.epoll:
@@ -38,10 +37,10 @@ class QlEpollObj:
         # the mask for an FD shouldn't ever be undefined
         # as it is set whenever an FD is added for a QlEpollObj instance
 
-        # libumem: resolved elicn feedback
         newmask = self.get_eventmask(fd) | newmask
-        self._fds[fd] = newmask
+
         self._epoll_object.modify(fd, newmask)
+        self._fds[fd] = newmask
 
     def monitor_fd(self, fd: int, eventmask: int) -> None:
         # tell the epoll object to watch the fd arg, looking for events matching the eventmask
@@ -53,7 +52,7 @@ class QlEpollObj:
         self._epoll_object.unregister(fd)
 
     def close(self) -> None:
-        self.epoll_instance.close()
+        self._epoll_object.close()
 
     def __contains__(self, fd: int) -> bool:
         """Test whether a specific fd is already being watched by this epoll instance.
@@ -111,27 +110,19 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 	# EPOLLWAKEUP (since Linux 3.5)
     #     If EPOLLONESHOT and EPOLLET are clear and the process has the CAP_BLOCK_SUSPEND capability
 
-    # TODO: not sure if qiling supports a way to determine if the target file descriptor is a
-    # directory. 
-    # Here, check against PersistentQlFile is to ensure that polling stdin, stdout, stderr
-    # is supported
-
     fd_obj = ql.os.fd[fd]
 
     if fd_obj is None:
         return -EBADF
 
+    # TODO: not sure if qiling supports a way to determine if the target file descriptor is a
+    # directory. Here, check against PersistentQlFile is to ensure that polling stdin, stdout,
+    # stderr is supported
+
     # The target file fd does not support epoll. This error can occur if fd refers to, for
     # example, a regular file or a directory.
     if isinstance(fd_obj, ql_file) and not isinstance(fd_obj, PersistentQlFile):
         return -EPERM
-
-    # elicn: not sure how the following condition even possible after we checked that op can
-    # be only one of EPOLL_CTL_{ADD,DEL,MOD} (originally checked with a dict)
-
-    # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
-    if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
-        return -EINVAL
 
     try:
         # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
@@ -210,22 +201,21 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
     if epoll_obj is None:
         return -EBADF
 
-
     ready_fds = epoll_obj.poll(timeout, maxevents)
 
     # Each tuple in ready_fds consists of (file descriptor, eventmask) so we iterate
     # through these to indicate which fds are ready and 'why'
 
-    for i, (fd, interest_mask) in enumerate(ready_fds):
+    for i, (fd, events) in enumerate(ready_fds):
         # if no longer interested in this fd, remove from list
-        if interest_mask & EPOLLONESHOT:
+        if events & EPOLLONESHOT:
             epoll_parent_obj.delist_fd(fd)
 
         # FIXME: the data packed after events should be the one passed on epoll_ctl
         # for that specific fd. currently this does not align with the spec
-        data = ql.pack32(interest_mask) + ql.pack64(fd)
+        data = ql.pack32(events) + ql.pack64(fd)
         offset = len(data) * i
-        # Resolved elicn remark, ql_event was dead code
+
         ql.mem.write(epoll_events + offset, data)
 
     return len(ready_fds)
