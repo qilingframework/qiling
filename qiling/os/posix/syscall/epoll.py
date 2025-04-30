@@ -141,16 +141,24 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     except RecursionError:
         return -ELOOP
 
-    ql_event = event and ql.mem.read_ptr(event, 4)
-
     if op == EPOLL_CTL_ADD:
         # can't add an fd that's already being waited on
         if fd in epoll_parent_obj:
             return -EEXIST
 
+        if not event:
+            return -EINVAL
+
+        event_ptr = ql.mem.read_ptr(event)
+        events = ql.mem.read_ptr(event_ptr, 4)
+
+        # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
+        if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
+            return -EINVAL
+
         # add to list of fds to be monitored with per-fd eventmask register will actual epoll
         # instance and add eventmask accordingly
-        epoll_parent_obj.monitor_fd(fd, ql_event)
+        epoll_parent_obj.monitor_fd(fd, events)
 
     elif op == EPOLL_CTL_DEL:
         if fd not in epoll_parent_obj:
@@ -163,11 +171,17 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
         if fd not in epoll_parent_obj:
             return -ENOENT
 
-        # EINVAL op was EPOLL_CTL_MOD and events included EPOLLEXCLUSIVE.
-        if op & EPOLLEXCLUSIVE and fd in epoll_obj.fds:
+        if not event:
             return -EINVAL
 
-        epoll_parent_obj.set_eventmask(fd, ql_event)
+        event_ptr = ql.mem.read_ptr(event)
+        events = ql.mem.read_ptr(event_ptr, 4)
+
+        # EPOLLEXCLUSIVE cannot be set on MOD operation, only on ADD
+        if events & EPOLLEXCLUSIVE:
+            return -EINVAL
+
+        epoll_parent_obj.set_eventmask(fd, events)
 
     return 0
 
