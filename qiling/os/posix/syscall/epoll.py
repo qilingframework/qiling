@@ -59,30 +59,22 @@ class QlEpollObj:
         return fd in self.fds
 
 
-def check_epoll_depth(ql_fd_list: QlFileDes, epolls_list: List[QlEpollObj], depth: int = 0) -> None:
-    # Recursively checks each epoll instance's 'watched' fds for an instance of
-    # epoll being watched. If a chain of over 5 levels is detected, return 1,
-    # which will return ELOOP in ql_syscall_epoll_wait
+def check_epoll_depth(ql_fd_list: QlFileDes) -> None:
+    """Recursively check each epoll instance's 'watched' fds for an instance of
+    epoll being watched. If a chain of over 5 levels is detected, raise an exception
+    """
 
-    if depth >= 5:
-        raise RecursionError
+    def __visit_obj(obj: QlEpollObj, depth: int):
+        if depth >= 5:
+            raise RecursionError
 
-    new_epolls_list = []
+        for fd in obj.fds:
+            if isinstance(ql_fd_list[fd], QlEpollObj):
+                __visit_obj(obj, depth + 1)
 
-    for ent in epolls_list:
-        watched = ent.fds
-
-        for w in watched:
-            obj = ql_fd_list[w]
-
-            if isinstance(obj, QlEpollObj):
-                new_epolls_list.append(obj)
-
-        # elicn: new_epolls_list is not cleared between loop iterations, rather it keeps
-        # aggregating items from previous iterations. is this what we want?
-
-        if new_epolls_list:
-            check_epoll_depth(ql_fd_list, new_epolls_list, depth + 1)
+    for obj in ql_fd_list:
+        if isinstance(obj, QlEpollObj):
+            __visit_obj(obj, 1)
 
 
 def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
@@ -138,14 +130,11 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
         return -EINVAL
 
-    # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
-    # than five epolls monitoring each other This may be removed in the future if the QlOsLinux
-    # class had a separate field for reserved for tracking epoll objects.
-    epolls_list = [fobj for fobj in ql.os.fd if isinstance(fobj, QlEpollObj)]
-
     try:
-        check_epoll_depth(ql.os.fd, epolls_list)
-    # more than five detected?
+        # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
+        # than five epolls monitoring each other This may be removed in the future if the QlOsLinux
+        # class had a separate field reserved for tracking epoll objects.
+        check_epoll_depth(ql.os.fd)
     except RecursionError:
         return -ELOOP
 
