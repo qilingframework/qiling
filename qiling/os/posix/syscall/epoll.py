@@ -221,7 +221,9 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
         if interest_mask & EPOLLONESHOT:
             epoll_parent_obj.delist_fd(fd)
 
-        data = ql.pack32(interest_mask) + ql.pack(fd)
+        # FIXME: the data packed after events should be the one passed on epoll_ctl
+        # for that specific fd. currently this does not align with the spec
+        data = ql.pack32(interest_mask) + ql.pack64(fd)
         offset = len(data) * i
         # Resolved elicn remark, ql_event was dead code
         ql.mem.write(epoll_events + offset, data)
