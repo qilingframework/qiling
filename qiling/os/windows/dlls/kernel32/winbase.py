@@ -159,24 +159,6 @@ def hook__lwrite(ql: Qiling, address: int, params):
 def hook_FatalExit(ql: Qiling, address: int, params):
     ql.emu_stop()
 
-# PVOID EncodePointer(
-#  _In_ PVOID Ptr
-# );
-@winsdkapi(cc=STDCALL, params={
-    'Ptr' : PVOID
-})
-def hook_EncodePointer(ql: Qiling, address: int, params):
-    return params['Ptr']
-
-# PVOID DecodePointer(
-#  _In_ PVOID Ptr
-# );
-@winsdkapi(cc=STDCALL, params={
-    'Ptr' : PVOID
-})
-def hook_DecodePointer(ql: Qiling, address: int, params):
-    return params['Ptr']
-
 # UINT WinExec(
 #   LPCSTR lpCmdLine,
 #   UINT   uCmdShow

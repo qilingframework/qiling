@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from qiling import Qiling
     from qiling.os.posix.posix import QlFileDes
 
-
 class QlEpollObj:
     def __init__(self, epoll_object: select.epoll):
         self._epoll_object = epoll_object
@@ -54,9 +53,11 @@ class QlEpollObj:
     def close(self) -> None:
         self._epoll_object.close()
 
+
     def __contains__(self, fd: int) -> bool:
         """Test whether a specific fd is already being watched by this epoll instance.
         """
+
 
         return fd in self.fds
 
@@ -77,6 +78,7 @@ def check_epoll_depth(ql_fd_list: QlFileDes) -> None:
     for obj in ql_fd_list:
         if isinstance(obj, QlEpollObj):
             __visit_obj(obj, 1)
+
 
 
 def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
@@ -123,6 +125,17 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     # example, a regular file or a directory.
     if isinstance(fd_obj, ql_file) and not isinstance(fd_obj, PersistentQlFile):
         return -EPERM
+
+
+
+    # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
+    if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
+        return -EINVAL
+
+    # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
+    # than five epolls monitoring each other This may be removed in the future if the QlOsLinux
+    # class had a separate field for reserved for tracking epoll objects.
+    epolls_list = [fobj for fobj in ql.os.fd if isinstance(fobj, QlEpollObj)]
 
     try:
         # Necessary to iterate over all possible qiling fds to determine if we have a chain of more

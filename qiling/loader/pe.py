@@ -10,7 +10,8 @@ import pefile
 import pickle
 import secrets
 import ntpath
-from typing import TYPE_CHECKING, Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
+from collections import namedtuple
+from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
@@ -28,6 +29,13 @@ from .loader import QlLoader, Image
 if TYPE_CHECKING:
     from logging import Logger
     from qiling import Qiling
+
+class ForwardedExport(NamedTuple):
+    source_dll: str
+    source_ordinal: str
+    source_symbol: str
+    target_dll: str
+    target_symbol: str
 
 
 class QlPeCacheEntry(NamedTuple):
@@ -79,6 +87,16 @@ class Process:
     export_symbols: MutableMapping[int, Dict[str, Any]]
     libcache: Optional[QlPeCache]
 
+    # maps image base to RVA of its function table
+    function_table_lookup: Dict[int, int]
+
+    # maps image base to its list of function table entries
+    function_tables: MutableMapping[int, List]
+
+    # List of exports which have been forwarded from
+    # one DLL to another.
+    forwarded_exports: List[ForwardedExport]
+
     def __init__(self, ql: Qiling):
         self.ql = ql
 
@@ -105,6 +123,108 @@ class Process:
         vpath = ntpath.join(dirname, basename)
 
         return self.ql.os.path.virtual_to_host_path(vpath), basename.casefold()
+    
+    def init_function_tables(self, pe: pefile.PE, image_base: int):
+        """Parse function table data for the given PE file.
+        Only really relevant for non-x86 images.
+
+        Args:
+            pe: the PE image whose function data should be parsed
+            image_base: the absolute address at which the image was loaded
+        """
+        if self.ql.arch.type is not QL_ARCH.X86:
+
+            # Check if the PE file has an exception directory
+            if hasattr(pe, 'DIRECTORY_ENTRY_EXCEPTION'):
+                exception_dir = pe.OPTIONAL_HEADER.DATA_DIRECTORY[
+                    pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXCEPTION']
+                ]
+                
+                self.function_table_lookup[image_base] = exception_dir.VirtualAddress
+
+                runtime_function_list = list(pe.DIRECTORY_ENTRY_EXCEPTION)
+
+                if image_base not in self.function_tables:
+                    self.function_tables[image_base] = []
+
+                self.function_tables[image_base].extend(runtime_function_list)
+
+                self.ql.log.debug(f'Parsed {len(runtime_function_list)} exception directory entries')
+
+            else:
+                self.ql.log.debug(f'Image has no exception directory; skipping exception data')
+
+    def lookup_function_entry(self, base_addr: int, control_pc: int):
+        """Look up a RUNTIME_FUNCTION entry and its index in a module's
+        function table, such that the given program counter falls within
+        the entry's begin and end range.
+
+        Args:
+            base_addr: The base address of the image whose exception directory to search.
+            control_pc: The program counter.
+
+        Returns:
+            A tuple (index, runtime_function)
+        """
+        function_table = self.function_tables[base_addr]
+
+        # Initiate a search of the function table for a RUNTIME_FUNCTION
+        # entry such that the provided PC falls within its start and end range.
+        return next(((i, rtfunc) for i, rtfunc in enumerate(function_table)
+                     if rtfunc.struct.BeginAddress <= control_pc - base_addr < rtfunc.struct.EndAddress),
+                     (None, None))
+    
+    def resolve_forwarded_exports(self):
+        while self.forwarded_exports:
+            forwarded_export = self.forwarded_exports.pop()
+
+            source_dll = forwarded_export.source_dll
+            source_ordinal = forwarded_export.source_ordinal
+            source_symbol = forwarded_export.source_symbol
+            target_dll = forwarded_export.target_dll
+            target_symbol = forwarded_export.target_symbol
+
+            if not source_symbol:
+                # Some DLLs (shlwapi.dll) have a bunch of forwarded
+                # exports with ordinals but no symbols.
+                # These are really annoying to deal with, but they are
+                # used extremely rarely, so we will ignore them.
+                continue
+
+            target_iat = self.import_address_table.get(target_dll)
+
+            if not target_iat:
+                # If IAT was not found, it is probably a virtual library.
+                continue
+
+            # If we have an existing entry in the process IAT for the code
+            # this entry forwards to, then we will point the symbol there
+            # rather than the symbol string in the exporter's data section.
+            forward_ea = target_iat.get(target_symbol)
+
+            if not forward_ea:
+                self.ql.log.warning(f"Forwarding symbol {source_dll}.{source_symbol} to {target_dll}.{target_symbol}: Failed to resolve address")
+                continue
+
+            self.import_address_table[source_dll][source_symbol] = forward_ea
+            self.import_address_table[source_dll][source_ordinal] = forward_ea
+
+            # Register the new address as having the source symbol/ordinal.
+            # This way, hooks on forward source symbols will function
+            # correctly.
+
+            self.import_symbols[forward_ea] = {
+                'name'    : source_symbol,
+                'ordinal' : source_ordinal,
+                'dll'     : source_dll.split('.')[0]
+            }
+
+            # TODO: With the above code, hooks on functions which are
+            # forward targets may not work correctly.
+            # The most correct way to resolve this would be to add
+            # support for addresses to be associated with multiple symbols.
+
+            self.ql.log.debug(f"Forwarding symbol {source_dll}.{source_symbol} to {target_dll}.{target_symbol}: Resolved symbol to ({forward_ea:#x})")
 
     def load_dll(self, name: str, is_driver: bool = False) -> int:
         dll_path, dll_name = self.__get_path_elements(name)
@@ -195,6 +315,9 @@ class Process:
                 with ShowProgress(self.ql.log, 0.1337):
                     dll.relocate_image(image_base)
 
+            # initialize the function tables only after possible relocation
+            self.init_function_tables(dll, image_base)
+
             data = bytearray(dll.get_memory_mapped_image())
             assert image_size >= len(data)
 
@@ -202,6 +325,31 @@ class Process:
 
             for sym in dll.DIRECTORY_ENTRY_EXPORT.symbols:
                 ea = image_base + sym.address
+
+                if sym.forwarder:
+                    # Some exports are forwarders, meaning they
+                    # actually refer to code in other libraries.
+                    # 
+                    # For example, calls to
+                    # kernel32.InterlockedPushEntrySList
+                    #   should be forwarded to
+                    # ntdll.RtlInterlockedPushEntrySList
+                    #
+                    # If we do not properly account for forwarders then
+                    # calls to these symbols will land in the exporter's
+                    # data section and cause a lot of problems.
+                    forward_str = sym.forwarder
+
+                    if b'.' in forward_str:
+                        target_dll_name, target_symbol_name = forward_str.split(b'.', 1)
+
+                        target_dll_filename = (target_dll_name.lower() + b'.dll').decode()
+
+                        # Remember the forwarded export for later.
+                        forwarded_export = ForwardedExport(dll_name, sym.ordinal, sym.name,
+                                                           target_dll_filename, target_symbol_name)
+
+                        self.forwarded_exports.append(forwarded_export)
 
                 import_symbols[ea] = {
                     'name'    : sym.name,
@@ -226,6 +374,8 @@ class Process:
         # Add dll to IAT
         self.import_address_table[dll_name] = import_table
         self.import_symbols.update(import_symbols)
+
+        self.resolve_forwarded_exports()
 
         dll_base = image_base
         dll_len = image_size
@@ -281,8 +431,8 @@ class Process:
         # the blacklist may be revisited from time to time to see if any of the file
         # can be safely unlisted.
         blacklist = {
-            32 : ('gdi32.dll',),
-            64 : ('gdi32.dll',)
+            32 : ('gdi32.dll','user32.dll',),
+            64 : ('gdi32.dll','user32.dll',)
         }[self.ql.arch.bits]
 
         if dll_name in blacklist:
@@ -674,12 +824,14 @@ class QlLoaderPE(QlLoader, Process):
     def run(self):
         self.init_dlls = (
             'ntdll.dll',
-            'kernel32.dll',
+            'kernelbase.dll', # kernel32 forwards some exports to kernelbase
+            'kernel32.dll',   # for efficiency, load kernelbase first
             'user32.dll'
         )
 
         self.sys_dlls = (
             'ntdll.dll',
+            'kernelbase.dll',
             'kernel32.dll',
             'mscoree.dll',
             'ucrtbase.dll'
@@ -709,6 +861,9 @@ class QlLoaderPE(QlLoader, Process):
         self.export_symbols = {}
         self.import_address_table = {}
         self.ldr_list = []
+        self.function_tables = {}
+        self.function_table_lookup = {}
+        self.forwarded_exports = []
         self.pe_image_address = 0
         self.pe_image_size = 0
         self.dll_size = 0
@@ -840,6 +995,9 @@ class QlLoaderPE(QlLoader, Process):
 
                 # set up call frame for DllMain
                 self.ql.os.fcall.call_native(self.entry_point, args, None)
+
+            # Initialize the function tables
+            super().init_function_tables(pe, image_base)
 
         elif pe is None:
             self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode]")

@@ -80,18 +80,19 @@ def hook_IsValidCodePage(ql: Qiling, address: int, params):
     return 1
 
 def __LCMapString(ql: Qiling, address: int, params, wstring: bool):
-    lpSrcStr: str = params["lpSrcStr"]
+    lpSrcStr: int = params["lpSrcStr"]
+    cchSrc: int = params["cchSrc"]
     lpDestStr: int = params["lpDestStr"]
     cchDest: int = params["cchDest"]
 
-    enc = "utf-16le" if wstring else "utf-8"
-    res = f'{lpSrcStr}\x00'
+    char_size = 2 if wstring else 1
+    byte_count = cchSrc * char_size
 
     if cchDest and lpDestStr:
-        # TODO maybe do some other check, for now is working
-        ql.mem.write(lpDestStr, res.encode(enc))
+        source_bytes = ql.mem.read(lpSrcStr, byte_count)
+        ql.mem.write(lpDestStr, bytes(source_bytes))
 
-    return len(res)
+    return cchSrc
 
 # int LCMapStringW(
 #   LCID    Locale,
@@ -104,9 +105,9 @@ def __LCMapString(ql: Qiling, address: int, params, wstring: bool):
 @winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwMapFlags' : DWORD,
-    'lpSrcStr'   : LPCWSTR,
+    'lpSrcStr'   : POINTER,
     'cchSrc'     : INT,
-    'lpDestStr'  : LPWSTR,
+    'lpDestStr'  : POINTER,
     'cchDest'    : INT
 })
 def hook_LCMapStringW(ql: Qiling, address: int, params):
@@ -123,9 +124,9 @@ def hook_LCMapStringW(ql: Qiling, address: int, params):
 @winsdkapi(cc=STDCALL, params={
     'Locale'     : LCID,
     'dwMapFlags' : DWORD,
-    'lpSrcStr'   : LPCSTR,
+    'lpSrcStr'   : POINTER,
     'cchSrc'     : INT,
-    'lpDestStr'  : LPSTR,
+    'lpDestStr'  : POINTER,
     'cchDest'    : INT
 })
 def hook_LCMapStringA(ql: Qiling, address: int, params):
@@ -145,9 +146,9 @@ def hook_LCMapStringA(ql: Qiling, address: int, params):
 @winsdkapi(cc=STDCALL, params={
     'lpLocaleName'         : LPCWSTR,
     'dwMapFlags'           : DWORD,
-    'lpSrcStr'             : LPCWSTR,
+    'lpSrcStr'             : POINTER,
     'cchSrc'               : INT,
-    'lpDestStr'            : LPWSTR,
+    'lpDestStr'            : POINTER,
     'cchDest'              : INT,
     'lpVersionInformation' : LPNLSVERSIONINFO,
     'lpReserved'           : LPVOID,

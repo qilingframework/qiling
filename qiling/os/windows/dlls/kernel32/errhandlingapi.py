@@ -44,15 +44,6 @@ def hook_GetLastError(ql: Qiling, address: int, params):
 def hook_SetLastError(ql: Qiling, address: int, params):
     ql.os.last_error = params['dwErrCode']
 
-# LONG UnhandledExceptionFilter(
-#   _EXCEPTION_POINTERS *ExceptionInfo
-# );
-@winsdkapi(cc=STDCALL, params={
-    'ExceptionInfo' : POINTER
-})
-def hook_UnhandledExceptionFilter(ql: Qiling, address: int, params):
-    return 1
-
 # UINT SetErrorMode(
 #   UINT uMode
 # );
@@ -62,33 +53,6 @@ def hook_UnhandledExceptionFilter(ql: Qiling, address: int, params):
 def hook_SetErrorMode(ql: Qiling, address: int, params):
     # TODO maybe this need a better implementation
     return 0
-
-# __analysis_noreturn VOID RaiseException(
-#   DWORD           dwExceptionCode,
-#   DWORD           dwExceptionFlags,
-#   DWORD           nNumberOfArguments,
-#   const ULONG_PTR *lpArguments
-# );
-@winsdkapi(cc=STDCALL, params={
-    'dwExceptionCode'    : DWORD,
-    'dwExceptionFlags'   : DWORD,
-    'nNumberOfArguments' : DWORD,
-    'lpArguments'        : POINTER
-})
-def hook_RaiseException(ql: Qiling, address: int, params):
-    nNumberOfArguments = params['nNumberOfArguments']
-    lpArguments = params['lpArguments']
-
-    handle = ql.os.handle_manager.search("TopLevelExceptionHandler")
-
-    if handle is None:
-        ql.log.warning(f'RaiseException: top level exception handler not found')
-        return
-
-    exception_handler = handle.obj
-    args = [(PARAM_INTN, ql.mem.read_ptr(lpArguments + i * ql.arch.pointersize)) for i in range(nNumberOfArguments)] if lpArguments else []
-
-    ql.os.fcall.call_native(exception_handler, args, None)
 
 # PVOID AddVectoredExceptionHandler(
 #   ULONG                       First,
@@ -151,3 +115,47 @@ def hook_RemoveVectoredExceptionHandler(ql: Qiling, address: int, params):
     hook.remove()
 
     return 0
+
+# VOID RaiseException(
+#   DWORD     dwExceptionCode,
+#   DWORD     dwExceptionFlags,
+#   DWORD     nNumberOfArguments,
+#   CONST ULONG_PTR* lpArguments
+# );
+@winsdkapi(cc=STDCALL, params={
+    'dwExceptionCode': DWORD,
+    'dwExceptionFlags': DWORD,
+    'nNumberOfArguments': DWORD,
+    'lpArguments': PVOID
+}, passthru=True)
+def hook_RaiseException(ql: Qiling, address: int, params):
+    # On x86_64, RaiseException will call RtlRaiseException,
+    # which calls the exception dispatcher directly. The native
+    # exception dispatching code mostly works correctly
+    # for software exceptions, so we shall simply continue
+    # through to the native dispatcher in this case.
+    if ql.arch.type is not QL_ARCH.X86:
+        return
+
+    # On x86, the situation is different. RtlRaiseException
+    # will call ZwRaiseException, which uses a syscall.
+    # However, Qiling doesn't really support Windows syscalls
+    # right now.
+    # We will treat all exceptions as unhandled exceptions,
+    # which is better than nothing.
+    # TODO: Get kernel exception dispatching working properly,
+    # then first-chance software exceptions, SEH, and C++
+    # exceptions can work on 32-bit Windows too.
+    nNumberOfArguments = params['nNumberOfArguments']
+    lpArguments = params['lpArguments']
+
+    handle = ql.os.handle_manager.search("TopLevelExceptionHandler")
+
+    if handle is None:
+        ql.log.warning(f'RaiseException: top level exception handler not found')
+        return
+
+    exception_handler = handle.obj
+    args = [(PARAM_INTN, ql.mem.read_ptr(lpArguments + i * ql.arch.pointersize)) for i in range(nNumberOfArguments)] if lpArguments else []
+
+    ql.os.fcall.call_native(exception_handler, args, None)
