@@ -1,18 +1,16 @@
+from __future__ import annotations
+
 import select
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, KeysView
 
-from qiling import *
-from qiling.const import *
 from qiling.os.posix.const import *
-from qiling.os.const import *
-from qiling.os.filestruct import ql_file
-from qiling.os.filestruct import PersistentQlFile
+from qiling.os.filestruct import PersistentQlFile, ql_file
 
 
 if TYPE_CHECKING:
+    from qiling import Qiling
     from qiling.os.posix.posix import QlFileDes
-#from qiling.os.posix.posix import QlFileDes
 
 class QlEpollObj:
     def __init__(self, epoll_object: select.epoll):
@@ -24,8 +22,8 @@ class QlEpollObj:
         self._fds: Dict[int, int] = {}
 
     @property
-    def fds(self) -> List[int]:
-        return list(self._fds.keys())
+    def fds(self) -> KeysView[int]:
+        return self._fds.keys()
 
     @property
     def epoll_instance(self) -> select.epoll:
@@ -38,10 +36,10 @@ class QlEpollObj:
         # the mask for an FD shouldn't ever be undefined
         # as it is set whenever an FD is added for a QlEpollObj instance
 
-        # libumem: resolved elicn feedback
         newmask = self.get_eventmask(fd) | newmask
-        self._fds[fd] = newmask
+
         self._epoll_object.modify(fd, newmask)
+        self._fds[fd] = newmask
 
     def monitor_fd(self, fd: int, eventmask: int) -> None:
         # tell the epoll object to watch the fd arg, looking for events matching the eventmask
@@ -53,34 +51,34 @@ class QlEpollObj:
         self._epoll_object.unregister(fd)
 
     def close(self) -> None:
-        self.epoll_instance.close()
+        self._epoll_object.close()
 
-    def is_present(self, fd: int) -> bool:
+
+    def __contains__(self, fd: int) -> bool:
+        """Test whether a specific fd is already being watched by this epoll instance.
+        """
+
+
         return fd in self.fds
 
 
-def check_epoll_depth(ql_fd_list, epolls_list: List[QlEpollObj], depth: int = 0) -> None:
-    # Recursively checks each epoll instance's 'watched' fds for an instance of
-    # epoll being watched. If a chain of over 5 levels is detected, raise
-    # an exception
+def check_epoll_depth(ql_fd_list: QlFileDes) -> None:
+    """Recursively check each epoll instance's 'watched' fds for an instance of
+    epoll being watched. If a chain of over 5 levels is detected, raise an exception
+    """
 
-    if depth >= 5:
-        raise RecursionError
+    def __visit_obj(obj: QlEpollObj, depth: int):
+        if depth >= 5:
+            raise RecursionError
 
-    new_epolls_list = []
+        for fd in obj.fds:
+            if isinstance(ql_fd_list[fd], QlEpollObj):
+                __visit_obj(obj, depth + 1)
 
-    for ent in epolls_list:
-        watched = ent.fds
+    for obj in ql_fd_list:
+        if isinstance(obj, QlEpollObj):
+            __visit_obj(obj, 1)
 
-        for w in watched:
-            obj = ql_fd_list[w]
-
-            if isinstance(obj, QlEpollObj):
-                new_epolls_list.append(obj)
-
-        if new_epolls_list:
-            check_epoll_depth(ql_fd_list, new_epolls_list, depth + 1)
-        new_epolls_list = []
 
 
 def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
@@ -114,20 +112,20 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 	# EPOLLWAKEUP (since Linux 3.5)
     #     If EPOLLONESHOT and EPOLLET are clear and the process has the CAP_BLOCK_SUSPEND capability
 
-    # TODO: not sure if qiling supports a way to determine if the target file descriptor is a
-    # directory. 
-    # Here, check against PersistentQlFile is to ensure that polling stdin, stdout, stderr
-    # is supported
-
     fd_obj = ql.os.fd[fd]
 
     if fd_obj is None:
         return -EBADF
 
+    # TODO: not sure if qiling supports a way to determine if the target file descriptor is a
+    # directory. Here, check against PersistentQlFile is to ensure that polling stdin, stdout,
+    # stderr is supported
+
     # The target file fd does not support epoll. This error can occur if fd refers to, for
     # example, a regular file or a directory.
     if isinstance(fd_obj, ql_file) and not isinstance(fd_obj, PersistentQlFile):
         return -EPERM
+
 
 
     # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
@@ -140,38 +138,54 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     epolls_list = [fobj for fobj in ql.os.fd if isinstance(fobj, QlEpollObj)]
 
     try:
-        check_epoll_depth(ql.os.fd, epolls_list)
-    # more than five detected?
+        # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
+        # than five epolls monitoring each other This may be removed in the future if the QlOsLinux
+        # class had a separate field reserved for tracking epoll objects.
+        check_epoll_depth(ql.os.fd)
     except RecursionError:
         return -ELOOP
 
-    ql_event = event and ql.mem.read_ptr(event, 4)
-
     if op == EPOLL_CTL_ADD:
         # can't add an fd that's already being waited on
-        if epoll_parent_obj.is_present(fd):
+        if fd in epoll_parent_obj:
             return -EEXIST
+
+        if not event:
+            return -EINVAL
+
+        event_ptr = ql.mem.read_ptr(event)
+        events = ql.mem.read_ptr(event_ptr, 4)
+
+        # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
+        if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
+            return -EINVAL
 
         # add to list of fds to be monitored with per-fd eventmask register will actual epoll
         # instance and add eventmask accordingly
-        epoll_parent_obj.monitor_fd(fd, ql_event)
+        epoll_parent_obj.monitor_fd(fd, events)
 
     elif op == EPOLL_CTL_DEL:
-        if not epoll_parent_obj.is_present(fd):
+        if fd not in epoll_parent_obj:
             return -ENOENT
 
         # remove from fds list and do so in the underlying epoll instance
         epoll_parent_obj.delist_fd(fd)
 
     elif op == EPOLL_CTL_MOD:
-        if not epoll_parent_obj.is_present(fd):
+        if fd not in epoll_parent_obj:
             return -ENOENT
 
-        # EINVAL op was EPOLL_CTL_MOD and events included EPOLLEXCLUSIVE.
-        if op & EPOLLEXCLUSIVE and fd in epoll_obj.fds:
+        if not event:
             return -EINVAL
 
-        epoll_parent_obj.set_eventmask(fd, ql_event)
+        event_ptr = ql.mem.read_ptr(event)
+        events = ql.mem.read_ptr(event_ptr, 4)
+
+        # EPOLLEXCLUSIVE cannot be set on MOD operation, only on ADD
+        if events & EPOLLEXCLUSIVE:
+            return -EINVAL
+
+        epoll_parent_obj.set_eventmask(fd, events)
 
     return 0
 
@@ -200,20 +214,21 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
     if epoll_obj is None:
         return -EBADF
 
-
     ready_fds = epoll_obj.poll(timeout, maxevents)
 
     # Each tuple in ready_fds consists of (file descriptor, eventmask) so we iterate
     # through these to indicate which fds are ready and 'why'
 
-    for i, (fd, interest_mask) in enumerate(ready_fds):
+    for i, (fd, events) in enumerate(ready_fds):
         # if no longer interested in this fd, remove from list
-        if interest_mask & EPOLLONESHOT:
+        if events & EPOLLONESHOT:
             epoll_parent_obj.delist_fd(fd)
 
-        data = ql.pack32(interest_mask) + ql.pack(fd)
+        # FIXME: the data packed after events should be the one passed on epoll_ctl
+        # for that specific fd. currently this does not align with the spec
+        data = ql.pack32(events) + ql.pack64(fd)
         offset = len(data) * i
-        # Resolved elicn remark, ql_event was dead code
+
         ql.mem.write(epoll_events + offset, data)
 
     return len(ready_fds)

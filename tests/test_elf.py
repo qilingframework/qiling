@@ -772,63 +772,67 @@ class ELFTest(unittest.TestCase):
         self.assertNotIn("root\n", ql.os.stdout.read().decode("utf-8"))
 
         del ql
-    
-    """
-    This tests a sample binary that (e)polls on stdin
-    and echos back the output. Upon receiving 'stop', it
-    will exit. 
-    """
-    @unittest.skip("TODO: Stdin hijacking doesn't work as expected")
+
+    @unittest.skip("stdin hijacking doesn't work as expected")
     def test_elf_linux_x8664_epoll_simple(self):
-        # epoll-0 source: https://github.com/maxasm/epoll-c/blob/main/main.c
+        # This tests a sample binary that (e)polls on stdin and echos back the output. Upon
+        # receiving 'stop', it will exit.
+        #
+        # epoll-0 tkaen from: https://github.com/maxasm/epoll-c/blob/main/main.c
+
         rootfs = "../examples/rootfs/x8664_linux"
         argv = r"../examples/rootfs/x8664_linux/bin/x8664_linux_epoll_0".split()
         ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
+
         #ql.os.stdin = pipe.SimpleInStream(0)
         ql.os.stdin.write(b'echo\n')
-        ql.os.stdin.write(b"stop\n") # signal to exit gracefully
+        ql.os.stdin.write(b'stop\n') # signal to exit gracefully
         ql.run()
-        self.assertIn("echo\n", ql.os.stdout.read().decode("utf-8"))
+
+        self.assertIn(b'echo\n', ql.os.stdout.read())
         del ql
-    """
-    This tests a simple server that uses epoll
-    to wait for data, then prints it out. It has been
-    modified to exit after data has been received; instead
-    of a typical server operation that reads requests indefinitely.
 
-    It listens on port 8000, and a separate thread is spawned in
-    order to test how the server handles a 'hello world' input.
-    The server prints out whatever it receives, so the assert
-    statement checks the input is present as expected. 
-    """
-    #@unittest.skip('See PR')
     def test_elf_linux_x8664_epoll_server(self):
-        # Source for onestraw server: https://github.com/onestraw/epoll-example
+        # This tests a simple server that uses epoll to wait for data, then prints it out. It has
+        # been modified to exit after data has been received; instead of a typical server operation
+        # that reads requests indefinitely.
+        #
+        # It listens on port 8000, and a separate thread is spawned in order to test how the server
+        # handles a 'hello world' input. The server prints out whatever it receives, so the assert
+        # statement checks the input is present as expected.
+        #
+        # onestraw server taken from: https://github.com/onestraw/epoll-example
 
-        """
-        Note: Without a hook for this syscall, this error fires:
-        TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType
-        """
-        def hook_newfstatat(ql: Qiling, dirfd: int, pathname: POINTER, statbuf: POINTER, flags:int):
+        # Note: Without a hook for this syscall, this error fires:
+        # TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType
+        def hook_newfstatat(ql: Qiling, dirfd: int, pathname: int, statbuf: int, flags: int):
             return 0
+
         def client():
-            time.sleep(3) # give time for the server to listen
+            # give time for the server to listen
+            time.sleep(3)
+
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            dest = ("127.0.0.1", 8000)
-            s.connect(dest)
-            test = b"hello world"
-            s.send(test)
+            s.connect(("127.0.0.1", 8000))
+            s.send(b"hello world")
             s.close()
-        client_thread = threading.Thread(target=client, daemon=True)
-        client_thread.start()
+
         rootfs = "../examples/rootfs/x8664_linux_glibc2.39"
         argv = r"../examples/rootfs/x8664_linux/bin/x8664_onestraw_server s".split() # s means 'server mode'
-        ql = Qiling(argv, rootfs, multithread=False, verbose=QL_VERBOSE.DEBUG)
-        ql.os.set_syscall("newfstatat",hook_newfstatat, QL_INTERCEPT.CALL)
+
+        ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
+        ql.os.set_syscall("newfstatat", hook_newfstatat, QL_INTERCEPT.CALL)
         ql.os.stdout = pipe.SimpleOutStream(1) # server prints data received to stdout
         ql.filter = '^data:'
+
+        client_thread = threading.Thread(target=client, daemon=True)
+        client_thread.start()
+
         ql.run()
-        self.assertIn('hello world', ql.os.stdout.read().decode("utf-8"))
+
+        self.assertIn(b'hello world', ql.os.stdout.read())
         del ql
+
+
 if __name__ == "__main__":
     unittest.main()
