@@ -1545,3 +1545,19 @@ def make_win32_find_data(archbits: int, *, wide: bool):
         )
 
     return WIN32_FIND_DATA
+
+# https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-exception_pointers
+def make_exception_pointers(archbits: int):
+    """Generate an EXCEPTION_POINTERS structure class.
+    """
+
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+
+    class EXCEPTION_POINTERS(Struct):
+        _fields_ = (
+            ('ExceptionRecord',     native_type),
+            ('ContextRecord',       native_type)
+        )
+
+    return EXCEPTION_POINTERS
