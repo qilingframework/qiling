@@ -12,7 +12,7 @@ from qiling.os.filestruct import PersistentQlFile
 
 if TYPE_CHECKING:
     from qiling.os.posix.posix import QlFileDes
-from qiling.os.posix.posix import QlFileDes
+#from qiling.os.posix.posix import QlFileDes
 
 class QlEpollObj:
     def __init__(self, epoll_object: select.epoll):
@@ -59,10 +59,10 @@ class QlEpollObj:
         return fd in self.fds
 
 
-def check_epoll_depth(ql_fd_list: QlFileDes, epolls_list: List[QlEpollObj], depth: int = 0) -> None:
+def check_epoll_depth(ql_fd_list, epolls_list: List[QlEpollObj], depth: int = 0) -> None:
     # Recursively checks each epoll instance's 'watched' fds for an instance of
-    # epoll being watched. If a chain of over 5 levels is detected, return 1,
-    # which will return ELOOP in ql_syscall_epoll_wait
+    # epoll being watched. If a chain of over 5 levels is detected, raise
+    # an exception
 
     if depth >= 5:
         raise RecursionError
@@ -78,11 +78,9 @@ def check_epoll_depth(ql_fd_list: QlFileDes, epolls_list: List[QlEpollObj], dept
             if isinstance(obj, QlEpollObj):
                 new_epolls_list.append(obj)
 
-        # elicn: new_epolls_list is not cleared between loop iterations, rather it keeps
-        # aggregating items from previous iterations. is this what we want?
-
         if new_epolls_list:
             check_epoll_depth(ql_fd_list, new_epolls_list, depth + 1)
+        new_epolls_list = []
 
 
 def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
@@ -131,8 +129,6 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     if isinstance(fd_obj, ql_file) and not isinstance(fd_obj, PersistentQlFile):
         return -EPERM
 
-    # elicn: not sure how the following condition even possible after we checked that op can
-    # be only one of EPOLL_CTL_{ADD,DEL,MOD} (originally checked with a dict)
 
     # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
     if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
