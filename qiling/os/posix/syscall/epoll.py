@@ -107,6 +107,18 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
     if epoll_obj.fileno() == fd:
         return -ELOOP
+    events = 0
+    if event:
+        events = ql.mem.read_ptr(event,4)
+    """
+    event is of type epoll_event. run man epoll_event for more info
+    struct epoll_event {
+           uint32_t      events;  /* Epoll events */
+           epoll_data_t  data;    /* User data variable */
+    };
+    so, read 4 bytes for the events field
+    """
+
 
 	# Qiling doesn't check process capabilities right now, so this case isn't explicitly handled yet
 	# EPOLLWAKEUP (since Linux 3.5)
@@ -153,7 +165,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
         if not event:
             return -EINVAL
 
-        event_ptr = ql.mem.read_ptr(event)
+
 
         # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
         if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
@@ -161,7 +173,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
         # add to list of fds to be monitored with per-fd eventmask register will actual epoll
         # instance and add eventmask accordingly
-        epoll_parent_obj.monitor_fd(fd, event_ptr)
+        epoll_parent_obj.monitor_fd(fd, events)
 
     elif op == EPOLL_CTL_DEL:
         if fd not in epoll_parent_obj:
@@ -177,13 +189,12 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
         if not event:
             return -EINVAL
 
-        event_ptr = ql.mem.read_ptr(event)
 
         # EPOLLEXCLUSIVE cannot be set on MOD operation, only on ADD
         if events & EPOLLEXCLUSIVE:
             return -EINVAL
 
-        epoll_parent_obj.set_eventmask(fd, event_ptr)
+        epoll_parent_obj.set_eventmask(fd, events)
 
     return 0
 
@@ -222,9 +233,8 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
         if events & EPOLLONESHOT:
             epoll_parent_obj.delist_fd(fd)
 
-        # FIXME: the data packed after events should be the one passed on epoll_ctl
-        # for that specific fd. currently this does not align with the spec
-        data = ql.pack32(events) + ql.pack(fd) 
+        # https://elixir.bootlin.com/linux/v6.14.4/source/include/uapi/linux/eventpoll.h#L83
+        data = ql.pack32(events) + ql.pack64(fd) 
         offset = len(data) * i
 
         ql.mem.write(epoll_events + offset, data)
