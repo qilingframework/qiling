@@ -817,7 +817,7 @@ class ELFTest(unittest.TestCase):
             s.send(b"hello world")
             s.close()
 
-        rootfs = "../examples/rootfs/x8664_linux_glibc2.39"
+        rootfs = "../examples/rootfs/x8664_linux"
         argv = r"../examples/rootfs/x8664_linux/bin/x8664_onestraw_server s".split() # s means 'server mode'
 
         ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
