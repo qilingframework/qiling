@@ -154,6 +154,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
             return -EINVAL
 
         event_ptr = ql.mem.read_ptr(event)
+        events = ql.mem.read_ptr(event_ptr, 4)
 
         # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
         if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
@@ -161,7 +162,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
         # add to list of fds to be monitored with per-fd eventmask register will actual epoll
         # instance and add eventmask accordingly
-        epoll_parent_obj.monitor_fd(fd, event_ptr)
+        epoll_parent_obj.monitor_fd(fd, events)
 
     elif op == EPOLL_CTL_DEL:
         if fd not in epoll_parent_obj:
@@ -178,12 +179,13 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
             return -EINVAL
 
         event_ptr = ql.mem.read_ptr(event)
+        events = ql.mem.read_ptr(event_ptr, 4)
 
         # EPOLLEXCLUSIVE cannot be set on MOD operation, only on ADD
         if events & EPOLLEXCLUSIVE:
             return -EINVAL
 
-        epoll_parent_obj.set_eventmask(fd, event_ptr)
+        epoll_parent_obj.set_eventmask(fd, events)
 
     return 0
 
@@ -224,7 +226,7 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
 
         # FIXME: the data packed after events should be the one passed on epoll_ctl
         # for that specific fd. currently this does not align with the spec
-        data = ql.pack32(events) + ql.pack(fd) 
+        data = ql.pack32(events) + ql.pack64(fd)
         offset = len(data) * i
 
         ql.mem.write(epoll_events + offset, data)
