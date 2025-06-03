@@ -1,16 +1,47 @@
 from __future__ import annotations
 
+import ctypes
 import select
 
-from typing import TYPE_CHECKING, Dict, KeysView
+from typing import TYPE_CHECKING, Dict, KeysView, NamedTuple
 
+from qiling.os import struct
 from qiling.os.posix.const import *
 from qiling.os.filestruct import PersistentQlFile, ql_file
 
 
 if TYPE_CHECKING:
     from qiling import Qiling
+    from qiling.arch.arch import QlArch
     from qiling.os.posix.posix import QlFileDes
+
+
+class QlEpollEntry(NamedTuple):
+    """A named tuple to represent an epoll entry.
+
+    This is used to store the events mask and the data for each entry in
+    the epoll instance.
+    """
+
+    events: int
+    data: int
+
+
+@struct.cache
+def __make_epoll_event(arch: QlArch):
+    """Create a structure to represent an epoll event.
+    """
+
+    Struct = struct.get_packed_struct(arch.endian)
+
+    class epoll_event(Struct):
+        _fields_ = (
+            ('events', ctypes.c_uint32),
+            ('data',   ctypes.c_uint64)
+        )
+
+    return epoll_event
+
 
 class QlEpollObj:
     def __init__(self, epoll_object: select.epoll):
@@ -19,7 +50,7 @@ class QlEpollObj:
         # maps fd to eventmask
         # keep track of which fds have what eventmasks,
         # since this isn't directly supported in select.epoll
-        self._fds: Dict[int, int] = {}
+        self._fds: Dict[int, QlEpollEntry] = {}
 
     @property
     def fds(self) -> KeysView[int]:
@@ -29,30 +60,29 @@ class QlEpollObj:
     def epoll_instance(self) -> select.epoll:
         return self._epoll_object
 
-    def get_eventmask(self, fd: int) -> int:
-        return self._fds[fd]
-
-    def set_eventmask(self, fd: int, newmask: int):
-        # the mask for an FD shouldn't ever be undefined
-        # as it is set whenever an FD is added for a QlEpollObj instance
-
-        newmask = self.get_eventmask(fd) | newmask
-
-        self._epoll_object.modify(fd, newmask)
-        self._fds[fd] = newmask
-
-    def monitor_fd(self, fd: int, eventmask: int) -> None:
-        # tell the epoll object to watch the fd arg, looking for events matching the eventmask
-        self._epoll_object.register(fd, eventmask)
-        self._fds[fd] = eventmask
-
-    def delist_fd(self, fd: int) -> None:
-        self._fds.pop(fd)
-        self._epoll_object.unregister(fd)
-
     def close(self) -> None:
         self._epoll_object.close()
 
+    def __getitem__(self, fd: int) -> QlEpollEntry:
+        return self._fds[fd]
+
+    def __setitem__(self, fd: int, entry: QlEpollEntry) -> None:
+        # if fd is already being watched, modify its eventmask.
+        if fd in self:
+            self._epoll_object.modify(fd, entry.events)
+
+        # otherwise, register it with the epoll object
+        else:
+            self._epoll_object.register(fd, entry.events)
+
+        self._fds[fd] = entry
+
+    def __delitem__(self, fd: int) -> None:
+        """Remove an fd from the epoll instance.
+        """
+
+        self._fds.pop(fd)
+        self._epoll_object.unregister(fd)
 
     def __contains__(self, fd: int) -> bool:
         """Test whether a specific fd is already being watched by this epoll instance.
@@ -153,23 +183,25 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
         if not event:
             return -EINVAL
 
-        event_ptr = ql.mem.read_ptr(event)
-        events = ql.mem.read_ptr(event_ptr, 4)
+        # dereference the event pointer to get structure fields
+        epoll_event_cls = __make_epoll_event(ql.arch)
+        epoll_event = epoll_event_cls.load_from(ql.mem, event)
 
         # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
-        if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
+        if isinstance(fd_obj, QlEpollObj) and (epoll_event.events & EPOLLEXCLUSIVE):
             return -EINVAL
 
-        # add to list of fds to be monitored with per-fd eventmask register will actual epoll
-        # instance and add eventmask accordingly
-        epoll_parent_obj.monitor_fd(fd, events)
+        epoll_parent_obj[fd] = QlEpollEntry(
+            epoll_event.events,
+            epoll_event.data
+        )
 
     elif op == EPOLL_CTL_DEL:
         if fd not in epoll_parent_obj:
             return -ENOENT
 
         # remove from fds list and do so in the underlying epoll instance
-        epoll_parent_obj.delist_fd(fd)
+        del epoll_parent_obj[fd]
 
     elif op == EPOLL_CTL_MOD:
         if fd not in epoll_parent_obj:
@@ -178,14 +210,18 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
         if not event:
             return -EINVAL
 
-        event_ptr = ql.mem.read_ptr(event)
-        events = ql.mem.read_ptr(event_ptr, 4)
+        # dereference the event pointer to get structure fields
+        epoll_event_cls = __make_epoll_event(ql.arch)
+        epoll_event = epoll_event_cls.load_from(ql.mem, event)
 
         # EPOLLEXCLUSIVE cannot be set on MOD operation, only on ADD
-        if events & EPOLLEXCLUSIVE:
+        if epoll_event.events & EPOLLEXCLUSIVE:
             return -EINVAL
 
-        epoll_parent_obj.set_eventmask(fd, events)
+        epoll_parent_obj[fd] = QlEpollEntry(
+            epoll_event.events,
+            epoll_event.data
+        )
 
     return 0
 
@@ -216,20 +252,22 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
 
     ready_fds = epoll_obj.poll(timeout, maxevents)
 
+    epoll_event_cls = __make_epoll_event(ql.arch)
+
     # Each tuple in ready_fds consists of (file descriptor, eventmask) so we iterate
     # through these to indicate which fds are ready and 'why'
-
+    #
+    # FIXME: emulated system fds are not the same as hosted system fds
     for i, (fd, events) in enumerate(ready_fds):
+        entry = epoll_parent_obj[fd]
+        epoll_event = epoll_event_cls(events, entry.data)
+
+        offset = epoll_event_cls.sizeof() * i
+        ql.mem.write(epoll_events + offset, bytes(epoll_event))
+
         # if no longer interested in this fd, remove from list
         if events & EPOLLONESHOT:
-            epoll_parent_obj.delist_fd(fd)
-
-        # FIXME: the data packed after events should be the one passed on epoll_ctl
-        # for that specific fd. currently this does not align with the spec
-        data = ql.pack32(events) + ql.pack64(fd)
-        offset = len(data) * i
-
-        ql.mem.write(epoll_events + offset, data)
+            del epoll_parent_obj[fd]
 
     return len(ready_fds)
 
