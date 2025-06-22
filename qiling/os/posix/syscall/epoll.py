@@ -88,7 +88,6 @@ class QlEpollObj:
         """Test whether a specific fd is already being watched by this epoll instance.
         """
 
-
         return fd in self.fds
 
 
@@ -168,9 +167,6 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     epolls_list = [fobj for fobj in ql.os.fd if isinstance(fobj, QlEpollObj)]
 
     try:
-        # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
-        # than five epolls monitoring each other This may be removed in the future if the QlOsLinux
-        # class had a separate field reserved for tracking epoll objects.
         check_epoll_depth(ql.os.fd)
     except RecursionError:
         return -ELOOP

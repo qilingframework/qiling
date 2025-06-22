@@ -783,8 +783,7 @@ class ELFTest(unittest.TestCase):
         rootfs = "../examples/rootfs/x8664_linux"
         argv = r"../examples/rootfs/x8664_linux/bin/x8664_linux_epoll_0".split()
         ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
-
-        #ql.os.stdin = pipe.SimpleInStream(0)
+        ql.os.stdin = pipe.SimpleInStream(0)
         ql.os.stdin.write(b'echo\n')
         ql.os.stdin.write(b'stop\n') # signal to exit gracefully
         ql.run()
@@ -830,7 +829,7 @@ class ELFTest(unittest.TestCase):
 
         ql.run()
 
-        self.assertIn(b'hello world', ql.os.stdout.read())
+        self.assertIn(b'hello world', ql.os.stdout.read(200)) # 200 is arbitrary--"good enough" for this task
         del ql
 
 
