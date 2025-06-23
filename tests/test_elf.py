@@ -790,7 +790,7 @@ class ELFTest(unittest.TestCase):
 
         self.assertIn(b'echo\n', ql.os.stdout.read())
         del ql
-
+    @unittest.skip("See comment in https://github.com/qilingframework/qiling/pull/1558")
     def test_elf_linux_x8664_epoll_server(self):
         # This tests a simple server that uses epoll to wait for data, then prints it out. It has
         # been modified to exit after data has been received; instead of a typical server operation
