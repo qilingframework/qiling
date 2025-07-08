@@ -1,4 +1,3 @@
-[![Documentation Status](https://github.com/qilingframework/qiling/wiki)](https://github.com/qilingframework/qiling/wiki)
 [![Downloads](https://pepy.tech/badge/qiling)](https://pepy.tech/project/qiling)
 [![Chat on Telegram](https://img.shields.io/badge/Chat%20on-Telegram-brightgreen.svg)](https://t.me/qilingframework)
 
@@ -250,4 +249,4 @@ Contact us at email [info@qiling.io](mailto:info@qiling.io), or via Twitter [@qi
 
 ## Core Developers & Contributors
 
-Please refer to [CREDITS.md](https://github.com/qilingframework/qiling/blob/dev/CREDITS.md).
+Please refer to [Contributors](https://github.com/qilingframework/qiling/graphs/contributors).
