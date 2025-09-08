@@ -22,7 +22,7 @@ class QlThread(Greenlet):
 # the common functions which are used in qiling core.
 # these functions must be implemented in child class.
 
-# like pthread_self(), return the id of currunt thread.
+# like pthread_self(), return the id of current thread.
 #    @abstractmethod
     def get_id(self):
         pass
