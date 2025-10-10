@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -53,31 +53,63 @@ def hook_mcount(ql, address, params):
     return 0
 
 
-@linux_kernel_api(params={
-    "Ptr": POINTER
-})
-def hook___x86_indirect_thunk_rax(ql, address, params):
-    return 0
+def __x86_indirect_thunk(ql: Qiling, dest: int):
+    ql.log.debug('retpoline to %#010x', dest)
+
+    ql.arch.regs.arch_pc = dest
+
+# using passthru as a hack to avoid syscall handler overwrite instruction pointer
+@linux_kernel_api(passthru=True)
+def hook___x86_indirect_thunk_rax(ql: Qiling, address: int, params):
+    __x86_indirect_thunk(ql, ql.arch.regs.rax)
 
 
-@linux_kernel_api(params={
-    "Ptr": POINTER
-})
-def hook__copy_to_user(ql, address, params):
-    return 0
-
-
-@linux_kernel_api(params={
-    "Ptr": POINTER
-})
-def hook__copy_from_user(ql, address, params):
-    return 0
-
-
-@linux_kernel_api(params={
-    "Ptr": POINTER
-})
+@linux_kernel_api(passthru=True)
 def hook___x86_indirect_thunk_r14(ql, address, params):
+    __x86_indirect_thunk(ql, ql.arch.regs.r14)
+
+
+@linux_kernel_api(params={
+    "ubuf": POINTER,
+    "kbuf": POINTER,
+    "count": SIZE_T
+})
+def hook__copy_to_user(ql: Qiling, address: int, params) -> int:
+    ubuf  = params['ubuf']
+    kbuf  = params['kbuf']
+    count = params['count']
+
+    # if user-mode buffer is not available, fail
+    # TODO: also fail if destination is not writeable
+    if not ql.mem.is_mapped(ubuf, count):
+        return count
+
+    data = ql.mem.read(kbuf, count)
+
+    ql.mem.write(ubuf, data)
+
+    return 0
+
+
+@linux_kernel_api(params={
+    "kbuf": POINTER,
+    "ubuf": POINTER,
+    "count": SIZE_T
+})
+def hook__copy_from_user(ql: Qiling, address: int, params) -> int:
+    ubuf  = params['ubuf']
+    kbuf  = params['kbuf']
+    count = params['count']
+
+    # if user-mode buffer is not available, fail
+    # TODO: also fail if source is not readable
+    if not ql.mem.is_mapped(ubuf, count):
+        return count
+
+    data = ql.mem.read(ubuf, count)
+
+    ql.mem.write(kbuf, data)
+
     return 0
 
 
