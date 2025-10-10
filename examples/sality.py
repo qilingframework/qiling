@@ -159,7 +159,7 @@ def hook_StartServiceA(ql: Qiling, address: int, params):
                 init_unseen_symbols(ql.amsint32_driver, ntoskrnl.base+0xb7695, b"NtTerminateProcess", 0, "ntoskrnl.exe")
                 #ql.amsint32_driver.debugger= ":9999"
                 try:
-                    ql.amsint32_driver.load()
+                    ql.amsint32_driver.run()
                     return 1
                 except UcError as e:
                     print("Load driver error: ", e)
