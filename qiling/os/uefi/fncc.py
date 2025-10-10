@@ -8,7 +8,7 @@ from typing import Any, Mapping, Optional
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 
-def dxeapi(params: Optional[Mapping[str, Any]] = None):
+def dxeapi(params: Optional[Mapping[str, Any]] = None, passthru: bool = False):
     def decorator(func):
         def wrapper(ql: Qiling):
             pc = ql.arch.regs.arch_pc
@@ -18,7 +18,7 @@ def dxeapi(params: Optional[Mapping[str, Any]] = None):
             onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(fname)
             onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(fname)
 
-            return ql.os.call(pc, f, params or {}, onenter, onexit)
+            return ql.os.call(pc, f, params or {}, onenter, onexit, passthru)
 
         return wrapper
 
