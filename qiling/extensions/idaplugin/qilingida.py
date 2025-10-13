@@ -38,8 +38,8 @@ import ida_netnode
 import ida_hexrays
 import ida_range
 # PyQt
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtWidgets import (QPushButton, QHBoxLayout)
 
 # Qiling
 from qiling import Qiling
@@ -294,24 +294,20 @@ class IDA:
         return ida_nalt.get_input_file_path()
 
     @staticmethod
-    def get_info_structure():
-        return ida_idaapi.get_inf_structure()
-
-    @staticmethod
     def get_main_address():
-        return IDA.get_info_structure().main
+        return ida_ida.inf_get_main()
 
     @staticmethod
     def get_max_address():
-        return IDA.get_info_structure().max_ea
+        return ida_ida.inf_get_max_ea()
 
     @staticmethod
     def get_min_address():
-        return IDA.get_info_structure().min_ea
+        return ida_ida.inf_get_min_ea()
 
     @staticmethod
     def is_big_endian():
-        return IDA.get_info_structure().is_be()
+        return ida_ida.inf_is_be()
 
     @staticmethod
     def is_little_endian():
@@ -319,8 +315,7 @@ class IDA:
 
     @staticmethod
     def get_filetype():
-        info = IDA.get_info_structure()
-        ftype = info.filetype
+        ftype = ida_ida.inf_get_filetype()
         if ftype == ida_ida.f_MACHO:
             return "macho"
         elif ftype == ida_ida.f_PE or ftype == ida_ida.f_EXE or ftype == ida_ida.f_EXE_old: # is this correct?
@@ -332,18 +327,17 @@ class IDA:
 
     @staticmethod
     def get_ql_arch_string():
-        info = IDA.get_info_structure()
-        proc = info.procname.lower()
+        proc = ida_ida.inf_get_procname().lower()
         result = None
         if proc == "metapc":
             result = "x86"
-            if info.is_64bit():
+            if ida_ida.inf_is_64bit():
                 result = "x8664"
         elif "mips" in proc:
             result = "mips"
         elif "arm" in proc:
             result = "arm32"
-            if info.is_64bit():
+            if ida_ida.inf_is_64bit():
                 result = "arm64"
         # That's all we support :(
         return result
@@ -1006,7 +1000,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def init(self):
         # init data
         logging.info('---------------------------------------------------------------------------------------')
-        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
+        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2025'.format(QLVERSION))
         logging.info('Based on Qiling v{0}'.format(QLVERSION))
         logging.info('Find more information about Qiling at https://qiling.io')
         logging.info('---------------------------------------------------------------------------------------')
