@@ -15,6 +15,8 @@ from elftools.elf.elffile import ELFFile
 from json import load
 
 # IDA Python SDK
+IDA_VERSION = IDAPYTHON_VERSION[0]
+
 from idaapi import *
 from idc import *
 from idautils import *
@@ -38,8 +40,12 @@ import ida_netnode
 import ida_hexrays
 import ida_range
 # PyQt
-from PySide6 import QtCore, QtWidgets
-from PySide6.QtWidgets import (QPushButton, QHBoxLayout)
+if IDA_VERSION >= 9:
+    from PySide6 import QtCore, QtWidgets
+    from PySide6.QtWidgets import (QPushButton, QHBoxLayout)
+else:
+    from PyQt5 import QtCore, QtWidgets
+    from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 # Qiling
 from qiling import Qiling
@@ -294,20 +300,24 @@ class IDA:
         return ida_nalt.get_input_file_path()
 
     @staticmethod
+    def get_info_structure():
+        return ida_idaapi.get_inf_structure()
+    
+    @staticmethod
     def get_main_address():
-        return ida_ida.inf_get_main()
+        return ida_ida.inf_get_main() if IDA_VERSION >= 9 else IDA.get_info_structure().main
 
     @staticmethod
     def get_max_address():
-        return ida_ida.inf_get_max_ea()
+        return ida_ida.inf_get_max_ea() if IDA_VERSION >= 9 else IDA.get_info_structure().max_ea
 
     @staticmethod
     def get_min_address():
-        return ida_ida.inf_get_min_ea()
+        return ida_ida.inf_get_min_ea() if IDA_VERSION >= 9 else IDA.get_info_structure().min_ea
 
     @staticmethod
     def is_big_endian():
-        return ida_ida.inf_is_be()
+        return ida_ida.inf_is_be() if IDA_VERSION >= 9 else IDA.get_info_structure().is_be
 
     @staticmethod
     def is_little_endian():
@@ -315,7 +325,7 @@ class IDA:
 
     @staticmethod
     def get_filetype():
-        ftype = ida_ida.inf_get_filetype()
+        ftype = ida_ida.inf_get_filetype() if IDA_VERSION >= 9 else IDA.get_info_structure().filetype
         if ftype == ida_ida.f_MACHO:
             return "macho"
         elif ftype == ida_ida.f_PE or ftype == ida_ida.f_EXE or ftype == ida_ida.f_EXE_old: # is this correct?
@@ -327,17 +337,18 @@ class IDA:
 
     @staticmethod
     def get_ql_arch_string():
-        proc = ida_ida.inf_get_procname().lower()
+        proc = (ida_ida.inf_get_procname() if IDA_VERSION >= 9 else IDA.get_info_structure().procname).lower()
         result = None
+        is_64_bit = ida_ida.inf_is_64bit() if IDA_VERSION >= 9 else IDA.get_info_structure().is_64bit()
         if proc == "metapc":
             result = "x86"
-            if ida_ida.inf_is_64bit():
+            if is_64_bit:
                 result = "x8664"
         elif "mips" in proc:
             result = "mips"
         elif "arm" in proc:
             result = "arm32"
-            if ida_ida.inf_is_64bit():
+            if is_64_bit:
                 result = "arm64"
         # That's all we support :(
         return result
