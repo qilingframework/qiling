@@ -21,16 +21,21 @@ class QlArmBaseCC(QlCommonBaseCC):
     def getNumSlots(argbits: int) -> int:
         return 1
 
+    def getReturnAddress(self) -> int:
+        return self.arch.regs.lr
+
     def setReturnAddress(self, addr: int) -> None:
         self.arch.regs.lr = addr
 
     def unwind(self, nslots: int) -> int:
         # TODO: cleanup?
-        return self.arch.regs.lr
+        return self.getReturnAddress()
+
 
 class aarch64(QlArmBaseCC):
     _retreg = UC_ARM64_REG_X0
     _argregs = make_arg_list(UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2, UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5, UC_ARM64_REG_X6, UC_ARM64_REG_X7)
+
 
 class aarch32(QlArmBaseCC):
     _retreg = UC_ARM_REG_R0

@@ -64,6 +64,31 @@ class QlMemoryManager:
         # make sure pagesize is a power of 2
         assert self.pagesize & (self.pagesize - 1) == 0, 'pagesize has to be a power of 2'
 
+        self._packers = {
+            (1, True): ql.pack8s,
+            (2, True): ql.pack16s,
+            (4, True): ql.pack32s,
+            (8, True): ql.pack64s,
+
+            (1, False): ql.pack8,
+            (2, False): ql.pack16,
+            (4, False): ql.pack32,
+            (8, False): ql.pack64
+        }
+
+        self._unpackers = {
+            (1, True): ql.unpack8s,
+            (2, True): ql.unpack16s,
+            (4, True): ql.unpack32s,
+            (8, True): ql.unpack64s,
+
+            (1, False): ql.unpack8,
+            (2, False): ql.unpack16,
+            (4, False): ql.unpack32,
+            (8, False): ql.unpack64
+        }
+
+
     def __read_string(self, addr: int) -> str:
         ret = bytearray()
         c = self.read(addr, 1)
@@ -344,22 +369,12 @@ class QlMemoryManager:
         if not size:
             size = self.ql.arch.pointersize
 
-        __unpack = ({
-            1: self.ql.unpack8s,
-            2: self.ql.unpack16s,
-            4: self.ql.unpack32s,
-            8: self.ql.unpack64s
-        } if signed else {
-            1: self.ql.unpack8,
-            2: self.ql.unpack16,
-            4: self.ql.unpack32,
-            8: self.ql.unpack64
-        }).get(size)
-
-        if __unpack is None:
+        try:
+            _unpack = self._unpackers[(size, signed)]
+        except KeyError:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        return __unpack(self.read(addr, size))
+        return _unpack(self.read(addr, size))
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.
@@ -385,22 +400,12 @@ class QlMemoryManager:
         if not size:
             size = self.ql.arch.pointersize
 
-        __pack = ({
-            1: self.ql.pack8s,
-            2: self.ql.pack16s,
-            4: self.ql.pack32s,
-            8: self.ql.pack64s
-        } if signed else {
-            1: self.ql.pack8,
-            2: self.ql.pack16,
-            4: self.ql.pack32,
-            8: self.ql.pack64
-        }).get(size)
-
-        if __pack is None:
+        try:
+            _pack = self._packers[(size, signed)]
+        except KeyError:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        self.write(addr, __pack(value))
+        self.write(addr, _pack(value))
 
     def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> List[int]:
         """Search for a sequence of bytes in memory.

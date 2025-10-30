@@ -48,7 +48,7 @@ class QlArchUtils:
         return addr, '-'
 
     def disassembler(self, ql: Qiling, address: int, size: int):
-        data = ql.mem.read(address, size)
+        data = memoryview(ql.mem.read(address, size))
 
         # knowing that all binary sections are aligned to page boundary allows
         # us to 'cheat' and search for the containing image using the aligned
@@ -64,11 +64,14 @@ class QlArchUtils:
         ba, name = self.get_base_and_name(ql.mem.align(address))
 
         anibbles = ql.arch.bits // 4
+        pos = 0
 
-        for insn in ql.arch.disassembler.disasm(data, address):
-            offset = insn.address - ba
+        for iaddr, isize, mnem, ops in ql.arch.disassembler.disasm_lite(data, address):
+            offset = iaddr - ba
+            ibytes = data[pos:pos + isize]
 
-            ql.log.info(f'{insn.address:0{anibbles}x} [{name:20s} + {offset:#08x}]  {insn.bytes.hex(" "):20s} {insn.mnemonic:20s} {insn.op_str}')
+            ql.log.info(f'{iaddr:0{anibbles}x} [{name:20s} + {offset:#08x}]  {ibytes.hex():22s} {mnem:16s} {ops}')
+            pos += isize
 
         if ql.verbose >= QL_VERBOSE.DUMP:
             for reg in ql.arch.regs.register_mapping:
