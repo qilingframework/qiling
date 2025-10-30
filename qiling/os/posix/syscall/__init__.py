@@ -14,6 +14,7 @@ from .prctl import *
 from .ptrace import *
 from .random import *
 from .resource import *
+from .rseq import *
 from .sched import *
 from .select import *
 from .sendfile import *
