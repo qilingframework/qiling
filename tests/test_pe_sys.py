@@ -219,8 +219,8 @@ class PETest(unittest.TestCase):
         fcall.writeParams(((DWORD, 0),))
 
         # run until third stop
-        # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
-        amsint32.hook_address(hook_third_stop_address, 0x0001066a, stops)
+        # TODO: Should stop at 0x10423, but for now just stop at 0x10430
+        amsint32.hook_address(hook_third_stop_address, 0x10430, stops)
         amsint32.run(begin=0x102D0)
 
         self.assertTrue(stops[0])
