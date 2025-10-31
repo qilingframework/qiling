@@ -13,12 +13,6 @@ from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_
 from qiling import Qiling
 from qiling.exception import *
 
-# tuple: range start, range end, permissions mask, range label, is mmio?
-MapInfoEntry = Tuple[int, int, int, str, bool]
-
-MmioReadCallback  = Callable[[Qiling, int, int], int]
-MmioWriteCallback = Callable[[Qiling, int, int, int], None]
-
 
 class QlMmioHandler(Protocol):
     """A simple MMIO handler boilerplate that can be used to implement memory mapped devices.
@@ -36,6 +30,13 @@ class QlMmioHandler(Protocol):
         ...
 
 
+# tuple: range start, range end, permissions mask, range label, mmio hander object (if mmio range)
+MapInfoEntry = Tuple[int, int, int, str, Optional[QlMmioHandler]]
+
+MmioReadCallback  = Callable[[Qiling, int, int], int]
+MmioWriteCallback = Callable[[Qiling, int, int, int], None]
+
+
 class QlMemoryManager:
     """
     some ideas and code from:
@@ -45,7 +46,6 @@ class QlMemoryManager:
     def __init__(self, ql: Qiling, pagesize: int = 0x1000):
         self.ql = ql
         self.map_info: List[MapInfoEntry] = []
-        self.mmio_cbs: Dict[Tuple[int, int], QlMmioHandler] = {}
 
         bit_stuff = {
             64: (1 << 64) - 1,
@@ -121,7 +121,7 @@ class QlMemoryManager:
 
         self.__write_string(addr, value, encoding)
 
-    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, is_mmio: bool = False):
+    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, mmio_ctx: Optional[QlMmioHandler] = None):
         """Add a new memory range to map.
 
         Args:
@@ -129,10 +129,10 @@ class QlMemoryManager:
             mem_e: memory range end
             mem_p: permissions mask
             mem_info: map entry label
-            is_mmio: memory range is mmio
+            mmio_ctx: mmio handler object; if specified the range will be treated as mmio
         """
 
-        bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, is_mmio))
+        bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, mmio_ctx))
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -146,13 +146,13 @@ class QlMemoryManager:
 
         def __split_overlaps():
             for idx in overlap_ranges:
-                lbound, ubound, perms, label, is_mmio = self.map_info[idx]
+                lbound, ubound, perms, label, mmio_ctx = self.map_info[idx]
 
                 if lbound < mem_s:
-                    yield (lbound, mem_s, perms, label, is_mmio)
+                    yield (lbound, mem_s, perms, label, mmio_ctx)
 
                 if mem_e < ubound:
-                    yield (mem_e, ubound, perms, label, is_mmio)
+                    yield (mem_e, ubound, perms, label, mmio_ctx)
 
         # indices of first and last overlapping ranges. since map info is always
         # sorted, we know that all overlapping rages are consecutive, so i1 > i0
@@ -209,18 +209,18 @@ class QlMemoryManager:
 
             return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
 
-        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, str]:
-            perms_str = __perms_mapping(perms)
+        def __process(entry: MapInfoEntry) -> Tuple[int, int, str, str, str]:
+            lbound, ubound, perms, label, mmio_ctx = entry
 
             if hasattr(self.ql, 'loader'):
                 image = self.ql.loader.find_containing_image(lbound)
-                container = image.path if image and not is_mmio else ''
+                container = image.path if image and mmio_ctx is None else ''
             else:
                 container = ''
 
-            return (lbound, ubound, perms_str, label, container)
+            return (lbound, ubound, __perms_mapping(perms), label, container)
 
-        return tuple(__process(*entry) for entry in self.map_info)
+        return tuple(__process(entry) for entry in self.map_info)
 
     def get_formatted_mapinfo(self) -> Sequence[str]:
         """Get memory map info in a nicely formatted table.
@@ -311,12 +311,13 @@ class QlMemoryManager:
             "mmio" : []
         }
 
-        for lbound, ubound, perm, label, is_mmio in self.map_info:
-            if is_mmio:
-                mem_dict['mmio'].append((lbound, ubound, perm, label, self.mmio_cbs[(lbound, ubound)]))
+        for lbound, ubound, perm, label, mmio_ctx in self.map_info:
+            if mmio_ctx is None:
+                key, data = 'ram', bytes(self.read(lbound, ubound - lbound))
             else:
-                data = self.read(lbound, ubound - lbound)
-                mem_dict['ram'].append((lbound, ubound, perm, label, bytes(data)))
+                key, data = 'mmio', mmio_ctx
+
+            mem_dict[key].append((lbound, ubound, perm, label, data))
 
         return mem_dict
 
@@ -429,7 +430,7 @@ class QlMemoryManager:
         assert begin < end, 'search arguments do not make sense'
 
         # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read side effects
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, mmio_ctx in self.map_info if not (end < lbound or ubound < begin or mmio_ctx is not None)]
         results = []
 
         # if needle is a bytes sequence use it verbatim, not as a pattern
@@ -454,9 +455,6 @@ class QlMemoryManager:
 
         self.del_mapinfo(addr, addr + size)
         self.ql.uc.mem_unmap(addr, size)
-
-        if (addr, addr + size) in self.mmio_cbs:
-            del self.mmio_cbs[(addr, addr+size)]
 
     def unmap_between(self, mem_s: int, mem_e: int) -> None:
         """Reclaim any allocated memory region within the specified range.
@@ -638,7 +636,7 @@ class QlMemoryManager:
             raise QlMemoryMappedError('Requested memory is unavailable')
 
         self.ql.uc.mem_map(addr, size, perms)
-        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', is_mmio=False)
+        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', None)
 
     def map_mmio(self, addr: int, size: int, handler: QlMmioHandler, info: str = '[mmio]'):
         # TODO: mmio memory overlap with ram? Is that possible?
@@ -664,9 +662,7 @@ class QlMemoryManager:
             cb(self.ql, offset, size, value)
 
         self.ql.uc.mmio_map(addr, size, __mmio_read, handler.read, __mmio_write, handler.write)
-        self.add_mapinfo(addr, addr + size, prot, info, is_mmio=True)
-
-        self.mmio_cbs[(addr, addr + size)] = handler
+        self.add_mapinfo(addr, addr + size, prot, info, handler)
 
 
 class Chunk:
