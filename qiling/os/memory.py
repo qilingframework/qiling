@@ -170,27 +170,30 @@ class QlMemoryManager:
         for entry in new_entries:
             bisect.insort(self.map_info, entry)
 
-    def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
-        tmp_map_info: Optional[MapInfoEntry] = None
-        info_idx: int = -1
+    def change_mapinfo(self, mem_s: int, mem_e: int, *, new_perms: Optional[int] = None, new_info: Optional[str] = None) -> None:
+        if new_perms is None and new_info is None:
+            # nothing to do
+            return
 
-        for idx, map_info in enumerate(self.map_info):
-            if mem_s >= map_info[0] and mem_e <= map_info[1]:
-                tmp_map_info = map_info
-                info_idx = idx
-                break
-
-        if tmp_map_info is None:
+        try:
+            # locate the map info entry to change
+            entry = next(entry for entry in self.map_info if mem_s >= entry[0] and mem_e <= entry[1])
+        except StopIteration:
             self.ql.log.error(f'Cannot change mapinfo at {mem_s:#08x}-{mem_e:#08x}')
             return
 
-        if mem_p is not None:
-            self.del_mapinfo(mem_s, mem_e)
-            self.add_mapinfo(mem_s, mem_e, mem_p, mem_info if mem_info else tmp_map_info[3])
-            return
+        _, _, perms, info, mmio_ctx = entry
 
-        if mem_info is not None:
-            self.map_info[info_idx] = (tmp_map_info[0], tmp_map_info[1], tmp_map_info[2], mem_info, tmp_map_info[4])
+        # caller wants to change perms?
+        if new_perms is not None:
+            perms = new_perms
+
+        # caller wants to change info?
+        if new_info is not None:
+            info = new_info
+
+        self.del_mapinfo(mem_s, mem_e)
+        self.add_mapinfo(mem_s, mem_e, perms, info, mmio_ctx)
 
     def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, str]]:
         """Get memory map info.
@@ -614,7 +617,7 @@ class QlMemoryManager:
         aligned_size = self.align_up((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
-        self.change_mapinfo(aligned_address, aligned_address + aligned_size, perms)
+        self.change_mapinfo(aligned_address, aligned_address + aligned_size, new_perms=perms)
 
     def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: Optional[str] = None):
         """Map a new memory range.
