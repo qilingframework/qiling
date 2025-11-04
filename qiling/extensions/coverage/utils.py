@@ -61,12 +61,3 @@ def collect_coverage(ql: Qiling, name: str, coverage_file: str):
     finally:
         cov.deactivate()
         cov.dump_coverage(coverage_file)
-
-def collect_coverage_no_yield(ql: Qiling, name: str, coverage_folder: str):
-    cov = factory.get_coverage_collector(ql, name)
-    cov.coverage_folder = coverage_folder
-    cov.activate()
-    return cov
-
-def get_coverage_instance(ql, name):
-    return factory.get_coverage_collector(ql, name)
