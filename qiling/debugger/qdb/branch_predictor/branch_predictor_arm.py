@@ -3,255 +3,264 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Callable, Dict, List, Optional, Tuple
 
+from capstone import CS_OP_IMM, CS_OP_MEM, CS_OP_REG
+from capstone.arm import ArmOp, ArmOpMem
+from capstone.arm_const import (
+    ARM_CC_EQ, ARM_CC_NE, ARM_CC_HS, ARM_CC_LO,
+    ARM_CC_MI, ARM_CC_PL, ARM_CC_VS, ARM_CC_VC,
+    ARM_CC_HI, ARM_CC_LS, ARM_CC_GE, ARM_CC_LT,
+    ARM_CC_GT, ARM_CC_LE, ARM_CC_AL
+)
 
-from .branch_predictor import *
-from ..arch import ArchARM
-from ..misc import read_int
+from unicorn.arm_const import UC_ARM_REG_PC
 
+from .branch_predictor import BranchPredictor, Prophecy
+from ..arch import ArchARM, ArchCORTEX_M
+from ..misc import InvalidInsn
 
 
 class BranchPredictorARM(BranchPredictor, ArchARM):
+    """Branch Predictor for ARM.
     """
-    predictor for ARM
-    """
 
-    def __init__(self, ql):
-        super().__init__(ql)
-        ArchARM.__init__(self)
+    stop = 'udf'
 
-        self.INST_SIZE = 4
-        self.THUMB_INST_SIZE = 2
-        self.CODE_END = "udf"
-
-    def read_reg(self, reg_name):
-        reg_name = reg_name.replace("ip", "r12").replace("fp", "r11")
-        return getattr(self.ql.arch.regs, reg_name)
-
-    def regdst_eq_pc(self, op_str):
-        return op_str.partition(", ")[0] == "pc"
-
-    @staticmethod
-    def get_cpsr(bits: int) -> (bool, bool, bool, bool):
+    def get_cond_flags(self) -> Tuple[bool, bool, bool, bool]:
+        """Get condition status flags from CPSR / xPSR.
         """
-        get flags from ql.reg.cpsr
-        """
+
+        cpsr = self.read_reg(self._flags_reg)
+
         return (
-                bits & 0x10000000 != 0, # V, overflow flag
-                bits & 0x20000000 != 0, # C, carry flag
-                bits & 0x40000000 != 0, # Z, zero flag
-                bits & 0x80000000 != 0, # N, sign flag
-                )
+            (cpsr & (0b1 << 28)) != 0,  # V, overflow flag
+            (cpsr & (0b1 << 29)) != 0,  # C, carry flag
+            (cpsr & (0b1 << 30)) != 0,  # Z, zero flag
+            (cpsr & (0b1 << 31)) != 0   # N, sign flag
+        )
 
-    def predict(self, pref_addr=None):
-        prophecy = Prophecy()
-        cur_addr = self.cur_addr if pref_addr is None else pref_addr
-        line = self.disasm(cur_addr)
+    def predict(self) -> Prophecy:
+        insn = self.disasm(self.cur_addr, True)
 
-        if line.mnemonic == self.CODE_END: # indicates program exited
-            prophecy.where = True
-            return prophecy
+        going = False
+        where = 0
 
-        jump_table = {
-                # unconditional branch
-                "b"    : (lambda *_: True),
-                "bl"   : (lambda *_: True),
-                "bx"   : (lambda *_: True),
-                "blx"  : (lambda *_: True),
-                "b.w"  : (lambda *_: True),
+        # invalid instruction; nothing to predict
+        if isinstance(insn, InvalidInsn):
+            return Prophecy(going, where)
 
-                # branch on equal, Z == 1
-                "beq"  : (lambda V, C, Z, N: Z == 1),
-                "bxeq" : (lambda V, C, Z, N: Z == 1),
-                "beq.w": (lambda V, C, Z, N: Z == 1),
+        # iname is the instruction's basename stripped from all optional suffixes.
+        # this greatly simplifies the case handling
+        iname: str = insn.insn_name() or ''
+        operands: List[ArmOp] = insn.operands
 
-                # branch on not equal, Z == 0
-                "bne"  : (lambda V, C, Z, N: Z == 0),
-                "bxne" : (lambda V, C, Z, N: Z == 0),
-                "bne.w": (lambda V, C, Z, N: Z == 0),
+        # branch instructions
+        branches = ('b', 'bl', 'bx', 'blx')
 
-                # branch on signed greater than, Z == 0 and N == V
-                "bgt"  : (lambda V, C, Z, N: (Z == 0 and N == V)),
-                "bgt.w": (lambda V, C, Z, N: (Z == 0 and N == V)),
+        # reg-based conditional branches
+        conditional_reg: Dict[str, Callable[[int], bool]] = {
+            'cbz' : lambda r: r == 0,
+            'cbnz': lambda r: r != 0
+        }
 
-                # branch on signed less than, N != V
-                "blt"  : (lambda V, C, Z, N: N != V),
+        def __read_reg(reg: int) -> Optional[int]:
+            """[internal] Read register value where register is provided as a Unicorn constant.
+            """
 
-                # branch on signed greater than or equal, N == V
-                "bge"  : (lambda V, C, Z, N: N == V),
+            # name will be None in case of an invalid register. this is expected in some cases
+            # and should not raise an exception, but rather silently dropped
+            name = insn.reg_name(reg)
 
-                # branch on signed less than or queal
-                "ble"  : (lambda V, C, Z, N: Z == 1 or N != V),
+            # pc reg value needs adjustment
+            adj = (2 * self.isize) if reg == UC_ARM_REG_PC else 0
 
-                # branch on unsigned higher or same (or carry set), C == 1
-                "bhs"  : (lambda V, C, Z, N: C == 1),
-                "bcs"  : (lambda V, C, Z, N: C == 1),
+            return name and self.read_reg(self.unalias(name)) + adj
 
-                # branch on unsigned lower (or carry clear), C == 0
-                "bcc"  : (lambda V, C, Z, N: C == 0),
-                "blo"  : (lambda V, C, Z, N: C == 0),
-                "bxlo" : (lambda V, C, Z, N: C == 0),
-                "blo.w": (lambda V, C, Z, N: C == 0),
+        def __read_mem(mem: ArmOpMem, size: int = 0, *, signed: bool = False) -> Optional[int]:
+            """[internal] Attempt to read memory contents. By default memory accesses are in
+            native size and values are unsigned.
+            """
 
-                # branch on negative or minus, N == 1
-                "bmi"  : (lambda V, C, Z, N: N == 1),
+            base  = __read_reg(mem.base) or 0
+            index = __read_reg(mem.index) or 0
+            scale = mem.scale
+            disp  = mem.disp
 
-                # branch on positive or plus, N == 0
-                "bpl"  : (lambda V, C, Z, N: N == 0),
+            return self.try_read_pointer(base + index * scale + disp, size, signed=signed)
 
-                # branch on signed overflow
-                "bvs"  : (lambda V, C, Z, N: V == 1),
+        def __parse_op(op: ArmOp, *args, **kwargs) -> Optional[int]:
+            """[internal] Parse an operand and return its value. Register references will be
+            substitued with the corresponding register value, while memory dereferences will
+            be substitued by the effective address they refer to.
+            """
 
-                # branch on no signed overflow
-                "bvc"  : (lambda V, C, Z, N: V == 0),
+            if op.type == CS_OP_REG:
+                value = __read_reg(op.reg)
 
-                # branch on unsigned higher
-                "bhi"  : (lambda V, C, Z, N: (Z == 0 and C == 1)),
-                "bxhi" : (lambda V, C, Z, N: (Z == 0 and C == 1)),
-                "bhi.w": (lambda V, C, Z, N: (Z == 0 and C == 1)),
+            elif op.type == CS_OP_IMM:
+                value = op.imm
 
-                # branch on unsigned lower
-                "bls"  : (lambda V, C, Z, N: (C == 0 or Z == 1)),
-                "bls.w": (lambda V, C, Z, N: (C == 0 or Z == 1)),
-                }
+            elif op.type == CS_OP_MEM:
+                value = __read_mem(op.mem, *args, **kwargs)
 
-        cb_table = {
-                # branch on equal to zero
-                "cbz" : (lambda r: r == 0),
-
-                # branch on not equal to zero
-                "cbnz": (lambda r: r != 0),
-                }
-
-        if line.mnemonic in jump_table:
-            prophecy.going = jump_table.get(line.mnemonic)(*self.get_cpsr(self.ql.arch.regs.cpsr))
-
-        elif line.mnemonic in cb_table:
-            prophecy.going = cb_table.get(line.mnemonic)(self.read_reg(line.op_str.split(", ")[0]))
-
-        if prophecy.going:
-            if "#" in line.op_str:
-                prophecy.where = read_int(line.op_str.split("#")[-1])
             else:
-                prophecy.where = self.read_reg(line.op_str)
+                # we are not expecting any other operand type, including floating point (CS_OP_FP)
+                raise RuntimeError(f'unexpected operand type: {op.type}')
 
-                if self.regdst_eq_pc(line.op_str):
-                    next_addr = cur_addr + line.size
-                    n2_addr = next_addr + len(self.read_insn(next_addr))
-                    prophecy.where += len(self.read_insn(n2_addr)) + len(self.read_insn(next_addr))
+            # LSR
+            if op.shift.type == 1:
+                value *= (1 >> op.shift.value)
 
-        elif line.mnemonic.startswith("it"):
-            # handle IT block here
+            # LSL
+            elif op.shift.type == 2:
+                value *= (1 << op.shift.value)
 
-            cond_met = {
-                    "eq": lambda V, C, Z, N: (Z == 1),
-                    "ne": lambda V, C, Z, N: (Z == 0),
-                    "ge": lambda V, C, Z, N: (N == V),
-                    "hs": lambda V, C, Z, N: (C == 1),
-                    "lo": lambda V, C, Z, N: (C == 0),
-                    "mi": lambda V, C, Z, N: (N == 1),
-                    "pl": lambda V, C, Z, N: (N == 0),
-                    "ls": lambda V, C, Z, N: (C == 0 or Z == 1),
-                    "le": lambda V, C, Z, N: (Z == 1 or N != V),
-                    "hi": lambda V, C, Z, N: (Z == 0 and C == 1),
-                    }.get(line.op_str)(*self.get_cpsr(self.ql.arch.regs.cpsr))
+            # ROR ?
 
-            it_block_range = [each_char for each_char in line.mnemonic[1:]]
+            return value
 
-            next_addr = cur_addr + self.THUMB_INST_SIZE
-            for each in it_block_range:
-                _insn = self.read_insn(next_addr)
-                n2_addr = self.predict(ql, next_addr)
+        def __is_taken(cc: int) -> Tuple[bool, Tuple[bool, ...]]:
+            pred = predicate[cc]
+            flags = self.get_cond_flags()
 
-                if (cond_met and each == "t") or (not cond_met and each == "e"):
-                    if n2_addr != (next_addr+len(_insn)): # branch detected
-                        break
+            return pred(*flags), flags
 
-                next_addr += len(_insn)
+        # conditions predicate selector
+        predicate: Dict[int, Callable[..., bool]] = {
+            ARM_CC_EQ: lambda V, C, Z, N: Z,
+            ARM_CC_NE: lambda V, C, Z, N: not Z,
+            ARM_CC_HS: lambda V, C, Z, N: C,
+            ARM_CC_LO: lambda V, C, Z, N: not C,
+            ARM_CC_MI: lambda V, C, Z, N: N,
+            ARM_CC_PL: lambda V, C, Z, N: not N,
+            ARM_CC_VS: lambda V, C, Z, N: V,
+            ARM_CC_VC: lambda V, C, Z, N: not V,
+            ARM_CC_HI: lambda V, C, Z, N: (not Z) and C,
+            ARM_CC_LS: lambda V, C, Z, N: (not C) or Z,
+            ARM_CC_GE: lambda V, C, Z, N: (N == V),
+            ARM_CC_LT: lambda V, C, Z, N: (N != V),
+            ARM_CC_GT: lambda V, C, Z, N: not Z and (N == V),
+            ARM_CC_LE: lambda V, C, Z, N: Z or (N != V),
+            ARM_CC_AL: lambda V, C, Z, N: True
+        }
 
-            prophecy.where = next_addr
+        # implementation of simple binary arithmetic and bitwise operations
+        binop: Dict[str, Callable[[int, int, int], int]] = {
+            'add': lambda a, b, _: a + b,
+            'adc': lambda a, b, c: a + b + c,
+            'sub': lambda a, b, _: a - b,
+            'rsb': lambda a, b, _: b - a,
+            'sbc': lambda a, b, c: a - b - (1 - c),
+            'rsc': lambda a, b, c: b - a - (1 - c),
+            'mul': lambda a, b, _: a * b,
+            'and': lambda a, b, _: a & b,
+            'orr': lambda a, b, _: a | b,
+            'eor': lambda a, b, _: a ^ b
+        }
 
-        elif line.mnemonic in ("ldr",):
+        # is this a branch?
+        if iname in branches:
+            going, _ = __is_taken(insn.cc)
 
-            if self.regdst_eq_pc(line.op_str):
-                _, _, rn_offset = line.op_str.partition(", ")
-                r, _, imm = rn_offset.strip("[]!").partition(", #")
+            if going:
+                where = __parse_op(operands[0])
 
-                if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
-                    prophecy.where = self.unpack32(self.read_mem(read_int(imm) + self.read_reg(r), self.INST_SIZE))
+            return Prophecy(going, where)
 
-                else: # post-indexed immediate
-                    # FIXME: weired behavior, immediate here does not apply
-                    prophecy.where = self.unpack32(self.read_mem(self.read_reg(r), self.INST_SIZE))
+        if iname in conditional_reg:
+            is_taken = conditional_reg[iname]
+            reg = __parse_op(operands[0])
+            assert reg is not None, 'unrecognized reg'
 
-        elif line.mnemonic in ("addls", "addne", "add") and self.regdst_eq_pc(line.op_str):
-            V, C, Z, N = self.get_cpsr(self.ql.arch.regs.cpsr)
-            r0, r1, r2, *imm = line.op_str.split(", ")
+            going = is_taken(reg)
 
-            # program counter is awalys 8 bytes ahead when it comes with pc, need to add extra 8 bytes
-            extra = 8 if 'pc' in (r0, r1, r2) else 0
+            if going:
+                where = __parse_op(operands[1])
 
-            if imm:
-                expr = imm[0].split()
-                # TODO: should support more bit shifting and rotating operation
-                if expr[0] == "lsl": # logical shift left
-                    n = read_int(expr[-1].strip("#")) * 2
+            return Prophecy(going, where)
 
-            if line.mnemonic == "addls" and (C == 0 or Z == 1):
-                prophecy.where = extra + self.read_reg(r1) + self.read_reg(r2) * n
+        # instruction is not a branch; check whether pc is affected by this instruction.
+        #
+        # insn.regs_write doesn't work well, so we use insn.regs_access instead
+        if UC_ARM_REG_PC in insn.regs_access()[1]:
 
-            elif line.mnemonic == "add" or (line.mnemonic == "addne" and Z == 0):
-                prophecy.where = extra + self.read_reg(r1) + (self.read_reg(r2) * n if imm else self.read_reg(r2))
+            if iname == 'mov':
+                going = True
+                where = __parse_op(operands[1])
 
-        elif line.mnemonic in ("tbh", "tbb"):
+            elif iname.startswith('ldr'):
+                suffix: str = insn.mnemonic[3:]
 
-            cur_addr += self.INST_SIZE
-            r0, r1, *imm = line.op_str.strip("[]").split(", ")
+                # map possible ldr suffixes to kwargs required for the memory access.
+                #
+                # to improve readability we also address the case where ldr has no suffix
+                # and no special kwargs are required. all strings start with '', so it
+                # serves as a safe default case
+                msize: Dict[str, Dict] = {
+                    'b' : {'size': 1, 'signed': False},
+                    'h' : {'size': 2, 'signed': False},
+                    'sb': {'size': 1, 'signed': True},
+                    'sh': {'size': 2, 'signed': True},
+                    ''  : {}
+                }
 
-            if imm:
-                expr = imm[0].split()
-                if expr[0] == "lsl": # logical shift left
-                    n = read_int(expr[-1].strip("#")) * 2
+                # ldr has different variations that affect the memory access size and
+                # whether the value should be signed or not.
+                suffix = next(s for s in msize if suffix.startswith(s))
 
-            if line.mnemonic == "tbh":
+                going, _ = __is_taken(insn.cc)
 
-                r1 = self.read_reg(r1) * n
+                if going:
+                    where = __parse_op(operands[1], **msize[suffix])
 
-            elif line.mnemonic == "tbb":
+            elif iname in binop:
+                going, flags = __is_taken(insn.cc)
 
-                r1 = self.read_reg(r1)
+                if going:
+                    operator = binop[iname]
+                    op1 = __parse_op(operands[1])
+                    op2 = __parse_op(operands[2])
+                    carry = int(flags[1])
 
-            to_add = int.from_bytes(self.read_mem(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * n
-            prophecy.where = cur_addr + to_add
+                    where = (op1 and op2) and operator(op1, op2, carry)
 
-        elif line.mnemonic.startswith("pop") and "pc" in line.op_str:
+            elif iname == 'pop':
+                going, _ = __is_taken(insn.cc)
 
-            prophecy.where = self.ql.stack_read(line.op_str.strip("{}").split(", ").index("pc") * self.INST_SIZE)
-            if not { # step to next instruction if cond does not meet
-                    "pop"  : lambda *_: True,
-                    "pop.w": lambda *_: True,
-                    "popeq": lambda V, C, Z, N: (Z == 1),
-                    "popne": lambda V, C, Z, N: (Z == 0),
-                    "pophi": lambda V, C, Z, N: (C == 1),
-                    "popge": lambda V, C, Z, N: (N == V),
-                    "poplt": lambda V, C, Z, N: (N != V),
-                    }.get(line.mnemonic)(*self.get_cpsr(self.ql.arch.regs.cpsr)):
+                if going:
+                    # find pc position within pop regs list
+                    idx = next(i for i, op in enumerate(operands) if (op.type == CS_OP_REG) and (op.reg == UC_ARM_REG_PC))
 
-                prophecy.where = cur_addr + self.INST_SIZE
+                    # read the corresponding stack entry
+                    where = self.ql.stack_read(idx * self.asize)
 
-        elif line.mnemonic == "sub" and self.regdst_eq_pc(line.op_str):
-            _, r, imm = line.op_str.split(", ")
-            prophecy.where = self.read_reg(r) - read_int(imm.strip("#"))
+            else:
+                # left here for users to provide feedback when encountered
+                raise RuntimeWarning(f'instruction affects pc but was not considered: {insn.mnemonic}')
 
-        elif line.mnemonic == "mov" and self.regdst_eq_pc(line.op_str):
-            _, r = line.op_str.split(", ")
-            prophecy.where = self.read_reg(r)
+        # for some reason capstone does not consider pc to be affected by 'tbb' and 'tbh'
+        # so we need to test for them specifically
 
-        if prophecy.where is not None:
-            prophecy.where &= ~0b1
+        # table branch byte
+        elif iname == 'tbb':
+            offset = __read_mem(operands[0].mem, 1)
+            pc = __read_reg(UC_ARM_REG_PC)
 
-        return prophecy
+            going = True
+            where = (offset and pc) and (pc + offset * 2)
 
-class BranchPredictorCORTEX_M(BranchPredictorARM):
-    def __init__(self, ql):
-        super().__init__(ql)
+        # table branch half-word
+        elif iname == 'tbh':
+            offset = __read_mem(operands[0].mem, 2)
+            pc = __read_reg(UC_ARM_REG_PC)
+
+            going = True
+            where = (offset and pc) and (pc + offset * 2)
+
+        return Prophecy(going, where)
+
+
+class BranchPredictorCORTEX_M(BranchPredictorARM, ArchCORTEX_M):
+    """Branch Predictor for ARM Cortex-M.
+    """

@@ -3,73 +3,66 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from typing import Iterator
 
-
-from .render import *
+from .render import Render, ContextRender
 from ..arch import ArchARM, ArchCORTEX_M
+from ..misc import InsnLike
+
 
 class ContextRenderARM(ContextRender, ArchARM):
+    """Context renderer for ARM architecture.
     """
-    context render for ARM
-    """
 
-    def __init__(self, ql, predictor):
-        super().__init__(ql, predictor)
-        ArchARM.__init__(self)
-        self.disasm_num = 8
+    def print_mode_info(self) -> None:
+        cpsr = self.read_reg(self._flags_reg)
 
-    @staticmethod
-    def print_mode_info(bits):
-        flags = ArchARM.get_flags(bits)
+        flags = ArchARM.get_flags(cpsr)
+        mode = ArchARM.get_mode(cpsr)
 
-        print(f"[{flags.pop('mode')} mode] ", end="")
-        for key, val in flags.items():
-            if val:
-                print(f"{color.BLUE}{key.upper()} ", end="")
-            else:
-                print(f"{color.GREEN}{key.lower()} ", end="")
+        self.render_flags(flags, f'{mode} mode')
 
-        print(color.END)
+    def __disasm_all(self, rng: range) -> Iterator[InsnLike]:
+        addr = rng.start
 
-    @Render.divider_printer("[ REGISTERS ]")
-    def context_reg(self, saved_reg_dump):
-        """
-        redering context registers
+        while addr in rng:
+            insn = self.disasm(addr)
+            yield insn
+
+            addr += insn.size
+
+    @Render.divider_printer("[ DISASM ]", footer=True)
+    def context_asm(self) -> None:
+        """Disassemble srrounding instructions.
         """
 
-        cur_regs = self.dump_regs()
-        cur_regs = self.swap_reg_name(cur_regs)
-        diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
-        self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-        self.print_mode_info(self.ql.arch.regs.cpsr)
+        address = self.cur_addr
+        prediction = self.predictor.predict()
 
+        # arm thumb may mix narrow and wide instructions so we can never know for
+        # sure where we need to start reading instructions from. to work around
+        # that we assume all instructions are wide, and then take the most recent
+        # ones into consideration.
+
+        listing = []
+
+        begin = address - self.asize * self.disasm_num
+        end = address
+
+        # disassemble all instructions in range, but keep only the last ones
+        listing.extend(self.__disasm_all(range(begin, end)))
+        listing = listing[-self.disasm_num:]
+
+        begin = address
+        end = address + self.asize * (self.disasm_num + 1)
+
+        # disassemble all instructions in range, but keep only the first ones
+        listing.extend(self.__disasm_all(range(begin, end)))
+        listing = listing[:self.disasm_num * 2 + 1]
+
+        self.render_assembly(listing, address, prediction)
 
 
 class ContextRenderCORTEX_M(ContextRenderARM, ArchCORTEX_M):
+    """Context renderer for ARM Cortex-M architecture.
     """
-    context render for cortex_m
-    """
-
-    def __init__(self, ql, predictor):
-        super().__init__(ql, predictor)
-        ArchCORTEX_M.__init__(self)
-        self.regs_a_row = 3
-
-    @Render.divider_printer("[ REGISTERS ]")
-    def context_reg(self, saved_reg_dump):
-        cur_regs = self.dump_regs()
-        cur_regs = self.swap_reg_name(cur_regs)
-
-        # for re-order
-        extra_dict = {
-                "xpsr": "xpsr",
-                "control": "control",
-                "primask": "primask",
-                "faultmask": "faultmask",
-                "basepri": "basepri",
-                }
-
-        cur_regs = self.swap_reg_name(cur_regs, extra_dict=extra_dict)
-        diff_reg = self.reg_diff(cur_regs, saved_reg_dump)
-        self.render_regs_dump(cur_regs, diff_reg=diff_reg)
-        self.print_mode_info(self.ql.arch.regs.cpsr)

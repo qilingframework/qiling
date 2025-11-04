@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from collections import namedtuple
-from os.path import basename
+from __future__ import annotations
+
+import os
+from typing import Any, TYPE_CHECKING, List, NamedTuple
 
 from .base import QlBaseCoverage
 
 
+if TYPE_CHECKING:
+    from qiling import Qiling
+
+
 # Adapted from https://github.com/nccgroup/Cartographer/blob/main/EZCOV.md#coverage-data
-class bb_entry(namedtuple('bb_entry', 'offset size mod_id')):
-    def csvline(self):
-        offset = '0x{:08x}'.format(self.offset)
+class bb_entry(NamedTuple):
+    offset: int
+    size: int
+    mod_id: Any
+
+    def as_csv(self) -> str:
+        offset = f'{self.offset:#010x}'
         mod_id = f"[ {self.mod_id if self.mod_id is not None else ''} ]"
+
         return f"{offset},{self.size},{mod_id}\n"
 
 class QlEzCoverage(QlBaseCoverage):
@@ -27,29 +38,30 @@ class QlEzCoverage(QlBaseCoverage):
 
     FORMAT_NAME = "ezcov"
 
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         super().__init__(ql)
+
         self.ezcov_version = 1
-        self.ezcov_flavor  = 'ezcov'
-        self.basic_blocks  = []
-        self.bb_callback   = None
+        self.ezcov_flavor = 'ezcov'
+        self.basic_blocks: List[bb_entry]  = []
+        self.bb_callback = None
 
-    @staticmethod
-    def block_callback(ql, address, size, self):
-        mod = ql.loader.find_containing_image(address)
-        if mod is not None:
-            ent = bb_entry(address - mod.base, size, basename(mod.path))
-            self.basic_blocks.append(ent)
+    def block_callback(self, ql: Qiling, address: int, size: int):
+        img = ql.loader.find_containing_image(address)
 
-    def activate(self):
-        self.bb_callback = self.ql.hook_block(self.block_callback, user_data=self)
+        if img is not None:
+            self.basic_blocks.append(bb_entry(address - img.base, size, os.path.basename(img.path)))
 
-    def deactivate(self):
-        self.ql.hook_del(self.bb_callback)
+    def activate(self) -> None:
+        self.bb_callback = self.ql.hook_block(self.block_callback)
 
-    def dump_coverage(self, coverage_file):
+    def deactivate(self) -> None:
+        if self.bb_callback:
+            self.ql.hook_del(self.bb_callback)
+
+    def dump_coverage(self, coverage_file: str) -> None:
         with open(coverage_file, "w") as cov:
             cov.write(f"EZCOV VERSION: {self.ezcov_version}\n")
             cov.write("# Qiling EZCOV exporter tool\n")
-            for bb in self.basic_blocks:
-                cov.write(bb.csvline())
+
+            cov.writelines(bb.as_csv() for bb in self.basic_blocks)

@@ -3,102 +3,147 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Optional
+from __future__ import annotations
 
-from unicorn import UC_ERR_READ_UNMAPPED
-import unicorn
+from typing import TYPE_CHECKING, Optional, Tuple, Union
+from unicorn import UcError
 
-from capstone import CsInsn
+from .misc import InvalidInsn
 
-from .misc import read_int, InvalidInsn
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from .misc import InsnLike
+
 
 class Context:
-    """
-    base class for accessing context of running qiling instance
+    """Emulation context accessor.
     """
 
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
+        # make sure mixin classes are properly initialized
+        super().__init__()
+
         self.ql = ql
         self.pointersize = self.ql.arch.pointersize
-        self.unpack = ql.unpack
-        self.unpack16 = ql.unpack16
-        self.unpack32 = ql.unpack32
-        self.unpack64 = ql.unpack64
 
     @property
-    def cur_addr(self):
-        """
-        program counter of qiling instance
+    def cur_addr(self) -> int:
+        """Read current program counter register.
         """
 
         return self.ql.arch.regs.arch_pc
 
-    def read_mem(self, address: int, size: int):
+    @property
+    def cur_sp(self) -> int:
+        """Read current stack pointer register.
         """
-        read data from memory of qiling instance
+
+        return self.ql.arch.regs.arch_sp
+
+    def read_reg(self, reg: Union[str, int]) -> int:
+        """Get register value.
+        """
+
+        return self.ql.arch.regs.read(reg)
+
+    def write_reg(self, reg: Union[str, int], value: int) -> None:
+        """Set register value.
+        """
+
+        self.ql.arch.regs.write(reg, value)
+
+    def disasm(self, address: int, detail: bool = False) -> InsnLike:
+        """Helper function for disassembling.
+        """
+
+        insn_bytes = self.read_insn(address) or b''
+        insn = None
+
+        if insn_bytes:
+            md = self.ql.arch.disassembler
+            md.detail = detail
+
+            insn = next(md.disasm(insn_bytes, address, 1), None)
+
+        return insn or InvalidInsn(insn_bytes, address)
+
+    def disasm_lite(self, address: int) -> Tuple[int, int, str, str]:
+        """Helper function for light disassembling, when details are not required.
+
+        Returns:
+            A tuple of: instruction address, size, mnemonic and operands
+        """
+
+        insn_bytes = self.read_insn(address) or b''
+        insn = None
+
+        if insn_bytes:
+            md = self.ql.arch.disassembler
+
+            insn = next(md.disasm_lite(insn_bytes, address, 1), None)
+
+        return insn or tuple()
+
+    def read_mem(self, address: int, size: int) -> bytearray:
+        """Read data of a certain size from specified memory location.
         """
 
         return self.ql.mem.read(address, size)
 
-    def disasm(self, address: int, detail: bool = False) -> Optional[CsInsn]:
-        """
-        helper function for disassembling
-        """
-
-        md = self.ql.arch.disassembler
-        md.detail = detail
-
-        if (bytes_read := self.read_insn(address)):
-            return next(md.disasm(bytes_read, address), InvalidInsn(bytes_read, address))
-        return InvalidInsn(bytes_read, address)
-
-    def try_read(self, address: int, size: int) -> Optional[bytes]:
-        """
-        try to read data from ql.mem
+    def try_read_mem(self, address: int, size: int) -> Optional[bytearray]:
+        """Attempt to read data from memory.
         """
 
-        result = None
-        err_msg = ""
         try:
-            result = self.read_mem(address, size)
+            data = self.read_mem(address, size)
+        except UcError:
+            data = None
 
-        except unicorn.unicorn.UcError as err:
-            if err.errno == UC_ERR_READ_UNMAPPED: # Invalid memory read (UC_ERR_READ_UNMAPPED)
-                err_msg = f"Can not access memory at address 0x{address:08x}"
+        return data
 
-        except:
-            pass
-
-        return (result, err_msg)
-
-    def try_read_pointer(self, address: int) -> Optional[bytes]:
-        """
-        try to read pointer size of data from ql.mem
+    def read_pointer(self, address: int, size: int = 0, *, signed: bool = False) -> int:
+        """Attempt to read a native-size integer from memory.
         """
 
-        return self.try_read(address, self.archbit)
+        return self.ql.mem.read_ptr(address, size, signed=signed)
+
+    def try_read_pointer(self, address: int, size: int = 0, *, signed: bool = False) -> Optional[int]:
+        """Attempt to read a native-size integer from memory.
+        """
+
+        try:
+            value = self.read_pointer(address, size, signed=signed)
+        except UcError:
+            value = None
+
+        return value
 
     def read_string(self, address: int) -> Optional[str]:
-        """
-        read string from memory of qiling instance
+        """Read string from memory.
         """
 
         return self.ql.mem.string(address)
 
     def try_read_string(self, address: int) -> Optional[str]:
-        """
-        try to read string from memory of qiling instance
+        """Attempt to read a string from memory.
         """
 
-        s = None
         try:
             s = self.read_string(address)
-        except:
-            pass
+        except UcError:
+            s = None
 
-    @staticmethod
-    def read_int(s: str) -> int:
-        return read_int(s)
+        return s
 
-if __name__ == "__main__":
-    pass
+    def get_deref(self, ptr: int) -> Union[int, str, None]:
+        """Get content referenced by a pointer.
+
+        If dereferenced data is printable, a string will be returned. Otherwise
+        an integer value is retgurned. If the specified address is not reachable
+        None is returned.
+        """
+
+        val = self.try_read_string(ptr)
+
+        return val if val and val.isprintable() else self.try_read_pointer(ptr)

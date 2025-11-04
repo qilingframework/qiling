@@ -7,7 +7,7 @@ import io
 import os
 
 from enum import IntEnum
-from typing import AnyStr, Optional, Sequence, Mapping, Tuple
+from typing import Any, AnyStr, Optional, Sequence, Mapping, Tuple
 
 from elftools.common.utils import preserve_stream_pos
 from elftools.elf.constants import P_FLAGS, SH_FLAGS
@@ -330,7 +330,7 @@ class QlLoaderELF(QlLoader):
         hwcap_values = {
             (QL_ARCH.ARM,   QL_ENDIAN.EL, 32): 0x001fb8d7,
             (QL_ARCH.ARM,   QL_ENDIAN.EB, 32): 0xd7b81f00,
-            (QL_ARCH.ARM64, QL_ENDIAN.EL, 64): 0x078bfbfd
+            (QL_ARCH.ARM64, QL_ENDIAN.EL, 64): 0x078bfafd
         }
 
         # determine hwcap value by arch properties; if not found default to 0
@@ -701,3 +701,15 @@ class QlLoaderELF(QlLoader):
                 elfdata_mapping.extend(sec.data())
 
         return bytes(elfdata_mapping)
+
+    def save(self) -> Mapping[str, Any]:
+        saved = super().save()
+
+        saved['brk_address'] = self.brk_address
+
+        return saved
+
+    def restore(self, saved_state: Mapping[str, Any]):
+        self.brk_address = saved_state['brk_address']
+
+        super().restore(saved_state)

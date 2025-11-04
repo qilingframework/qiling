@@ -49,6 +49,17 @@ def hook_HeapCreate(ql: Qiling, address: int, params):
 
     return ql.os.heap.alloc(dwInitialSize)
 
+def _HeapAlloc(ql: Qiling, address: int, params):
+    dwFlags = params["dwFlags"]
+    dwBytes = params["dwBytes"]
+
+    ptr = ql.os.heap.alloc(dwBytes)
+
+    if ptr and (dwFlags & HEAP_ZERO_MEMORY):
+        __zero_mem(ql.mem, ptr, dwBytes)
+
+    return ptr
+
 # DECLSPEC_ALLOCATOR LPVOID HeapAlloc(
 #   HANDLE hHeap,
 #   DWORD  dwFlags,
@@ -60,15 +71,45 @@ def hook_HeapCreate(ql: Qiling, address: int, params):
     'dwBytes' : SIZE_T
 })
 def hook_HeapAlloc(ql: Qiling, address: int, params):
-    dwFlags = params["dwFlags"]
-    dwBytes = params["dwBytes"]
+    return _HeapAlloc(ql, address, params)
 
-    ptr = ql.os.heap.alloc(dwBytes)
+# DECLSPEC_ALLOCATOR LPVOID HeapReAlloc(
+#   HANDLE                 hHeap,
+#   DWORD                  dwFlags,
+#   _Frees_ptr_opt_ LPVOID lpMem,
+#   SIZE_T                 dwBytes
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hHeap'   : HANDLE,
+    'dwFlags' : DWORD,
+    'lpMem': LPVOID,
+    'dwBytes' : SIZE_T
+})
+def hook_HeapReAlloc(ql: Qiling, address: int, params):
+    base = params["lpMem"]
+    newSize = params["dwBytes"]
 
-    if ptr and (dwFlags & HEAP_ZERO_MEMORY):
-        __zero_mem(ql.mem, ptr, dwBytes)
+    if not base:
+        return _HeapAlloc(ql, address, params)
+    
+    if newSize == 0:
+        ql.os.heap.free(base)
+        
+        return 0
 
-    return ptr
+    oldSize = ql.os.heap.size(base)
+    oldData = bytes(ql.mem.read(base, oldSize))
+    
+    ql.os.heap.free(base)
+
+    if newSize < oldSize:
+        oldData = oldData[0:newSize]
+
+    newBase = ql.os.heap.alloc(newSize)
+    if newBase:
+        ql.mem.write(newBase, oldData)
+
+    return newBase
 
 # SIZE_T HeapSize(
 #   HANDLE  hHeap,
@@ -120,3 +161,29 @@ def hook_HeapSetInformation(ql: Qiling, address: int, params):
 @winsdkapi(cc=STDCALL, params={})
 def hook_GetProcessHeap(ql: Qiling, address: int, params):
     return ql.os.heap.start_address
+
+# BOOL HeapValidate(
+#   HANDLE hHeap,
+#   DWORD  dwFlags,
+#   LPCVOID lpMem
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hHeap': PVOID,
+    'dwFlags': DWORD,
+    'lpMem': PVOID
+})
+def hook_HeapValidate(ql: Qiling, address: int, params):
+    hHeap = params['hHeap']
+    lpMem = params['lpMem']
+
+    if not hHeap:
+        return 0
+    
+    # TODO: Maybe _find is a heap manager implementation
+    # detail, in which case we shouldn't rely on it.
+    chunk = ql.os.heap._find(lpMem)
+
+    if not chunk:
+        return 0
+    
+    return chunk.inuse

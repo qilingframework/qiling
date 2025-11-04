@@ -6,7 +6,7 @@
 import bisect
 import os
 import re
-from typing import Any, Callable, Iterator, List, Mapping, Optional, Pattern, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Pattern, Protocol, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
@@ -20,6 +20,22 @@ MmioReadCallback  = Callable[[Qiling, int, int], int]
 MmioWriteCallback = Callable[[Qiling, int, int, int], None]
 
 
+class QlMmioHandler(Protocol):
+    """A simple MMIO handler boilerplate that can be used to implement memory mapped devices.
+
+    This should be extended to implement mapped devices state machines. Note that the read and write
+    methods are optional, where their existance indicates whether the device supports the corresponding
+    operation. That is, an unimplemented method means the corresponding operation will be silently
+    dropped.
+    """
+
+    def read(self, ql: Qiling, offset: int, size: int) -> int:
+        ...
+
+    def write(self, ql: Qiling, offset: int, size: int, value: int) -> None:
+        ...
+
+
 class QlMemoryManager:
     """
     some ideas and code from:
@@ -29,7 +45,7 @@ class QlMemoryManager:
     def __init__(self, ql: Qiling, pagesize: int = 0x1000):
         self.ql = ql
         self.map_info: List[MapInfoEntry] = []
-        self.mmio_cbs = {}
+        self.mmio_cbs: Dict[Tuple[int, int], QlMmioHandler] = {}
 
         bit_stuff = {
             64: (1 << 64) - 1,
@@ -57,7 +73,7 @@ class QlMemoryManager:
             addr += 1
             c = self.read(addr, 1)
 
-        return ret.decode()
+        return ret.decode('latin1')
 
     def __write_string(self, addr: int, s: str, encoding: str):
         self.write(addr, bytes(s, encoding) + b'\x00')
@@ -272,7 +288,7 @@ class QlMemoryManager:
 
         for lbound, ubound, perm, label, is_mmio in self.map_info:
             if is_mmio:
-                mem_dict['mmio'].append((lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)]))
+                mem_dict['mmio'].append((lbound, ubound, perm, label, self.mmio_cbs[(lbound, ubound)]))
             else:
                 data = self.read(lbound, ubound - lbound)
                 mem_dict['ram'].append((lbound, ubound, perm, label, bytes(data)))
@@ -294,12 +310,12 @@ class QlMemoryManager:
             self.ql.log.debug(f'writing {len(data):#x} bytes at {lbound:#08x}')
             self.write(lbound, data)
 
-        for lbound, ubound, perms, label, read_cb, write_cb in mem_dict['mmio']:
+        for lbound, ubound, perms, label, handler in mem_dict['mmio']:
             self.ql.log.debug(f"restoring mmio range: {lbound:#08x} {ubound:#08x} {label}")
 
             size = ubound - lbound
             if not self.is_mapped(lbound, size):
-                self.map_mmio(lbound, size, read_cb, write_cb, info=label)
+                self.map_mmio(lbound, size, handler, label)
 
     def read(self, addr: int, size: int) -> bytearray:
         """Read bytes from memory.
@@ -619,15 +635,15 @@ class QlMemoryManager:
         self.ql.uc.mem_map(addr, size, perms)
         self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', is_mmio=False)
 
-    def map_mmio(self, addr: int, size: int, read_cb: Optional[MmioReadCallback], write_cb: Optional[MmioWriteCallback], info: str = '[mmio]'):
+    def map_mmio(self, addr: int, size: int, handler: QlMmioHandler, info: str = '[mmio]'):
         # TODO: mmio memory overlap with ram? Is that possible?
         # TODO: Can read_cb or write_cb be None? How uc handle that access?
         prot = UC_PROT_NONE
 
-        if read_cb:
+        if hasattr(handler, 'read'):
             prot |= UC_PROT_READ
 
-        if write_cb:
+        if hasattr(handler, 'write'):
             prot |= UC_PROT_WRITE
 
         # generic mmio read wrapper
@@ -642,10 +658,10 @@ class QlMemoryManager:
 
             cb(self.ql, offset, size, value)
 
-        self.ql.uc.mmio_map(addr, size, __mmio_read, read_cb, __mmio_write, write_cb)
+        self.ql.uc.mmio_map(addr, size, __mmio_read, handler.read, __mmio_write, handler.write)
         self.add_mapinfo(addr, addr + size, prot, info, is_mmio=True)
 
-        self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
+        self.mmio_cbs[(addr, addr + size)] = handler
 
 
 class Chunk:

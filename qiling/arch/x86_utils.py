@@ -5,6 +5,7 @@ from typing import Optional
 from qiling import Qiling
 from qiling.arch.x86 import QlArchIntel
 from qiling.arch.x86_const import *
+from qiling.const import QL_ARCH
 from qiling.exception import QlGDTError, QlMemoryMappedError
 from qiling.os.memory import QlMemoryManager
 
@@ -60,6 +61,8 @@ class GDTManager:
         # setup GDT by writing to GDTR
         ql.arch.regs.write(UC_X86_REG_GDTR, (0, base, limit, 0x0))
 
+        self.is_long_mode = ql.arch.type is QL_ARCH.X8664
+
         self.array = GDTArray(ql.mem, base, num_entries)
 
     @staticmethod
@@ -93,7 +96,18 @@ class GDTManager:
         return (idx << 3) | QL_X86_SEGSEL_TI_GDT | rpl
 
     def register_gdt_segment(self, index: int, seg_base: int, seg_limit: int, access: int) -> int:
-        flags = QL_X86_F_OPSIZE_32
+        is_code = access & QL_X86_A_CODE
+
+        if is_code and self.is_long_mode:
+            # If this is a code segment and 64-bit long mode is enabled,
+            # then set the long segment descriptor bit.
+            # This prevents some strange CPU errors encountered with
+            # intra-privilege level IRET instructions used for
+            # context switching on 64-bit Windows.
+            flags = QL_X86_F_LONG
+        else:
+            # Otherwise, OPSIZE_32 should be set.
+            flags = QL_X86_F_OPSIZE_32
 
         # is this a huge segment?
         if seg_limit > (1 << 16):
@@ -138,16 +152,21 @@ class SegmentManager:
 
 class SegmentManager86(SegmentManager):
     def setup_cs_ds_ss_es(self, base: int, size: int) -> None:
-        # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
+        # TODO: 64-bit code segment access bits were adjusted, removing the conforming bit.
+        # Perhaps make the same change for x86?
         access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_CODE | QL_X86_A_CODE | QL_X86_A_CODE_C | QL_X86_A_CODE_R
+        # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
         selector = self.gdtm.register_gdt_segment(3, base, size - 1, access)
 
         self.arch.regs.cs = selector
 
         # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
+        # TODO: 64-bit data segment access bits were adjusted, removing the direction bit.
+        # After this change, there were no problems changing the privilege level to ring 3.
+        # Perhaps make the same change for x86?
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_0 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         # While debugging the Linux kernel segment, I found that the three segments DS, SS, and ES all point to the same location in the GDT table.
         # This position is the fifth segment table of GDT.
-        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_0 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         selector = self.gdtm.register_gdt_segment(5, base, size - 1, access)
 
         self.arch.regs.ds = selector
@@ -169,15 +188,32 @@ class SegmentManager86(SegmentManager):
 
 class SegmentManager64(SegmentManager):
     def setup_cs_ds_ss_es(self, base: int, size: int) -> None:
+        # Code segment access bits:
+        # * QL_X86_A_PRESENT        : Present
+        # * QL_X86_A_PRIV_3         : Ring 3 (user-mode)
+        # * QL_X86_A_DESC_CODE      : Segment describes a code segment
+        # * QL_X86_A_CODE           : Executable bit set
+        # * QL_X86_A_CODE_R         : Readable
+        # Not set:
+        # * QL_X86_A_CODE_C         : Conforming bit
+        #   -> unset means code in this segment can only be executed from the ring set in DPL.
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_CODE | QL_X86_A_CODE | QL_X86_A_CODE_R
         # While debugging the linux kernel segment, the cs segment was found on the sixth segment of gdt.
-        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_CODE | QL_X86_A_CODE | QL_X86_A_CODE_C | QL_X86_A_CODE_R
         selector = self.gdtm.register_gdt_segment(6, base, size - 1, access)
 
         self.arch.regs.cs = selector
 
-        # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
+        # Data segment access bits:
+        # * QL_X86_A_PRESENT        : Present
+        # * QL_X86_A_PRIV_3         : Ring 3 (user-mode)
+        # * QL_X86_A_DESC_DATA      : Segment describes a data segment
+        # * QL_X86_A_DATA           : Executable bit NOT set
+        # * QL_X86_A_DATA_W         : Writable
+        # Not set:
+        # * QL_X86_A_DATA_E         : Direction bit
+        #   -> unset means the data segment grows upward, rather than downward.
+        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_W
         # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
-        access = QL_X86_A_PRESENT | QL_X86_A_PRIV_0 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
         selector = self.gdtm.register_gdt_segment(5, base, size - 1, access)
 
         # self.arch.regs.ds = selector
