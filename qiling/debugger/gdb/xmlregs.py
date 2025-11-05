@@ -38,6 +38,10 @@ from qiling.arch.x86_const import (
     reg_map_ymm as x86_regs_ymm
 )
 
+from qiling.arch.ppc_const import (
+    reg_map as ppc_regs
+)
+
 from qiling.const import QL_ARCH, QL_OS
 
 RegEntry = Tuple[Optional[int], int, int]
@@ -142,7 +146,8 @@ class QlGdbFeatures:
             QL_ARCH.ARM:      dict(**arm_regs, **arm_regs_vfp, **arm_regs_q, **arm_regs_s),
             QL_ARCH.CORTEX_M: dict(**cortex_m_regs),
             QL_ARCH.ARM64:    dict(**arm64_regs, **arm64_regs_v, **arm64_reg_map_fp),
-            QL_ARCH.MIPS:     dict(**mips_regs_gpr)
+            QL_ARCH.MIPS:     dict(**mips_regs_gpr),
+            QL_ARCH.PPC:      dict(**ppc_regs)
         }[archtype]
 
         regsinfo = sorted(QlGdbFeatures.__walk_xml_regs(xmltree))
