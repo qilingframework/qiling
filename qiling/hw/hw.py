@@ -182,6 +182,6 @@ class QlHwManager:
 
         # a dirty hack to rehydrate non-pickleable hwman
         # a proper fix would require a deeper refactoring to how peripherals are created and managed
-        for ph in self.ql.mem.mmio_cbs.values():
+        for *_, ph in self.ql.mem.map_info:
             if isinstance(ph, QlPripheralHandler):
                 setattr(ph, '_hwman', self)
