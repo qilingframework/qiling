@@ -12,6 +12,9 @@ class mipso32(QlCommonBaseCC):
     _shadow = 4
     _retaddr_on_stack = False
 
+    def getReturnAddress(self) -> int:
+        return self.arch.regs.ra
+
     def setReturnAddress(self, addr: int):
         self.arch.regs.ra = addr
 

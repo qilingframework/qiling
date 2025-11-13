@@ -644,6 +644,7 @@ class Process:
 
                 # DLLs that seem to contain most of the requested symbols
                 key_dlls = (
+                    'kernel32.dll',
                     'ntdll.dll',
                     'kernelbase.dll',
                     'ucrtbase.dll'

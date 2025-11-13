@@ -89,6 +89,7 @@ class QlOs:
         if self.ql.code:
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
+            self.load_address = self.profile.getint('CODE', 'load_address')
             self.entry_point = self.profile.getint('CODE', 'entry_point')
             self.code_ram_size = self.profile.getint('CODE', 'ram_size')
 

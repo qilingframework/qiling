@@ -9,11 +9,6 @@ from qiling import Qiling
 
 from .. import utils
 
-# exit
-def __leaf_4c(ql: Qiling):
-    ql.log.info("Program terminated gracefully")
-    ql.emu_stop()
-
 # write a character to screen
 def __leaf_02(ql: Qiling):
     ch = ql.arch.regs.dl
@@ -130,6 +125,45 @@ def __leaf_41(ql: Qiling):
 def __leaf_43(ql: Qiling):
     ql.arch.regs.cx = 0xffff
     ql.os.clear_cf()
+
+
+def __leaf_48(ql: Qiling):
+    """Allocate memory.
+    """
+
+    size = ql.arch.regs.bx * 0x10
+
+    # announce it but do not do anything really
+    ql.log.debug(f'allocating memory block at {addr:#06x} to {size:#x} bytes')
+
+    # success
+    ql.os.clear_cf()
+
+
+def __leaf_49(ql: Qiling):
+    """Deallocate memory.
+    """
+    ...
+
+
+def __leaf_4a(ql: Qiling):
+    """Modify memory allocation.
+    """
+
+    addr = ql.arch.regs.es
+    size = ql.arch.regs.bx * 0x10
+
+    # announce it but do not do anything really
+    ql.log.debug(f'resizing memory block at {addr:#06x} to {size:#x} bytes')
+
+    # success
+    ql.os.clear_cf()
+
+
+def __leaf_4c(ql: Qiling):
+    ql.log.info("Program terminated gracefully")
+    ql.emu_stop()
+
 
 def handler(ql: Qiling):
     ah = ql.arch.regs.ah

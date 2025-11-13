@@ -136,10 +136,7 @@ class QlQdb(Cmd, QlDebugger):
         with self.__set_temp(self.ql, 'verbose', QL_VERBOSE.DISABLED):
             self.ql.os.run()
 
-        if self.ql.os.type is QL_OS.BLOB:
-            self.ql.loader.entry_point = self.ql.loader.load_address
-
-        elif init_hook:
+        if init_hook:
             for each_hook in init_hook:
                 self.do_breakpoint(each_hook)
 

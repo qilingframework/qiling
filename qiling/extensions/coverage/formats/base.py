@@ -3,9 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import ABC, abstractmethod
+from __future__ import annotations
 
-from qiling import Qiling
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
 
 
 class QlBaseCoverage(ABC):
@@ -15,25 +20,21 @@ class QlBaseCoverage(ABC):
     all the methods marked with the @abstractmethod decorator.
     """
 
+    FORMAT_NAME: str
+
     def __init__(self, ql: Qiling):
         super().__init__()
 
         self.ql = ql
 
-    @property
-    @staticmethod
     @abstractmethod
-    def FORMAT_NAME() -> str:
-        raise NotImplementedError
-
-    @abstractmethod
-    def activate(self):
+    def activate(self) -> None:
         pass
 
     @abstractmethod
-    def deactivate(self):
+    def deactivate(self) -> None:
         pass
 
     @abstractmethod
-    def dump_coverage(self, coverage_file: str):
+    def dump_coverage(self, coverage_file: str) -> None:
         pass

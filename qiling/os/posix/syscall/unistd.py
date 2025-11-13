@@ -415,6 +415,8 @@ def ql_syscall_read(ql: Qiling, fd: int, buf: int, length: int):
 
     try:
         data = f.read(length)
+    except IsADirectoryError:
+        return -EISDIR
     except ConnectionError:
         ql.log.debug('read failed due to a connection error')
         return -EIO

@@ -17,7 +17,7 @@ from capstone.arm_const import (
 from unicorn.arm_const import UC_ARM_REG_PC
 
 from .branch_predictor import BranchPredictor, Prophecy
-from ..arch import ArchARM
+from ..arch import ArchARM, ArchCORTEX_M
 from ..misc import InvalidInsn
 
 
@@ -27,11 +27,11 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
 
     stop = 'udf'
 
-    def get_cpsr(self) -> Tuple[bool, bool, bool, bool]:
-        """Get flags map of CPSR.
+    def get_cond_flags(self) -> Tuple[bool, bool, bool, bool]:
+        """Get condition status flags from CPSR / xPSR.
         """
 
-        cpsr = self.read_reg('cpsr')
+        cpsr = self.read_reg(self._flags_reg)
 
         return (
             (cpsr & (0b1 << 28)) != 0,  # V, overflow flag
@@ -122,9 +122,9 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
 
         def __is_taken(cc: int) -> Tuple[bool, Tuple[bool, ...]]:
             pred = predicate[cc]
-            cpsr = self.get_cpsr()
+            flags = self.get_cond_flags()
 
-            return pred(*cpsr), cpsr
+            return pred(*flags), flags
 
         # conditions predicate selector
         predicate: Dict[int, Callable[..., bool]] = {
@@ -215,13 +215,13 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
                     where = __parse_op(operands[1], **msize[suffix])
 
             elif iname in binop:
-                going, cpsr = __is_taken(insn.cc)
+                going, flags = __is_taken(insn.cc)
 
                 if going:
                     operator = binop[iname]
                     op1 = __parse_op(operands[1])
                     op2 = __parse_op(operands[2])
-                    carry = int(cpsr[1])
+                    carry = int(flags[1])
 
                     where = (op1 and op2) and operator(op1, op2, carry)
 
@@ -261,6 +261,6 @@ class BranchPredictorARM(BranchPredictor, ArchARM):
         return Prophecy(going, where)
 
 
-class BranchPredictorCORTEX_M(BranchPredictorARM):
+class BranchPredictorCORTEX_M(BranchPredictorARM, ArchCORTEX_M):
     """Branch Predictor for ARM Cortex-M.
     """

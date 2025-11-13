@@ -57,7 +57,7 @@ class Context:
         """Helper function for disassembling.
         """
 
-        insn_bytes = self.read_insn(address)
+        insn_bytes = self.read_insn(address) or b''
         insn = None
 
         if insn_bytes:
@@ -75,7 +75,7 @@ class Context:
             A tuple of: instruction address, size, mnemonic and operands
         """
 
-        insn_bytes = self.read_insn(address)
+        insn_bytes = self.read_insn(address) or b''
         insn = None
 
         if insn_bytes:

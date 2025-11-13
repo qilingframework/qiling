@@ -10,6 +10,10 @@ from .ProcessorBind import *
 from .UefiBaseType import *
 from .UefiMultiPhase import *
 
+from .protocols.EfiSimpleTextInProtocol import EFI_SIMPLE_TEXT_INPUT_PROTOCOL
+from .protocols.EfiSimpleTextOutProtocol import EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL
+
+
 # definitions for EFI_TIME.Daylight
 EFI_TIME_ADJUST_DAYLIGHT = (1 << 1)
 EFI_TIME_IN_DAYLIGHT     = (1 << 2)
@@ -222,14 +226,6 @@ class EFI_CONFIGURATION_TABLE(STRUCT):
         ('VendorGuid',    EFI_GUID),
         ('VendorTable',    PTR(VOID)),
     ]
-
-# TODO: to be implemented
-# @see: MdePkg\Include\Protocol\SimpleTextIn.h
-EFI_SIMPLE_TEXT_INPUT_PROTOCOL = STRUCT
-
-# TODO: to be implemented
-# @see: MdePkg\Include\Protocol\SimpleTextOut.h
-EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL = STRUCT
 
 class EFI_SYSTEM_TABLE(STRUCT):
     _pack_ = 8

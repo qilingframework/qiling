@@ -15,6 +15,9 @@ class QlIntelBaseCC(QlCommonBaseCC):
     Supports arguments passing over registers and stack.
     """
 
+    def getReturnAddress(self) -> int:
+        return self.arch.stack_read(0)
+
     def setReturnAddress(self, addr: int) -> None:
         self.arch.stack_push(addr)
 

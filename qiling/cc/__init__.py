@@ -70,6 +70,12 @@ class QlCC:
 
         raise NotImplementedError
 
+    def getReturnAddress(self) -> int:
+        """Get function return address.
+        """
+
+        raise NotImplementedError
+
     def setReturnAddress(self, addr: int) -> None:
         """Set function return address.
 

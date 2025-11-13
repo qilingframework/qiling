@@ -3,12 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Dict, Optional
+from typing import ClassVar, Dict, Optional
 
 from .arch import Arch
 
 
 class ArchARM(Arch):
+    _flags_reg: ClassVar[str] = 'cpsr'
+
     def __init__(self) -> None:
         regs = (
             'r0', 'r1', 'r2', 'r3',
@@ -134,6 +136,8 @@ class ArchARM(Arch):
 
 
 class ArchCORTEX_M(ArchARM):
+    _flags_reg: ClassVar[str] = 'xpsr'
+
     def __init__(self):
         super().__init__()
 

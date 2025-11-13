@@ -25,4 +25,10 @@
   <reg name="pc" bitsize="32" type="code_ptr"/>
 
   <reg name="xpsr" bitsize="32" regnum="25"/>
+  <reg name="msp" bitsize="32"/>
+  <reg name="psp" bitsize="32"/>
+  <reg name="primask" bitsize="32"/>
+  <reg name="basepri" bitsize="32"/>
+  <reg name="faultmask" bitsize="32"/>
+  <reg name="control" bitsize="32"/>
 </feature>
