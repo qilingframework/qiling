@@ -4,7 +4,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-python3 ./test_posix.py && 
+python3 -m pdb ./test_posix.py && 
 python3 ./test_elf_multithread.py &&
 python3 ./test_elf_ko.py &&
 python3 ./test_debugger.py && 

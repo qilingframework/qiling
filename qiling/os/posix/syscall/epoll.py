@@ -118,7 +118,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     if op not in (EPOLL_CTL_ADD, EPOLL_CTL_DEL, EPOLL_CTL_MOD):
         return -EINVAL
 
-    if epfd == fd:
+    if epfd == fd or fd == 0xffffffff: # latter condition was seen in testing, but should not happen in the real world
         return -EINVAL
 
     if epfd not in range(NR_OPEN):

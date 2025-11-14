@@ -217,13 +217,13 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
-
+    #@unittest.skip('Experiment to avoid FD issue')
     def test_elf_linux_x86(self):
         filename = 'test.qlog'
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", verbose=QL_VERBOSE.DEBUG, log_devices=[filename])
         ql.run()
-
+        ql._log_file_fd.handlers[0].close() # prevent FD leak that causes downstream issues
         os.remove(filename)
         del ql
 
@@ -789,8 +789,7 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertIn(b'echo\n', ql.os.stdout.read())
-        del ql
-    @unittest.skip("See comment in https://github.com/qilingframework/qiling/pull/1558")
+        del ql 
     def test_elf_linux_x8664_epoll_server(self):
         # This tests a simple server that uses epoll to wait for data, then prints it out. It has
         # been modified to exit after data has been received; instead of a typical server operation
@@ -810,7 +809,6 @@ class ELFTest(unittest.TestCase):
         def client():
             # give time for the server to listen
             time.sleep(3)
-
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(("127.0.0.1", 8000))
             s.send(b"hello world")
@@ -826,7 +824,6 @@ class ELFTest(unittest.TestCase):
 
         client_thread = threading.Thread(target=client, daemon=True)
         client_thread.start()
-
         ql.run()
 
         self.assertIn(b'hello world', ql.os.stdout.read(200)) # 200 is arbitrary--"good enough" for this task
