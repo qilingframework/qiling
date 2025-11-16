@@ -217,7 +217,7 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
         ql.run()
         del ql
-    #@unittest.skip('Experiment to avoid FD issue')
+    
     def test_elf_linux_x86(self):
         filename = 'test.qlog'
 
@@ -789,7 +789,9 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertIn(b'echo\n', ql.os.stdout.read())
+
         del ql 
+
     def test_elf_linux_x8664_epoll_server(self):
         # This tests a simple server that uses epoll to wait for data, then prints it out. It has
         # been modified to exit after data has been received; instead of a typical server operation
