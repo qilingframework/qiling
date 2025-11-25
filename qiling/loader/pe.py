@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, NamedTuple, O
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
+from unicorn.unicorn_const import UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_NONE
 
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
 from qiling.const import QL_ARCH, QL_STATE
@@ -381,7 +382,8 @@ class Process:
         dll_len = image_size
 
         self.dll_size += dll_len
-        self.ql.mem.map(dll_base, dll_len, info=dll_name)
+        self.ql.mem.map(dll_base, dll_len, UC_PROT_READ, info=dll_name)
+        self.protect_sections(dll_base, dll)
         self.ql.mem.write(dll_base, bytes(data))
 
         if dll_base == self.dll_last_address:
@@ -879,11 +881,39 @@ class QlLoaderPE(QlLoader, Process):
         self.cmdline = bytes(f'{cmdline} {cmdargs}\x00', "utf-8")
 
         self.load(pe)
+    
+    def protect_sections(self, image_base: int, pe: pefile.PE):
+        for section in pe.sections:
+            mem_prot = UC_PROT_NONE
+            prot_num = 0
+            log_str = str(section.Name, 'utf-8') + ' section memory protection: '
+            prot_str = [None, None, None]
+
+            if section.Characteristics & pefile.SECTION_CHARACTERISTICS['IMAGE_SCN_MEM_EXECUTE']:
+                mem_prot |= UC_PROT_EXEC
+                prot_str[prot_num] = 'IMAGE_SCN_MEM_EXECUTE'
+                prot_num += 1
+            if section.Characteristics & pefile.SECTION_CHARACTERISTICS['IMAGE_SCN_MEM_READ']:
+                mem_prot |= UC_PROT_READ
+                prot_str[prot_num] = 'IMAGE_SCN_MEM_READ'
+                prot_num += 1
+            if section.Characteristics & pefile.SECTION_CHARACTERISTICS['IMAGE_SCN_MEM_WRITE']:
+                mem_prot |= UC_PROT_WRITE
+                prot_str[prot_num] = 'IMAGE_SCN_MEM_WRITE'
+                prot_num += 1
+            
+            for i in range(prot_num):
+                if i != 0:
+                    log_str += ', '
+                log_str += prot_str[i]
+
+            self.ql.log.info(log_str)
+            self.ql.mem.protect(image_base + section.VirtualAddress, (int(section.Misc_VirtualSize / pe.OPTIONAL_HEADER.SectionAlignment) + 1) * pe.OPTIONAL_HEADER.SectionAlignment, mem_prot)
 
     def load(self, pe: Optional[pefile.PE]):
         # set stack pointer
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
-        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
+        self.ql.mem.map(self.stack_address, self.stack_size, UC_PROT_READ | UC_PROT_WRITE, info="[stack]")
 
         if pe is not None:
             image_name = os.path.basename(self.path)
@@ -902,7 +932,8 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            self.ql.mem.map(image_base, image_size, info=f'{image_name}')
+            self.ql.mem.map(image_base, image_size, UC_PROT_READ, info=f'{image_name}')
+            self.protect_sections(image_base, pe)
             self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:

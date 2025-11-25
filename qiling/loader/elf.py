@@ -88,7 +88,7 @@ class QlLoaderELF(QlLoader):
         stack_address = self.profile.getint('stack_address')
         stack_size = self.profile.getint('stack_size')
         top_of_stack = stack_address + stack_size
-        self.ql.mem.map(stack_address, stack_size, info='[stack]')
+        self.ql.mem.map(stack_address, stack_size, UC_PROT_READ | UC_PROT_WRITE, info='[stack]')
 
         self.path = self.ql.path
 
