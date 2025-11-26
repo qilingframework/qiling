@@ -45,7 +45,8 @@ class LoadCommand:
             LC_DYLD_CHAINED_FIXUPS  :   LoadDyldChainedFixups,
             LC_RPATH                :   LoadRPath,
             LC_ID_DYLIB             :   LoadIdDylib,
-            LC_BUILD_VERSION        :   LoadBuildVersion
+            LC_BUILD_VERSION        :   LoadBuildVersion,
+            LC_DYLD_CHAINED_FIXUPS  :   LoadDyldChainedFixups,
         }
 
         exec_func = cmd_map.get(self.cmd_id)
@@ -538,3 +539,10 @@ class LoadIdDylib(LoadCommand):
         self.compatibility_version = unpack("<L", self.FR.read(4))[0]
         self.FR.setOffset(self.name_offset)
         self.name = self.FR.readString(4)
+
+class LoadDyldChainedFixups(LoadCommand):
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.data_offset = unpack("<L", self.FR.read(4))[0]
+        self.data_size = unpack("<L", self.FR.read(4))[0]

@@ -422,8 +422,95 @@ class QlLoaderMACHO(QlLoader):
         if self.ql.arch.type == QL_ARCH.X8664:
             load_commpage(self.ql)
 
+        if depth == 0 and self.is_driver is False and self.ql.arch.type == QL_ARCH.ARM64:
+            self.dyld_chained_fixups()
+
         return self.proc_entry
-        
+
+    def dyld_chained_fixups(self):
+        # Only support arm64 for now
+        all_imports = {}
+
+        chained_fixups = self.macho_file.chained_fixups
+        if chained_fixups is None:
+            return
+
+        can_resolve_binds = chained_fixups.header.imports_format == 1 # Only support format 1 for now
+        for starts_in_seg in chained_fixups.starts_in_segment:
+            if starts_in_seg is None:
+                continue
+
+            pointer_format = starts_in_seg.pointer_format
+            for page_idx in range(starts_in_seg.page_count):
+                start_offset = starts_in_seg.page_start[page_idx]
+                if start_offset == 0xFFFF:
+                    continue
+
+                page_file_offset = starts_in_seg.segment_offset + (page_idx * starts_in_seg.page_size)
+                chain_cursor_ptr = self.load_address + self.slide + page_file_offset + start_offset
+                done = False
+
+                while not done:
+                    target_offset = 0
+                    if pointer_format == DYLD_CHAINED_PTR_64:
+                        value = self.ql.unpack64(self.ql.mem.read(chain_cursor_ptr, 8))
+                        target = value & 0xFFFFFFFFF
+                        high8 = (value >> 36) & 0xFF
+                        next_stride = (value >> 51) & 0xFFF
+                        is_bind = (value >> 63) & 0x1 == 1
+                        if is_bind is False: target_offset = target | (high8 << 36)
+                    else:
+                        raise QlErrorMACHOFormat("Unsupported pointer format in chained fixups: {}".format(pointer_format))
+
+                    if is_bind is False:
+                        corrected_addr = self.load_address + self.slide + target_offset
+                        if pointer_format == DYLD_CHAINED_PTR_32:
+                            self.ql.mem.write(chain_cursor_ptr, self.ql.pack32(corrected_addr))
+                        else:
+                            self.ql.mem.write(chain_cursor_ptr, self.ql.pack64(corrected_addr))
+                    else:
+                        if not can_resolve_binds:
+                            raise QlErrorMACHOFormat("Cannot resolve binds in chained fixups")
+
+                        ordinal = 0
+                        if pointer_format == DYLD_CHAINED_PTR_64:
+                            value = self.ql.unpack64(self.ql.mem.read(chain_cursor_ptr, 8))
+                            ordinal = value & 0xFFFFFF
+                        else:
+                            raise QlErrorMACHOFormat("Unsupported pointer format in chained fixups: {}".format(pointer_format))
+
+                        if ordinal < chained_fixups.header.imports_count:
+                            import_entry = chained_fixups.imports[ordinal]
+                            all_imports[chain_cursor_ptr] = import_entry.symbol_name
+
+                    if next_stride == 0:
+                        done = True
+                    else:
+                        chain_cursor_ptr += next_stride * 4
+
+
+        self.import_symbols = {}
+        if len(all_imports) != 0:
+            self.static_addr = self.vm_end_addr
+            self.static_size = self.ql.mem.align_up(len(all_imports) * 4)
+
+            self.ql.mem.map(self.static_addr, self.static_size, info="[STATIC]")
+            self.vm_end_addr += self.static_size
+            self.ql.log.info("Memory for external static symbol is created at 0x%x with size 0x%x" % (self.static_addr,
+                                                                                                      self.static_size))
+            jump = self.static_addr
+            for fixup_addr in all_imports:
+                self.import_symbols[jump] = {
+                    'ptr': fixup_addr,
+                    'name': all_imports[fixup_addr]
+                }
+
+                #self.ql.mem.write(jump, b'\x00\x00\x20\xD4') # brk #0
+                self.ql.mem.write(jump, b'\xC0\x03\x5F\xD6') # ret
+                self.ql.mem.write(fixup_addr, self.ql.pack64(jump))
+                jump += 4
+
+
     def loadSegment64(self, cmd, isdyld):
         PAGE_SIZE = 0x1000
         if isdyld:

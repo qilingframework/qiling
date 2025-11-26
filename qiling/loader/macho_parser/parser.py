@@ -140,6 +140,8 @@ class MachoParser:
                 self.seg_split_info = SegmentSplitInfo(command, self.binary_file)
             elif command.cmd_id == LC_DYSYMTAB:
                 self.dysymbol_table = DySymbolTable(command, self.binary_file)
+            elif command.cmd_id == LC_DYLD_CHAINED_FIXUPS:
+                self.chained_fixups = ChainedFixups(command, self.binary_file)
         return True
     
     @staticmethod

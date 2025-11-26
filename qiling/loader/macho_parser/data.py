@@ -39,6 +39,9 @@ class Section:
         self.rel_offset = lc.relocations_offset
         self.rel_num = lc.number_of_relocations
         self.flags = lc.flags
+        self.reserved1 = lc.reserved1
+        self.reserved2 = lc.reserved2
+        self.reserved3 = lc.reserved3
         self.content = data[self.offset : self.offset + self.size]
 
     # def __str__(self):
@@ -235,3 +238,116 @@ class DySymbolTable:
 
     def __str__(self):
         pass
+
+class DyldChainedHeader:
+    def __init__(self, data):
+        '''
+        struct dyld_chained_header {
+            uint32_t    fixups_version;
+            uint32_t    starts_offset;
+            uint32_t    imports_offset;
+            uint32_t    symbols_offset;
+            uint32_t    imports_count;
+            uint32_t    imports_format;
+            uint32_t    symbols_format;
+        };
+        '''
+        self.fixups_version = unpack("<L", data[0:4])[0]
+        self.starts_offset = unpack("<L", data[4:8])[0]
+        self.imports_offset = unpack("<L", data[8:12])[0]
+        self.symbols_offset = unpack("<L", data[12:16])[0]
+        self.imports_count = unpack("<L", data[16:20])[0]
+        self.imports_format = unpack("<L", data[20:24])[0]
+        self.symbols_format = unpack("<L", data[24:28])[0]
+
+class DyldChainedStartsInImage:
+    def __init__(self, data):
+        '''
+        struct dyld_chained_starts_in_image {
+            uint32_t    seg_count;
+            uint32_t    seg_info_offset[1];
+        };
+        '''
+        self.seg_count = unpack("<L", data[0:4])[0]
+        self.seg_info_offset = []
+        slide = 4
+        for i in range(self.seg_count):
+            self.seg_info_offset.append(unpack("<L", data[slide:slide +4])[0])
+            slide +=4
+
+
+class DyldChainedStartsInSegment:
+    def __init__(self, data):
+        '''
+        struct dyld_chained_starts_in_segment {
+            uint32_t    size;
+            uint16_t    page_size;
+            uint16_t    pointer_format;
+            uint64_t    segment_offset;
+            uint32_t    max_valid_pointer;
+            uint16_t    page_count;
+            uint16_t    page_start[1];
+        };
+        '''
+        self.size = unpack("<L", data[0:4])[0]
+        self.page_size = unpack("<H", data[4:6])[0]
+        self.pointer_format = unpack("<H", data[6:8])[0]
+        self.segment_offset = unpack("<Q", data[8:16])[0]
+        self.max_valid_pointer = unpack("<L", data[16:20])[0]
+        self.page_count = unpack("<H", data[20:22])[0]
+        self.page_start = []
+        slide = 22
+        for i in range(self.page_count):
+            self.page_start.append(unpack("<H", data[slide:slide +2])[0])
+            slide +=2
+
+class DyldChainedImport:
+    def __init__(self, data):
+        '''
+        struct dyld_chained_import {
+            uint32_t lib_ordinal : 8;
+            uint32_t weak_import : 1;
+            uint32_t name_offset : 23;
+        };
+        '''
+        tmp = unpack("<L", data[0:4])[0]
+        self.lib_ordinal = tmp & 0xff
+        tmp >>= 8
+        self.weak_import = tmp & 0x1
+        tmp >>= 1
+        self.name_offset = tmp & 0x7fffff
+
+        self.symbol_name = None  # to be filled later
+
+class ChainedFixups:
+    def __init__(self, lc, data):
+        self.offset = lc.data_offset
+        self.size = lc.data_size
+        self.content = data[self.offset : self.offset + self.size]
+
+        self.header = DyldChainedHeader(self.content)
+        self.starts_in_image = DyldChainedStartsInImage(self.content[self.header.starts_offset:])
+        self.starts_in_segment = []
+        for i in range(self.starts_in_image.seg_count):
+            seg_offset = self.starts_in_image.seg_info_offset[i]
+            if seg_offset == 0:
+                self.starts_in_segment.append(None)
+                continue
+
+            seg_data = self.content[self.header.starts_offset + seg_offset:]
+            self.starts_in_segment.append(DyldChainedStartsInSegment(seg_data))
+
+        self.imports = []
+        symbol_pool = self.content[self.header.symbols_offset:]
+        for i in range(self.header.imports_count):
+            import_offset = self.header.imports_offset + i * 4
+            import_data = self.content[import_offset : import_offset + 4]
+
+            import_entry = DyldChainedImport(import_data)
+            import_entry.symbol_name = symbol_pool[import_entry.name_offset :].split(b'\0', 1)[0].decode()
+            self.imports.append(import_entry)
+
+
+
+    # def __str__(self):
+    #     return (" ChainedFixupsInfo: content {}".format(self.content))

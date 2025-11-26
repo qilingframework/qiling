@@ -4,6 +4,7 @@
 #
 
 from ctypes import sizeof
+from typing import Dict, TextIO, Union, Callable, IO, List, Optional
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
@@ -11,7 +12,7 @@ from unicorn.x86_const import UC_X86_INS_SYSCALL
 from qiling import Qiling
 from qiling.arch.x86_utils import GDTManager, SegmentManager64
 from qiling.cc import intel
-from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE, QL_INTERCEPT
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.macos.events.macos import QlMacOSEvManager
@@ -19,7 +20,8 @@ from qiling.os.macos.events.macos_policy import QlMacOSPolicy
 from qiling.os.macos.events.macos_structs import mac_policy_list_t
 from qiling.os.macos.structs import kmod_info_t, POINTER64
 from qiling.os.posix.syscall.abi import arm
-
+from qiling.exception import QlErrorSyscallError, QlErrorSyscallNotFound, QlMemoryMappedError
+from qiling.os.os import QlOs
 
 class QlOsMacos(QlOsPosix):
     type = QL_OS.MACOS
@@ -164,7 +166,31 @@ class QlOsMacos(QlOsPosix):
 
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
-    
+        self.ql.hook_code(self.hook_imports)
+
+    def hook_imports(self, ql: Qiling, address: int, size: int):
+        if address in ql.loader.import_symbols:
+            entry = ql.loader.import_symbols[address]
+            api_name = entry['name']
+
+            api_func = self.user_defined_api[QL_INTERCEPT.CALL].get(api_name)
+            if api_func:
+                try:
+                    api_func(ql, address, api_name)
+                except Exception as ex:
+                    ql.log.exception(ex)
+                    ql.log.debug("%s Exception Found" % api_name)
+
+                    raise QlErrorSyscallError("Macos API Implementation Error")
+            else:
+                ql.log.warning(f'api {api_name} is not implemented')
+
+                if ql.debug_stop:
+                    raise QlErrorSyscallNotFound("Macos API implementation not found")
+
+    def set_api(self, target: str, handler: Callable, intercept: QL_INTERCEPT = QL_INTERCEPT.CALL):
+        QlOs.set_api(self, target, handler, intercept)
+
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
 
