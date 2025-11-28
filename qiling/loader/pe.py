@@ -382,9 +382,7 @@ class Process:
         dll_len = image_size
 
         self.dll_size += dll_len
-        self.ql.mem.map(dll_base, dll_len, UC_PROT_READ, info=dll_name)
-        self.protect_sections(dll_base, dll)
-        self.ql.mem.write(dll_base, bytes(data))
+        _map_sections_(self.ql, dll, dll_base, dll_len, dll_name)
 
         if dll_base == self.dll_last_address:
             self.dll_last_address = self.ql.mem.align_up(self.dll_last_address + dll_len, 0x10000)
@@ -815,6 +813,35 @@ class Process:
         cookie = secrets.randbits(self.ql.arch.bits - 16)
 
         self.ql.mem.write_ptr(cookie_rva + image_base, cookie)
+            
+def _map_sections_(ql : Qiling, pe : pefile.PE, image_base: int, image_size : int, image_name : str):
+            """Load file sections to memory, each in its own memory region protected by
+            its defined permissions. That allows separation of code and data, which makes
+            it easier to detect abnomal behavior or memory corruptions.
+            """
+
+            # load the header
+            hdr_base = image_base
+            hdr_perm = UC_PROT_READ
+
+            ql.mem.map(hdr_base, image_size, hdr_perm, image_name)
+
+            # load sections
+            for section in pe.sections:
+                if not section.IMAGE_SCN_MEM_DISCARDABLE:
+                    sec_name = section.Name.rstrip(b'\x00').decode()
+                    sec_data = bytes(section.get_data(ignore_padding=True))
+                    sec_base = image_base + section.VirtualAddress
+                    sec_size = (int(section.Misc_VirtualSize / pe.OPTIONAL_HEADER.SectionAlignment) + 1) * pe.OPTIONAL_HEADER.SectionAlignment
+
+                    sec_perm = sum((
+                        section.IMAGE_SCN_MEM_READ * UC_PROT_READ,
+                        section.IMAGE_SCN_MEM_WRITE * UC_PROT_WRITE,
+                        section.IMAGE_SCN_MEM_EXECUTE * UC_PROT_EXEC
+                    ))
+
+                    ql.mem.protect(sec_base, sec_size, sec_perm)
+            ql.mem.write(image_base, bytes(pe.get_memory_mapped_image()))
 
 class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql: Qiling, libcache: bool):
@@ -881,44 +908,19 @@ class QlLoaderPE(QlLoader, Process):
         self.cmdline = bytes(f'{cmdline} {cmdargs}\x00', "utf-8")
 
         self.load(pe)
-    
-    def protect_sections(self, image_base: int, pe: pefile.PE):
-        for section in pe.sections:
-            mem_prot = UC_PROT_NONE
-            prot_num = 0
-            log_str = str(section.Name, 'utf-8') + ' section memory protection: '
-            prot_str = [None, None, None]
-
-            if section.Characteristics & pefile.SECTION_CHARACTERISTICS['IMAGE_SCN_MEM_EXECUTE']:
-                mem_prot |= UC_PROT_EXEC
-                prot_str[prot_num] = 'IMAGE_SCN_MEM_EXECUTE'
-                prot_num += 1
-            if section.Characteristics & pefile.SECTION_CHARACTERISTICS['IMAGE_SCN_MEM_READ']:
-                mem_prot |= UC_PROT_READ
-                prot_str[prot_num] = 'IMAGE_SCN_MEM_READ'
-                prot_num += 1
-            if section.Characteristics & pefile.SECTION_CHARACTERISTICS['IMAGE_SCN_MEM_WRITE']:
-                mem_prot |= UC_PROT_WRITE
-                prot_str[prot_num] = 'IMAGE_SCN_MEM_WRITE'
-                prot_num += 1
-            
-            for i in range(prot_num):
-                if i != 0:
-                    log_str += ', '
-                log_str += prot_str[i]
-
-            self.ql.log.info(log_str)
-            self.ql.mem.protect(image_base + section.VirtualAddress, (int(section.Misc_VirtualSize / pe.OPTIONAL_HEADER.SectionAlignment) + 1) * pe.OPTIONAL_HEADER.SectionAlignment, mem_prot)
 
     def load(self, pe: Optional[pefile.PE]):
         # set stack pointer
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
-        self.ql.mem.map(self.stack_address, self.stack_size, UC_PROT_READ | UC_PROT_WRITE, info="[stack]")
+        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
         if pe is not None:
             image_name = os.path.basename(self.path)
             image_base = pe.OPTIONAL_HEADER.ImageBase
             image_size = self.ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
+
+            if pe.OPTIONAL_HEADER.DllCharacteristics & pefile.DLL_CHARACTERISTICS['IMAGE_DLLCHARACTERISTICS_NX_COMPAT']:
+                self.ql.mem.protect(self.stack_address, self.stack_size, UC_PROT_WRITE | UC_PROT_READ)
 
             # if default base address is taken, use the one specified in profile
             if not self.ql.mem.is_available(image_base, image_size):
@@ -932,8 +934,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            self.ql.mem.map(image_base, image_size, UC_PROT_READ, info=f'{image_name}')
-            self.protect_sections(image_base, pe)
+            _map_sections_(self.ql, pe, image_base, image_size, image_name)
             self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:
@@ -963,7 +964,6 @@ class QlLoaderPE(QlLoader, Process):
             pe.parse_data_directories()
 
             # done manipulating pe file; write its contents into memory
-            self.ql.mem.write(image_base, bytes(pe.get_memory_mapped_image()))
 
             if self.is_driver:
                 # security cookie can be written only after image has been loaded to memory

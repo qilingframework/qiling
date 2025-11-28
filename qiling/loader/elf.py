@@ -84,12 +84,6 @@ class QlLoaderELF(QlLoader):
 
         self.profile = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
-        # setup program stack
-        stack_address = self.profile.getint('stack_address')
-        stack_size = self.profile.getint('stack_size')
-        top_of_stack = stack_address + stack_size
-        self.ql.mem.map(stack_address, stack_size, UC_PROT_READ | UC_PROT_WRITE, info='[stack]')
-
         self.path = self.ql.path
 
         with open(self.path, 'rb') as infile:
@@ -97,6 +91,18 @@ class QlLoaderELF(QlLoader):
 
         elffile = ELFFile(fstream)
         elftype = elffile['e_type']
+
+        stack_perm = UC_PROT_NONE
+        for seg in elffile.iter_segments('PT_GNU_STACK'):
+            stack_perm = QlLoaderELF.seg_perm_to_uc_prot(seg['p_flags'])
+
+        QlLoaderELF.seg_perm_to_uc_prot(stack_perm)
+
+        # setup program stack
+        stack_address = self.profile.getint('stack_address')
+        stack_size = self.profile.getint('stack_size')
+        top_of_stack = stack_address + stack_size
+        self.ql.mem.map(stack_address, stack_size, stack_perm, info='[stack]')
 
         # is it a driver?
         if elftype == 'ET_REL':
