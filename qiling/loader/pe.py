@@ -382,7 +382,8 @@ class Process:
         dll_len = image_size
 
         self.dll_size += dll_len
-        _map_sections_(self.ql, dll, dll_base, dll_len, dll_name)
+        _map_pe_(self.ql, dll, dll_base, dll_len, dll_name)
+        self.ql.mem.write(dll_base, bytes(data))
 
         if dll_base == self.dll_last_address:
             self.dll_last_address = self.ql.mem.align_up(self.dll_last_address + dll_len, 0x10000)
@@ -813,12 +814,18 @@ class Process:
         cookie = secrets.randbits(self.ql.arch.bits - 16)
 
         self.ql.mem.write_ptr(cookie_rva + image_base, cookie)
-            
-def _map_sections_(ql : Qiling, pe : pefile.PE, image_base: int, image_size : int, image_name : str):
+
+def _map_pe_(ql : Qiling, pe : pefile.PE, image_base: int, image_size : int, image_name : str):
             """Load file sections to memory, each in its own memory region protected by
             its defined permissions. That allows separation of code and data, which makes
             it easier to detect abnomal behavior or memory corruptions.
             """
+
+            # if sections are aligned to page, we can map them separately
+            sec_alignment = pe.OPTIONAL_HEADER.SectionAlignment
+            if (sec_alignment % ql.mem.pagesize) != 0:
+                ql.mem.map(image_base, image_size, info=f'{image_name}')
+                return
 
             # load the header
             hdr_base = image_base
@@ -828,20 +835,18 @@ def _map_sections_(ql : Qiling, pe : pefile.PE, image_base: int, image_size : in
 
             # load sections
             for section in pe.sections:
-                if not section.IMAGE_SCN_MEM_DISCARDABLE:
-                    sec_name = section.Name.rstrip(b'\x00').decode()
-                    sec_data = bytes(section.get_data(ignore_padding=True))
-                    sec_base = image_base + section.VirtualAddress
-                    sec_size = (int(section.Misc_VirtualSize / pe.OPTIONAL_HEADER.SectionAlignment) + 1) * pe.OPTIONAL_HEADER.SectionAlignment
+                sec_name = section.Name.rstrip(b'\x00').decode()
+                sec_base = image_base + section.VirtualAddress
+                sec_size = ql.mem.align_up(section.Misc_VirtualSize, sec_alignment)
 
-                    sec_perm = sum((
-                        section.IMAGE_SCN_MEM_READ * UC_PROT_READ,
-                        section.IMAGE_SCN_MEM_WRITE * UC_PROT_WRITE,
-                        section.IMAGE_SCN_MEM_EXECUTE * UC_PROT_EXEC
-                    ))
+                sec_perm = sum((
+                    section.IMAGE_SCN_MEM_READ * UC_PROT_READ,
+                    section.IMAGE_SCN_MEM_WRITE * UC_PROT_WRITE,
+                    section.IMAGE_SCN_MEM_EXECUTE * UC_PROT_EXEC
+                ))
 
-                    ql.mem.protect(sec_base, sec_size, sec_perm)
-            ql.mem.write(image_base, bytes(pe.get_memory_mapped_image()))
+                ql.mem.protect(sec_base, sec_size, sec_perm)
+                ql.mem.change_mapinfo(sec_base, sec_base+sec_size, new_perms=sec_perm, new_info=f'{image_name} {sec_name}')
 
 class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql: Qiling, libcache: bool):
@@ -934,7 +939,8 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            _map_sections_(self.ql, pe, image_base, image_size, image_name)
+            _map_pe_(self.ql, pe, image_base, image_size, image_name)
+
             self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:
@@ -964,6 +970,7 @@ class QlLoaderPE(QlLoader, Process):
             pe.parse_data_directories()
 
             # done manipulating pe file; write its contents into memory
+            self.ql.mem.write(image_base, bytes(pe.get_memory_mapped_image()))
 
             if self.is_driver:
                 # security cookie can be written only after image has been loaded to memory

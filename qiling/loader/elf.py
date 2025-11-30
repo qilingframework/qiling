@@ -92,13 +92,9 @@ class QlLoaderELF(QlLoader):
         elffile = ELFFile(fstream)
         elftype = elffile['e_type']
 
-        stack_perm = UC_PROT_NONE
-        for seg in elffile.iter_segments('PT_GNU_STACK'):
-            stack_perm = QlLoaderELF.seg_perm_to_uc_prot(seg['p_flags'])
-
-        QlLoaderELF.seg_perm_to_uc_prot(stack_perm)
-
         # setup program stack
+        stack_seg = elffile.iter_segments('PT_GNU_STACK')
+        stack_perm = QlLoaderELF.seg_perm_to_uc_prot(next(stack_seg)['p_flags'])
         stack_address = self.profile.getint('stack_address')
         stack_size = self.profile.getint('stack_size')
         top_of_stack = stack_address + stack_size
