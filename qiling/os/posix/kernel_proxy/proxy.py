@@ -13,6 +13,7 @@ Usage (internal — started by KernelProxy.__init__):
     python -m qiling.os.posix.kernel_proxy.proxy <socket_fd>
 """
 
+import logging
 import os
 import sys
 import ctypes
@@ -24,10 +25,12 @@ from qiling.os.posix.kernel_proxy.ipc import (
     ProxyServer, MsgType, FdOp
 )
 
+log = logging.getLogger("qiling.os.posix.kernel_proxy.proxy")
+
 # load libc for raw syscall()
 _libc_path = ctypes.util.find_library("c")
 if _libc_path is None:
-    print("kernel_proxy: cannot find libc", file=sys.stderr)
+    log.critical("kernel_proxy: cannot find libc")
     sys.exit(1)
 
 _libc = ctypes.CDLL(_libc_path, use_errno=True)
@@ -86,7 +89,7 @@ def handle_fd_op(op: FdOp, proxy_fd: int, arg1: int, arg2: int, data: bytes) -> 
 
 def main():
     if len(sys.argv) != 2:
-        print(f"usage: {sys.argv[0]} <socket_fd>", file=sys.stderr)
+        log.error(f"usage: {sys.argv[0]} <socket_fd>")
         sys.exit(1)
 
     sock_fd = int(sys.argv[1])

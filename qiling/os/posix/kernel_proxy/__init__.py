@@ -24,17 +24,15 @@ import os
 import sys
 import socket
 import subprocess
-import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING
 
 from qiling.const import QL_INTERCEPT, QL_OS
+from qiling.exception import QlErrorArch, QlErrorSyscallError, QlErrorSyscallNotFound
 from qiling.os.posix.kernel_proxy.ipc import ProxyClient
 from qiling.os.posix.kernel_proxy.proxy_fd import ql_proxy_fd
 
 if TYPE_CHECKING:
     from qiling import Qiling
-
-log = logging.getLogger(__name__)
 
 
 class KernelProxy:
@@ -46,13 +44,13 @@ class KernelProxy:
 
     def __init__(self, ql: Qiling):
         if sys.platform != 'linux':
-            raise RuntimeError("KernelProxy requires a Linux host")
+            raise QlErrorArch("KernelProxy requires a Linux host")
 
         self.ql = ql
         self._process: Optional[subprocess.Popen] = None
         self._client: Optional[ProxyClient] = None
-        self._forwarded: dict = {}  # name -> syscall_nr
-        self._reverse_table: Optional[dict] = None  # name -> nr (built on first use)
+        self._forwarded: Dict[str, int] = {}  # name -> syscall_nr
+        self._reverse_table: Optional[Dict[str, int]] = None  # name -> nr (built on first use)
 
         self._start_proxy()
 
@@ -78,14 +76,13 @@ class KernelProxy:
         child_sock.close()
 
         self._client = ProxyClient(parent_sock)
-        log.info(f"kernel proxy started (pid={self._process.pid})")
+        self.ql.log.info(f"kernel proxy started (pid={self._process.pid})")
 
-    def _build_reverse_table(self) -> dict:
+    def _build_reverse_table(self) -> Dict[str, int]:
         """Build name -> syscall_nr mapping from the guest architecture's syscall table."""
         if self._reverse_table is not None:
             return self._reverse_table
 
-        from qiling.os.linux.map_syscall import get_syscall_mapper
         from qiling.const import QL_ARCH
 
         # get the raw syscall table dict for this architecture
@@ -102,7 +99,7 @@ class KernelProxy:
 
         table_name = arch_tables.get(self.ql.arch.type)
         if table_name is None:
-            raise RuntimeError(f"KernelProxy: unsupported architecture {self.ql.arch.type}")
+            raise QlErrorArch(f"KernelProxy: unsupported architecture {self.ql.arch.type}")
 
         import qiling.os.linux.map_syscall as mod
         table = getattr(mod, table_name)
@@ -115,7 +112,7 @@ class KernelProxy:
         """Resolve a syscall name to its number for the guest architecture."""
         table = self._build_reverse_table()
         if name not in table:
-            raise ValueError(
+            raise QlErrorSyscallNotFound(
                 f"KernelProxy: syscall '{name}' not found in {self.ql.arch.type.name} syscall table"
             )
         return table[name]
@@ -135,8 +132,8 @@ class KernelProxy:
         forwarder = self._make_forwarder(name, nr, returns_fd)
         self.ql.os.set_syscall(name, forwarder, QL_INTERCEPT.CALL)
 
-        log.info(f"forwarding syscall '{name}' (nr={nr}) to kernel proxy"
-                 f"{' [returns FD]' if returns_fd else ''}")
+        self.ql.log.info(f"forwarding syscall '{name}' (nr={nr}) to kernel proxy"
+                         f"{' [returns FD]' if returns_fd else ''}")
 
     def _make_forwarder(self, name: str, guest_nr: int, returns_fd: bool):
         """Create a CALL hook closure for one syscall."""
@@ -170,17 +167,16 @@ class KernelProxy:
             self._host_table = self._load_host_syscall_table()
 
         if name not in self._host_table:
-            raise RuntimeError(f"KernelProxy: syscall '{name}' not available on host")
+            raise QlErrorSyscallNotFound(f"KernelProxy: syscall '{name}' not available on host")
 
         return self._host_table[name]
 
-    def _load_host_syscall_table(self) -> dict:
+    def _load_host_syscall_table(self) -> Dict[str, int]:
         """Load the host's syscall name->nr mapping.
 
         Uses the same Qiling tables, indexed by the host architecture.
         """
         import platform
-        from qiling.const import QL_ARCH
         import qiling.os.linux.map_syscall as mod
 
         machine = platform.machine()
@@ -195,7 +191,7 @@ class KernelProxy:
 
         table_name = host_arch_map.get(machine)
         if table_name is None:
-            raise RuntimeError(f"KernelProxy: unsupported host architecture '{machine}'")
+            raise QlErrorArch(f"KernelProxy: unsupported host architecture '{machine}'")
 
         table = getattr(mod, table_name)
         return {name: nr for nr, name in table.items()}
@@ -208,7 +204,7 @@ class KernelProxy:
                 ql.os.fd[i] = fd_obj
                 return i
 
-        raise OSError("kernel_proxy: FD table full")
+        raise QlErrorSyscallError("kernel_proxy: FD table full")
 
     def stop(self):
         """Stop the proxy process."""
@@ -226,7 +222,7 @@ class KernelProxy:
             except subprocess.TimeoutExpired:
                 self._process.kill()
                 self._process.wait()
-            log.info(f"kernel proxy stopped (pid={self._process.pid})")
+            self.ql.log.info(f"kernel proxy stopped (pid={self._process.pid})")
             self._process = None
 
     def __del__(self):

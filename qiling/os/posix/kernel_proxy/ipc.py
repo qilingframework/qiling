@@ -17,6 +17,8 @@ import struct
 import socket
 from enum import IntEnum
 
+from qiling.exception import QlProxyConnectionError
+
 
 class MsgType(IntEnum):
     SYSCALL = 1
@@ -64,7 +66,7 @@ def _recvall(sock: socket.socket, n: int) -> bytes:
     while len(buf) < n:
         chunk = sock.recv(n - len(buf))
         if not chunk:
-            raise ConnectionError("kernel proxy connection closed")
+            raise QlProxyConnectionError("kernel proxy connection closed")
         buf.extend(chunk)
     return bytes(buf)
 
@@ -162,7 +164,7 @@ class ProxyServer:
             return MsgType.FD_OP, (FdOp(op), proxy_fd, arg1, arg2, data)
 
         else:
-            raise ValueError(f"unknown message type: {msg_type}")
+            raise QlProxyConnectionError(f"unknown message type: {msg_type}")
 
     def send_syscall_response(self, retval: int, errno_val: int):
         payload = struct.pack(SYSCALL_RESP_FMT, retval, errno_val)

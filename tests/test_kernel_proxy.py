@@ -283,13 +283,14 @@ class KernelProxyTest(unittest.TestCase):
     # -------------------------------------------------------------------------
 
     def test_forward_invalid_syscall_name(self):
-        """forward_syscall with bogus name raises ValueError."""
+        """forward_syscall with bogus name raises QlErrorSyscallNotFound."""
         from qiling.os.posix.kernel_proxy import KernelProxy
+        from qiling.exception import QlErrorSyscallNotFound
 
         ql = Qiling([self.HELLO_BIN], self.ROOTFS, verbose=QL_VERBOSE.OFF)
         proxy = KernelProxy(ql)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(QlErrorSyscallNotFound):
             proxy.forward_syscall('nonexistent_syscall_xyz')
 
         proxy.stop()
