@@ -223,12 +223,33 @@ class BaseStructEB(BaseStruct, ctypes.BigEndianStructure):
 
 
 @cache
+def get_packed_struct(endian: QL_ENDIAN = QL_ENDIAN.EL) -> Type[BaseStruct]:
+    """Provide a packed version of BaseStruct based on the emulated
+    architecture endianess.
+
+    Args:
+        archbits: required alignment in bits
+    """
+
+    Struct = {
+        QL_ENDIAN.EL: BaseStructEL,
+        QL_ENDIAN.EB: BaseStructEB
+    }[endian]
+
+    class PackedStruct(Struct):
+        _pack_ = 1
+
+    return PackedStruct
+
+
+@cache
 def get_aligned_struct(archbits: int, endian: QL_ENDIAN = QL_ENDIAN.EL) -> Type[BaseStruct]:
     """Provide an aligned version of BaseStruct based on the emulated
     architecture properties.
 
     Args:
         archbits: required alignment in bits
+        endian: required endianness
     """
 
     Struct = {
