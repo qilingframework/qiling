@@ -179,7 +179,7 @@ https://www.man7.org/linux/man-pages/man2/utimes.2.html
 def ql_syscall_utimes(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER):
     return do_utime(ql, filename, times, True)  # True for 's' means the
     # we want 'utimes', which has a different prototype, and consequently,
-    # struct unpacking requirements, then utime
+    # struct unpacking requirements, than utime
 
 
 """
