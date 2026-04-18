@@ -6,9 +6,11 @@
 from qiling import Qiling
 from qiling.arch.x86_const import *
 from qiling.const import QL_ARCH
+from qiling.os.posix.const import AT_FDCWD, AT_SYMLINK_NOFOLLOW
 from qiling.os.posix.structs import *
 from datetime import datetime
 from math import floor
+import os
 import ctypes
 
 def __get_timespec_struct(archbits: int):

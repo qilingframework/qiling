@@ -751,8 +751,9 @@ F_SETLKW = 7
 
 FD_CLOEXEC = 1
 
-AT_FDCWD = -100
+AT_FDCWD = 0xffffff9c # /usr/include/linux/fcntl.h
 AT_EMPTY_PATH = 0x1000
+AT_SYMLINK_NOFOLLOW = 0x100
 
 # error code
 EPERM           = 1
