@@ -13,19 +13,18 @@ from math import floor
 import os
 import ctypes
 
+
 def __get_timespec_struct(archbits: int):
-    long  = getattr(ctypes, f'c_int{archbits}')
-    ulong = getattr(ctypes, f'c_uint{archbits}')
+    long = getattr(ctypes, f"c_int{archbits}")
+    ulong = getattr(ctypes, f"c_uint{archbits}")
 
     class timespec(ctypes.Structure):
         _pack_ = archbits // 8
 
-        _fields_ = (
-            ('tv_sec', ulong),
-            ('tv_nsec', long)
-        )
+        _fields_ = (("tv_sec", ulong), ("tv_nsec", long))
 
     return timespec
+
 
 def __get_timespec_obj(archbits: int):
     now = datetime.now().timestamp()
@@ -40,9 +39,9 @@ def __get_timespec_obj(archbits: int):
 def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
     if ql.arch.type == QL_ARCH.X86:
         u_info = ql.mem.read(u_info_addr, 4 * 4)
-        index = ql.unpack32s(u_info[0 : 4])
-        base = ql.unpack32(u_info[4 : 8])
-        limit = ql.unpack32(u_info[8 : 12])
+        index = ql.unpack32s(u_info[0:4])
+        base = ql.unpack32(u_info[4:8])
+        limit = ql.unpack32(u_info[8:12])
 
         ql.log.debug("set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
 
@@ -50,7 +49,14 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
             index = ql.os.gdtm.get_free_idx(12)
 
         if index in (12, 13, 14):
-            access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
+            access = (
+                QL_X86_A_PRESENT
+                | QL_X86_A_PRIV_3
+                | QL_X86_A_DESC_DATA
+                | QL_X86_A_DATA
+                | QL_X86_A_DATA_E
+                | QL_X86_A_DATA_W
+            )
 
             ql.os.gdtm.register_gdt_segment(index, base, limit, access)
             ql.mem.write_ptr(u_info_addr, index, 4)
@@ -59,12 +65,12 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
             return -1
 
     elif ql.arch.type == QL_ARCH.MIPS:
-        CONFIG3_ULR = (1 << 13)
+        CONFIG3_ULR = 1 << 13
         ql.arch.regs.cp0_config3 = CONFIG3_ULR
         ql.arch.regs.cp0_userlocal = u_info_addr
         ql.arch.regs.v0 = 0
         ql.arch.regs.a3 = 0
-        ql.log.debug ("set_thread_area(0x%x)" % u_info_addr)
+        ql.log.debug("set_thread_area(0x%x)" % u_info_addr)
 
     return 0
 
@@ -77,11 +83,13 @@ def ql_syscall_set_tls(ql: Qiling, address: int):
 
         ql.log.debug("settls(%#x)", address)
 
+
 def ql_syscall_clock_gettime(ql: Qiling, clock_id: int, tp: int):
     ts_obj = __get_timespec_obj(ql.arch.bits)
     ql.mem.write(tp, bytes(ts_obj))
 
     return 0
+
 
 def ql_syscall_gettimeofday(ql: Qiling, tv: int, tz: int):
     if tv:
@@ -89,7 +97,7 @@ def ql_syscall_gettimeofday(ql: Qiling, tv: int, tz: int):
         ql.mem.write(tv, bytes(ts_obj))
 
     if tz:
-        ql.mem.write(tz, b'\x00' * 8)
+        ql.mem.write(tz, b"\x00" * 8)
 
     return 0
 
@@ -130,7 +138,9 @@ def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s):
         with data.ref(ql.mem, times) as ref_atime:  # times[0]
             actime = seconds_to_nanoseconds(ref_atime.tv_sec)
             actime += microseconds_to_nanoseconds(ref_atime.tv_usec)
-        with data.ref(ql.mem, times + ctypes.sizeof(data)) as ref_mtime:  # increment by ctypes.sizeof() to get times[1]
+        with data.ref(
+            ql.mem, times + ctypes.sizeof(data)
+        ) as ref_mtime:  # increment by ctypes.sizeof() to get times[1]
             modtime = seconds_to_nanoseconds(ref_mtime.tv_sec)
             modtime += microseconds_to_nanoseconds(ref_mtime.tv_usec)
 
@@ -179,7 +189,12 @@ the dfd and timespec unpacking here
 
 
 def do_utime_fd_ns(
-    ql: Qiling, dfd: int, filename: ctypes.POINTER, utimes: ctypes.POINTER, flags: int, symlinks
+    ql: Qiling,
+    dfd: int,
+    filename: ctypes.POINTER,
+    utimes: ctypes.POINTER,
+    flags: int,
+    symlinks,
 ):
     # transform to real path, which ensures that we are
     # operating inside of the qiling root
@@ -239,6 +254,9 @@ int futimesat(int dirfd, const char *pathname,
                                     const struct timeval times[2]);
 """
 
-def ql_syscall_futimesat(ql:Qiling, dfd: int, pathname:ctypes.POINTER, timeval:ctypes.POINTER):
 
-    return ql_syscall_utimensat(ql, dfd, pathname, timeval)
+def ql_syscall_futimesat(
+    ql: Qiling, dfd: int, pathname: ctypes.POINTER, timeval: ctypes.POINTER
+):
+
+    return ql_syscall_utimensat(ql, dfd, pathname, timeval, 0)

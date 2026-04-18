@@ -837,7 +837,8 @@ class ELFTest(unittest.TestCase):
         targets = [
             f"{rootfs}/utimensat-test",
             f"{rootfs}/utime-test",
-            f"{rootfs}/utimes-test"
+            f"{rootfs}/utimes-test",
+            f"{rootfs}/futimesat-test"
         ]
         for t in targets:
             with open(t, "wb" ) as test_file:
