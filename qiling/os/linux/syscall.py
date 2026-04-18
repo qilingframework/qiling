@@ -6,7 +6,7 @@
 from qiling import Qiling
 from qiling.arch.x86_const import *
 from qiling.const import QL_ARCH
-
+from qiling.os.posix.structs import *
 from datetime import datetime
 from math import floor
 import ctypes
@@ -90,3 +90,149 @@ def ql_syscall_gettimeofday(ql: Qiling, tv: int, tz: int):
         ql.mem.write(tz, b'\x00' * 8)
 
     return 0
+
+"""
+TODO: This is considered deprecated,
+https://www.man7.org/linux/man-pages/man2/futimesat.2.html
+but should there be a wrapper added for legacy code?
+int futimesat(int dirfd, const char *pathname,
+                                    const struct timeval times[2]);
+
+"""
+
+
+# Handle seconds conversions 'in house'
+def microseconds_to_nanoseconds(s):
+    return s * 1000
+
+
+def seconds_to_nanoseconds(s):
+    return s * 1000000000
+
+
+"""
+Actual implmentation of utime(s)
+Rather than repeat work based on different
+precision  requirements, just convert seconds/microseconds
+to ns and pass to os.utime()
+"""
+
+
+def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s):
+    real_file = ""
+    try:
+        # get path inside of qiling rootfs
+        real_file = ql.os.path.transform_to_real_path(ql.mem.string(filename))
+    except Exception as ex:  # return errors appropriately, don't try to handle
+        # everything ourselves
+        return -ex.errno
+    actime = modtime = 0
+    """
+    times[0] specifies the new access time, and times[1] specifies the new modification time.  
+    If times is NULL, then analogously to utime(), the access and modification times of the file are set to the
+    current time.
+    """
+    if s:  # utimes, times[0] == new access time, times[1] == modification
+        data = make_timeval_buf(ql.arch.bits, ql.arch.endian)
+        with data.ref(ql.mem, times) as ref_atime:  # times[0]
+            actime = seconds_to_nanoseconds(ref_atime.tv_sec)
+            actime += microseconds_to_nanoseconds(ref_atime.tv_usec)
+        with data.ref(ql.mem, times + ctypes.sizeof(data)) as ref_mtime:  # increment by ctypes.sizeof() to get times[1]
+            modtime = seconds_to_nanoseconds(ref_mtime.tv_sec)
+            modtime += microseconds_to_nanoseconds(ref_mtime.tv_usec)
+
+    else:
+        # utime uses utimbuf, so different data handling needs to be done
+        data = make_utimbuf(ql.arch.bits, ql.arch.endian)
+        with data.ref(ql.mem, times) as ref:
+            actime = seconds_to_nanoseconds(ref.actime)
+            modtime = seconds_to_nanoseconds(ref.modtime)
+    try:
+        os.utime(real_file, ns=(actime, modtime))
+    except Exception as ex:
+        return -ex.errno
+    return 0
+
+
+"""
+https://www.man7.org/linux/man-pages/man2/utimes.2.html
+       int utime(const char *filename,
+                 const struct utimbuf *_Nullable times);
+"""
+
+
+def ql_syscall_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER):
+    return do_utime(ql, filename, times, False)  # False for 's' means
+    # do plain utime
+
+
+"""
+https://www.man7.org/linux/man-pages/man2/utimes.2.html
+        int utimes(const char *filename,
+                 const struct timeval times[_Nullable 2]);
+"""
+
+
+def ql_syscall_utimes(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER):
+    return do_utime(ql, filename, times, True)  # True for 's' means the
+    # we want 'utimes', which has a different prototype, and consequently,
+    # struct unpacking requirements, then utime
+
+
+"""
+Not re-using the do_utime implementation so we can handle
+the dfd and timespec unpacking here
+"""
+
+
+def do_utime_fd_ns(
+    ql: Qiling, dfd: int, filename: ctypes.POINTER, utimes: ctypes.POINTER, flags: int, symlinks
+):
+    # transform to real path, which ensures that we are
+    # operating inside of the qiling root
+    unpacked_filename = ql.os.path.transform_to_real_path(ql.mem.string(filename))
+    timespec_struct = make_timespec_buf(ql.arch.bits, ql.arch.endian)
+    atime_nsec = mtime_nsec = 0
+    if dfd is not None:
+        dfd = ql.os.fd[dfd].fileno
+    with timespec_struct.ref(ql.mem, utimes) as atime_ref:
+        atime_nsec = atime_ref.tv_nsec
+        atime_nsec += seconds_to_nanoseconds(atime_ref.tv_sec)
+    with timespec_struct.ref(
+        ql.mem, utimes + ctypes.sizeof(timespec_struct)
+    ) as mtime_ref:
+        mtime_nsec = mtime_ref.tv_nsec
+        mtime_nsec += seconds_to_nanoseconds(mtime_ref.tv_sec)
+    ql.log.debug(f"Got filename {unpacked_filename} for utimensat syscall ")
+    try:
+        os.utime(
+            unpacked_filename,
+            ns=(atime_nsec, mtime_nsec),
+            dir_fd=dfd,
+            follow_symlinks=symlinks,
+        )
+    except Exception as ex:
+        return -ex.errno
+    return 0
+
+
+"""
+https://www.man7.org/linux/man-pages/man2/utimensat.2.html
+	sys_utimensat	int dfd	const char *filename	struct timespec *utimes	int flags
+"""
+
+
+def ql_syscall_utimensat(
+    ql: Qiling, dfd: int, filename: ctypes.POINTER, utimes: ctypes.POINTER, flags: int
+):
+    if filename == 0:
+        return EACCES
+    if utimes == 0:
+        return EACCES
+    if dfd == AT_FDCWD:
+        dfd = None
+    if flags == AT_SYMLINK_NOFOLLOW:
+        follow_symlink = False
+    else:
+        follow_symlink = True
+    return do_utime_fd_ns(ql, dfd, filename, utimes, flags, follow_symlink)
