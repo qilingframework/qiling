@@ -93,15 +93,6 @@ def ql_syscall_gettimeofday(ql: Qiling, tv: int, tz: int):
 
     return 0
 
-"""
-TODO: This is considered deprecated,
-https://www.man7.org/linux/man-pages/man2/futimesat.2.html
-but should there be a wrapper added for legacy code?
-int futimesat(int dirfd, const char *pathname,
-                                    const struct timeval times[2]);
-
-"""
-
 
 # Handle seconds conversions 'in house'
 def microseconds_to_nanoseconds(s):
@@ -238,3 +229,16 @@ def ql_syscall_utimensat(
     else:
         follow_symlink = True
     return do_utime_fd_ns(ql, dfd, filename, utimes, flags, follow_symlink)
+
+
+"""
+This is considered deprecated,
+https://www.man7.org/linux/man-pages/man2/futimesat.2.html
+but including here in case some legacy code needs it
+int futimesat(int dirfd, const char *pathname,
+                                    const struct timeval times[2]);
+"""
+
+def ql_syscall_futimesat(ql:Qiling, dfd: int, pathname:ctypes.POINTER, timeval:ctypes.POINTER):
+
+    return ql_syscall_utimensat(ql, dfd, pathname, timeval)
