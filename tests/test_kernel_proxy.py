@@ -352,5 +352,173 @@ class KernelProxyTest(unittest.TestCase):
         del ql
 
 
+    # -------------------------------------------------------------------------
+    # FD translation (#3)
+    # -------------------------------------------------------------------------
+
+    def test_fd_arg_translated_to_proxy_fd(self):
+        """When a forwarded syscall's arg is declared FD, the guest fd is replaced
+        with the underlying proxy fd before forwarding."""
+        from qiling.os.posix.kernel_proxy import KernelProxy, FD
+        from qiling.os.posix.kernel_proxy.proxy_fd import ql_proxy_fd
+
+        ql = Qiling([self.HELLO_BIN], self.ROOTFS, verbose=QL_VERBOSE.OFF)
+        proxy = KernelProxy(ql)
+        proxy.forward_syscall('close', arg_types=(FD,))
+
+        # capture what gets sent over IPC
+        sent = []
+        original_syscall = proxy._client.syscall
+
+        def spy(nr, args):
+            sent.append((nr, tuple(args)))
+            return 0  # pretend the kernel accepted
+
+        proxy._client.syscall = spy
+
+        # plant a ql_proxy_fd at guest_fd=42 with a chosen proxy_fd value
+        guest_fd = 42
+        fake_proxy_fd = 9999
+        ql.os.fd[guest_fd] = ql_proxy_fd(proxy._client, fake_proxy_fd)
+
+        close_hook = ql.os.posix_syscall_hooks[QL_INTERCEPT.CALL]['ql_syscall_close']
+        close_hook(ql, guest_fd)
+
+        self.assertEqual(len(sent), 1)
+        _nr, args = sent[0]
+        self.assertEqual(args[0], fake_proxy_fd,
+                         f"expected proxy_fd={fake_proxy_fd} forwarded, got args={args}")
+
+        proxy._client.syscall = original_syscall
+        ql.os.fd[guest_fd] = None
+        proxy.stop()
+        del ql
+
+    def test_fd_arg_rejects_non_proxy_fd(self):
+        """Forwarding with FD arg type rejects non-proxy guest FDs."""
+        from qiling.os.posix.kernel_proxy import KernelProxy, FD
+        from qiling.exception import QlErrorSyscallError
+
+        ql = Qiling([self.HELLO_BIN], self.ROOTFS, verbose=QL_VERBOSE.OFF)
+        proxy = KernelProxy(ql)
+        proxy.forward_syscall('close', arg_types=(FD,))
+
+        close_hook = ql.os.posix_syscall_hooks[QL_INTERCEPT.CALL]['ql_syscall_close']
+
+        # stdin (fd 0) is a regular ql_pipe, not a proxy fd
+        with self.assertRaises(QlErrorSyscallError):
+            close_hook(ql, 0)
+
+        proxy.stop()
+        del ql
+
+    # -------------------------------------------------------------------------
+    # Pointer marshaling (#2)
+    # -------------------------------------------------------------------------
+
+    def test_ptr_out_writes_back_to_guest_memory(self):
+        """PtrOut buffer is written back into guest memory after the syscall.
+
+        Uses pipe2(int pipefd[2], int flags) — pipefd is an output buffer of
+        2 * sizeof(int) = 8 bytes containing the read/write FDs created by
+        the kernel.
+        """
+        from qiling.os.posix.kernel_proxy import KernelProxy, PtrOut
+
+        ql = Qiling([self.HELLO_BIN], self.ROOTFS, verbose=QL_VERBOSE.OFF)
+        proxy = KernelProxy(ql)
+        proxy.forward_syscall('pipe2', arg_types=(PtrOut(size=8), 'int'))
+
+        # pick a free guest address and map it
+        addr = 0x800000
+        ql.mem.map(addr, 0x1000)
+        ql.mem.write(addr, b'\xff' * 8)  # poison so we can detect the writeback
+
+        hook = ql.os.posix_syscall_hooks[QL_INTERCEPT.CALL]['ql_syscall_pipe2']
+        retval = hook(ql, addr, 0)
+        self.assertEqual(retval, 0)
+
+        raw = bytes(ql.mem.read(addr, 8))
+        rfd, wfd = struct.unpack('<ii', raw)
+        # the proxy returns kernel-side FDs; both must be valid (>=0) and distinct
+        self.assertGreaterEqual(rfd, 0)
+        self.assertGreaterEqual(wfd, 0)
+        self.assertNotEqual(rfd, wfd)
+
+        # clean up the proxy-side FDs the kernel just gave us
+        import os as _os
+        _os.close(rfd)
+        _os.close(wfd)
+
+        proxy.stop()
+        del ql
+
+    def test_ptr_in_reads_guest_memory(self):
+        """PtrIn buffer is copied from guest memory and the proxy sees the data.
+
+        Uses write(int fd, const void *buf, size_t count) on stderr (fd 2).
+        We can't easily inspect proxy's stderr, but a successful return value
+        equal to count proves the data was forwarded — write would otherwise
+        return -EFAULT for a bad pointer or short for less data.
+        """
+        from qiling.os.posix.kernel_proxy import KernelProxy, PtrIn
+
+        ql = Qiling([self.HELLO_BIN], self.ROOTFS, verbose=QL_VERBOSE.OFF)
+        proxy = KernelProxy(ql)
+        proxy.forward_syscall('write', arg_types=('int', PtrIn(size=lambda a: a[2]), 'int'))
+
+        addr = 0x800000
+        payload = b'kernel_proxy ptr_in roundtrip\n'
+        ql.mem.map(addr, 0x1000)
+        ql.mem.write(addr, payload)
+
+        # forward stderr (fd 2 in the proxy is our subprocess's stderr,
+        # which goes to the test runner — harmless)
+        hook = ql.os.posix_syscall_hooks[QL_INTERCEPT.CALL]['ql_syscall_write']
+        retval = hook(ql, 2, addr, len(payload))
+        self.assertEqual(retval, len(payload))
+
+        proxy.stop()
+        del ql
+
+    def test_ptr_size_callable(self):
+        """PtrIn/PtrOut accept a size callable that depends on other args."""
+        from qiling.os.posix.kernel_proxy import PtrIn, PtrOut
+
+        ptr = PtrIn(size=lambda args: args[2] * 4)
+        self.assertEqual(ptr.resolve((0, 0, 5)), 20)
+
+        ptr2 = PtrOut(size=12)
+        self.assertEqual(ptr2.resolve((0, 0, 0)), 12)
+
+    # -------------------------------------------------------------------------
+    # Reference cycle (#4)
+    # -------------------------------------------------------------------------
+
+    def test_no_reference_cycle_via_hook(self):
+        """The forwarder closure holds only a weakref to KernelProxy, so the
+        proxy can be garbage-collected once the user drops their reference,
+        even though the hook is still registered on ql.os."""
+        import gc
+        import weakref
+        from qiling.os.posix.kernel_proxy import KernelProxy
+
+        ql = Qiling([self.HELLO_BIN], self.ROOTFS, verbose=QL_VERBOSE.OFF)
+        proxy = KernelProxy(ql)
+        proxy.forward_syscall('getpid')
+        proxy.forward_syscall('eventfd2', returns_fd=True)
+
+        wref = weakref.ref(proxy)
+        proxy.stop()  # tear down the subprocess but leave the hooks registered
+        del proxy
+        gc.collect()
+
+        self.assertIsNone(wref(),
+                          "KernelProxy survived after stop()+del — closure must hold "
+                          "a strong ref (cycle), defeating the weakref design")
+
+        del ql
+
+
 if __name__ == "__main__":
     unittest.main()

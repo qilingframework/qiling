@@ -51,6 +51,36 @@ def raw_syscall(nr: int, a0: int, a1: int, a2: int, a3: int, a4: int, a5: int) -
     return result, 0
 
 
+def raw_syscall_ex(nr: int, args: list, in_bufs: list, out_specs: list) -> tuple:
+    """Execute a syscall with buffer marshaling.
+
+    For each in_buf (arg_idx, data): allocate a ctypes buffer initialized with
+    data and place its address in args[arg_idx]. For each out_spec (arg_idx, length):
+    allocate a zeroed buffer and place its address in args[arg_idx]. After the
+    syscall, return the contents of each out buffer.
+    """
+    keepalive = []  # keep ctypes buffers alive until after the syscall
+    out_buffers = []  # parallel to out_specs
+
+    args = list(args)
+
+    for arg_idx, data in in_bufs:
+        buf = ctypes.create_string_buffer(data, len(data))
+        keepalive.append(buf)
+        args[arg_idx] = ctypes.addressof(buf)
+
+    for arg_idx, length in out_specs:
+        buf = ctypes.create_string_buffer(length)
+        keepalive.append(buf)
+        out_buffers.append(buf)
+        args[arg_idx] = ctypes.addressof(buf)
+
+    retval, err = raw_syscall(nr, *args)
+
+    out_data = [bytes(buf.raw) for buf in out_buffers]
+    return retval, err, out_data
+
+
 def handle_fd_op(op: FdOp, proxy_fd: int, arg1: int, arg2: int, data: bytes) -> tuple:
     """Handle an FD operation on a proxy-side FD. Returns (retval, errno, data)."""
     try:
@@ -106,6 +136,11 @@ def main():
             nr, a0, a1, a2, a3, a4, a5 = fields
             retval, err = raw_syscall(nr, a0, a1, a2, a3, a4, a5)
             server.send_syscall_response(retval, err)
+
+        elif msg_type == MsgType.SYSCALL_EX:
+            nr, args, in_bufs, out_specs = fields
+            retval, err, out_bufs = raw_syscall_ex(nr, args, in_bufs, out_specs)
+            server.send_syscall_ex_response(retval, err, out_bufs)
 
         elif msg_type == MsgType.FD_OP:
             op, proxy_fd, arg1, arg2, data = fields

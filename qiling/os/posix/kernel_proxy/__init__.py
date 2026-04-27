@@ -8,13 +8,22 @@ Hybrid kernel proxy — forward specific syscalls to a real Linux kernel.
 
 Usage:
     from qiling import Qiling
-    from qiling.os.posix.kernel_proxy import KernelProxy
+    from qiling.os.posix.kernel_proxy import KernelProxy, FD, PtrIn, PtrOut
 
     ql = Qiling(argv=["/bin/myserver"], rootfs="rootfs/x8664_linux")
     proxy = KernelProxy(ql)
-    proxy.forward_syscall("epoll_create", returns_fd=True)
-    proxy.forward_syscall("epoll_ctl")
-    proxy.forward_syscall("epoll_wait")
+
+    # integer-arg syscall returning a new FD
+    proxy.forward_syscall("epoll_create1", returns_fd=True)
+
+    # epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
+    proxy.forward_syscall("epoll_ctl",
+                          arg_types=(FD, "int", FD, PtrIn(size=12)))
+
+    # epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+    proxy.forward_syscall("epoll_wait",
+                          arg_types=(FD, PtrOut(size=lambda a: a[2] * 12), "int", "int"))
+
     ql.run()
 """
 
@@ -24,15 +33,22 @@ import os
 import sys
 import socket
 import subprocess
-from typing import Dict, Optional, TYPE_CHECKING
+import weakref
+from typing import Dict, Optional, Sequence, Tuple, TYPE_CHECKING
 
-from qiling.const import QL_INTERCEPT, QL_OS
+from qiling.const import QL_INTERCEPT
 from qiling.exception import QlErrorArch, QlErrorSyscallError, QlErrorSyscallNotFound
+from qiling.os.posix.kernel_proxy.argtypes import (
+    INT, FD, PtrIn, PtrOut, PtrInOut, is_pointer,
+)
 from qiling.os.posix.kernel_proxy.ipc import ProxyClient
 from qiling.os.posix.kernel_proxy.proxy_fd import ql_proxy_fd
 
 if TYPE_CHECKING:
     from qiling import Qiling
+
+
+__all__ = ['KernelProxy', 'INT', 'FD', 'PtrIn', 'PtrOut', 'PtrInOut']
 
 
 class KernelProxy:
@@ -117,40 +133,74 @@ class KernelProxy:
             )
         return table[name]
 
-    def forward_syscall(self, name: str, returns_fd: bool = False):
+    def forward_syscall(self, name: str, returns_fd: bool = False,
+                        arg_types: Optional[Sequence] = None):
         """Register a CALL hook that forwards this syscall to the kernel proxy.
 
         Args:
-            name: syscall name (e.g. "epoll_create", "eventfd2")
+            name: syscall name (e.g. "epoll_create1", "eventfd2").
             returns_fd: if True, wrap the return value in ql_proxy_fd and store
-                        in the Qiling FD table. Use this for syscalls that return
-                        file descriptors (epoll_create, eventfd, timerfd_create, etc.)
+                        it in the Qiling FD table. Use this for syscalls that
+                        return file descriptors (epoll_create1, eventfd2, etc.).
+            arg_types: optional per-arg descriptors. Each entry is one of:
+                       INT (or "int") — pass through unchanged (default).
+                       FD (or "fd")   — guest FD; translated to the proxy FD.
+                       PtrIn(size)    — pointer; bytes copied from guest to proxy.
+                       PtrOut(size)   — pointer; bytes copied back from proxy to guest.
+                       PtrInOut(size) — pointer; both directions.
+                       If omitted, all arguments are treated as INT.
         """
         nr = self._resolve_syscall_nr(name)
         self._forwarded[name] = nr
 
-        forwarder = self._make_forwarder(name, nr, returns_fd)
+        forwarder = self._make_forwarder(name, nr, returns_fd, arg_types)
         self.ql.os.set_syscall(name, forwarder, QL_INTERCEPT.CALL)
 
-        self.ql.log.info(f"forwarding syscall '{name}' (nr={nr}) to kernel proxy"
-                         f"{' [returns FD]' if returns_fd else ''}")
+        kind = []
+        if returns_fd:
+            kind.append('returns FD')
+        if arg_types:
+            kind.append(f'arg_types={tuple(type(a).__name__ if not isinstance(a, str) else a for a in arg_types)}')
 
-    def _make_forwarder(self, name: str, guest_nr: int, returns_fd: bool):
-        """Create a CALL hook closure for one syscall."""
+        suffix = f" [{', '.join(kind)}]" if kind else ''
+        self.ql.log.info(f"forwarding syscall '{name}' (nr={nr}) to kernel proxy{suffix}")
+
+    def _make_forwarder(self, name: str, guest_nr: int, returns_fd: bool,
+                        arg_types: Optional[Sequence]):
+        """Create a CALL hook closure for one syscall.
+
+        Captures only the data the closure needs (host syscall nr, client, weakref
+        to self) so the registered hook does not keep the KernelProxy alive.
+        """
+        # resolve once at registration time so the hot path stays simple
+        host_nr = self._get_host_syscall_nr(name)
         client = self._client
+        weak_self = weakref.ref(self)
+
+        # normalize arg_types to a tuple, treating the string aliases as-is
+        spec = tuple(arg_types) if arg_types else ()
+        has_pointers = any(is_pointer(s) for s in spec)
 
         def _forwarder(ql, *args):
-            # use the HOST syscall number, not the guest number.
-            # for now, resolve from the host's syscall table at runtime.
-            host_nr = self._get_host_syscall_nr(name)
+            self_ref = weak_self()
+            if self_ref is None:
+                ql.log.error(f"kernel_proxy: {name}() called after proxy was destroyed")
+                return -1
 
-            padded = args + (0,) * (6 - len(args))
-            retval = client.syscall(host_nr, padded[:6])
+            translated = self_ref._translate_args(name, args, spec)
+
+            if has_pointers:
+                in_bufs, out_specs, out_arg_indices = self_ref._collect_buffers(
+                    ql, translated, spec
+                )
+                retval, out_data = client.syscall_ex(host_nr, translated, in_bufs, out_specs)
+                self_ref._writeback_buffers(ql, args, out_arg_indices, out_data)
+            else:
+                retval = client.syscall(host_nr, translated)
 
             if returns_fd and retval >= 0:
-                # the proxy created a real FD. wrap it and store in Qiling's FD table.
                 proxy_fd_obj = ql_proxy_fd(client, retval)
-                guest_fd = self._alloc_fd(ql, proxy_fd_obj)
+                guest_fd = self_ref._alloc_fd(ql, proxy_fd_obj)
                 ql.log.debug(f"kernel_proxy: {name}() -> proxy_fd={retval}, guest_fd={guest_fd}")
                 return guest_fd
 
@@ -159,6 +209,60 @@ class KernelProxy:
 
         _forwarder.__name__ = f'ql_syscall_{name}'
         return _forwarder
+
+    def _translate_args(self, name: str, args: Tuple[int, ...],
+                        spec: Tuple) -> Tuple[int, ...]:
+        """Translate guest FD args to proxy FD numbers; pad to 6 args.
+
+        Pointer args are left untouched here — _collect_buffers replaces them
+        with the proxy-side buffer addresses just before invocation.
+        """
+        out = list(args) + [0] * (6 - len(args))
+
+        for idx, kind in enumerate(spec):
+            if kind == FD:
+                guest_fd = args[idx]
+                fd_obj = self.ql.os.fd[guest_fd] if 0 <= guest_fd < len(self.ql.os.fd) else None
+
+                if not isinstance(fd_obj, ql_proxy_fd):
+                    raise QlErrorSyscallError(
+                        f"kernel_proxy: {name}() arg{idx} guest_fd={guest_fd} "
+                        f"does not refer to a proxy-owned FD"
+                    )
+
+                out[idx] = fd_obj._proxy_fd
+
+        return tuple(out[:6])
+
+    def _collect_buffers(self, ql, args: Tuple[int, ...], spec: Tuple):
+        """Read PtrIn/PtrInOut buffers from guest memory; collect PtrOut sizes."""
+        in_bufs = []
+        out_specs = []
+        out_arg_indices = []
+
+        for idx, kind in enumerate(spec):
+            if isinstance(kind, (PtrIn, PtrInOut)):
+                size = kind.resolve(args)
+                if size > 0:
+                    data = bytes(ql.mem.read(args[idx], size))
+                    in_bufs.append((idx, data))
+
+            if isinstance(kind, (PtrOut, PtrInOut)):
+                size = kind.resolve(args)
+                if size > 0:
+                    out_specs.append((idx, size))
+                    out_arg_indices.append(idx)
+
+        return in_bufs, out_specs, out_arg_indices
+
+    @staticmethod
+    def _writeback_buffers(ql, args: Tuple[int, ...],
+                           out_arg_indices: Sequence[int],
+                           out_data: Sequence[bytes]):
+        """Write PtrOut/PtrInOut response buffers back into guest memory."""
+        for idx, data in zip(out_arg_indices, out_data):
+            if data:
+                ql.mem.write(args[idx], data)
 
     def _get_host_syscall_nr(self, name: str) -> int:
         """Get the syscall number on the HOST architecture."""
