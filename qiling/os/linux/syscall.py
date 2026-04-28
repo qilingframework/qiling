@@ -119,6 +119,17 @@ to ns and pass to os.utime()
 """
 
 
+def handle_null_times(path):
+    try:
+        curr_time = datetime.now() # See https://docs.python.org/3/library/datetime.html#examples-of-usage-datetime for format
+        actime = modtime = microseconds_to_nanoseconds(curr_time[6]) # curr_time[6] is microseconds
+        os.utime(path, ns=(actime, modtime))
+    except Exception as ex:
+        return -ex.errno
+    return 0
+
+
+
 def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s):
     real_file = ""
     try:
@@ -128,6 +139,13 @@ def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s):
         # everything ourselves
         return -ex.errno
     actime = modtime = 0
+    """
+    times is nullable for utime(2), utimes(2), and utimensat(2)
+    """
+    if times is NULL:
+        return handle_null_times(real_file)
+
+
     """
     times[0] specifies the new access time, and times[1] specifies the new modification time.  
     If times is NULL, then analogously to utime(), the access and modification times of the file are set to the
@@ -199,6 +217,8 @@ def do_utime_fd_ns(
     # transform to real path, which ensures that we are
     # operating inside of the qiling root
     unpacked_filename = ql.os.path.transform_to_real_path(ql.mem.string(filename))
+    if utimes is NULL:
+        return handle_null_times(unpacked_filename)
     timespec_struct = make_timespec_buf(ql.arch.bits, ql.arch.endian)
     atime_nsec = mtime_nsec = 0
     if dfd is not None:
@@ -235,8 +255,7 @@ def ql_syscall_utimensat(
 ):
     if filename == 0:
         return EACCES
-    if utimes == 0:
-        return EACCES
+    # do not check `utimes` value at this point 
     if dfd == AT_FDCWD:
         dfd = None
     if flags == AT_SYMLINK_NOFOLLOW:
