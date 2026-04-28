@@ -7,10 +7,8 @@ authors = ["KaiJern Lau (xwings) <info@qiling.io>"]
 license = "GPLv2"
 readme = "README.md"
 classifiers = [
-	"Development Status :: 3 - Beta",
-
+	"Development Status :: 5 - Production/Stable",
 	"Intended Audience :: Developers",
-
 	"Topic :: Software Development :: Disassemblers",
 	"Topic :: System :: Emulators",
 	"Topic :: System :: Operating System",
