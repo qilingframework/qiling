@@ -8,6 +8,7 @@ from qiling.arch.x86_const import *
 from qiling.const import QL_ARCH
 from qiling.os.posix.const import AT_FDCWD, AT_SYMLINK_NOFOLLOW
 from qiling.os.posix.structs import *
+from qiling.os.posix.syscall import *
 from datetime import datetime
 from math import floor
 import os
@@ -129,12 +130,18 @@ def handle_null_times(path):
     return 0
 
 
-
-def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s):
+'''
+'s' means whether or not to use the timeval struct
+'has_dfd' determines whether to interpret the path relative to our CWD
+'''
+def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s:bool, has_dfd: bool):
     real_file = ""
     try:
         # get path inside of qiling rootfs
-        real_file = ql.os.path.transform_to_real_path(ql.mem.string(filename))
+        if has_dfd:
+            real_file = ql.os.path.transform_to_relative_path(ql.mem.string(filename))
+        else:
+            real_file = ql.os.path.transform_to_real_path(ql.mem.string(filename))
     except Exception as ex:  # return errors appropriately, don't try to handle
         # everything ourselves
         return -ex.errno
@@ -183,7 +190,7 @@ https://www.man7.org/linux/man-pages/man2/utimes.2.html
 
 
 def ql_syscall_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER):
-    return do_utime(ql, filename, times, False)  # False for 's' means
+    return do_utime(ql, filename, times, s=False, has_dfd=False)  # False for 's' means
     # do plain utime
 
 
@@ -195,7 +202,7 @@ https://www.man7.org/linux/man-pages/man2/utimes.2.html
 
 
 def ql_syscall_utimes(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER):
-    return do_utime(ql, filename, times, True)  # True for 's' means the
+    return do_utime(ql, filename, times, s=True, has_dfd=False)  # True for 's' means the
     # we want 'utimes', which has a different prototype, and consequently,
     # struct unpacking requirements, than utime
 
@@ -271,6 +278,14 @@ https://www.man7.org/linux/man-pages/man2/futimesat.2.html
 but including here in case some legacy code needs it
 int futimesat(int dirfd, const char *pathname,
                                     const struct timeval times[2]);
+
+
+If the pathname given in pathname is relative, then it is interpreted relative to the directory referred to by the file descriptor dirfd (rather than relative to the current work‐
+ing directory of the calling process, as is done by utimes(2) for a relative pathname).
+
+If pathname is relative and dirfd is the special value AT_FDCWD, then pathname is interpreted relative to the current working directory of the calling process (like utimes(2)).
+
+If pathname is absolute, then dirfd is ignored.  (See openat(2) for an explanation of why the dirfd argument is useful.)      
 """
 
 
@@ -278,4 +293,4 @@ def ql_syscall_futimesat(
     ql: Qiling, dfd: int, pathname: ctypes.POINTER, timeval: ctypes.POINTER
 ):
 
-    return ql_syscall_utimensat(ql, dfd, pathname, timeval, 0)
+    return do_utime(ql, filename, timeval, True, True)
