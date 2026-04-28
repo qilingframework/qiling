@@ -74,3 +74,5 @@ pyrightconfig.json
 # AI
 CLAUDE.md
 .claude
+.codex
+.AGENT.md
