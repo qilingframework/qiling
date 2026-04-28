@@ -1,7 +1,7 @@
 [tool.poetry]
 urls = { homepage = "https://qiling.io" }
 name = "qiling"
-version = "1.4.8"
+version = "1.4.9"
 description = "Qiling is an advanced binary emulation framework that cross-platform-architecture"
 authors = ["KaiJern Lau (xwings) <info@qiling.io>"]
 license = "GPLv2"
