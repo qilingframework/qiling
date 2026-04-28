@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- Copyright (C) 2009-2016 Free Software Foundation, Inc.
+
+ *!Copying and distribution of this file, with or without modification,
+ *!are permitted in any medium without royalty provided the copyright
+ *!notice and this notice are preserved.  -->
+
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target xmlns:xi="http://www.w3.org/2001/XInclude">
+    <architecture>armv7-m</architecture>
+    <xi:include href="arm-m-profile.xml"/>
+</target>

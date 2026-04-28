@@ -114,7 +114,7 @@ However, Qiling offers some important differences against QEMU user mode:
 
 #### Installation
 
-Please see [setup guide](https://docs.qiling.io/en/latest/install/) file for how to install Qiling Framework.
+Please see [setup guide](https://github.com/qilingframework/qiling/wiki/Installation) file for how to install Qiling Framework.
 
 ---
 

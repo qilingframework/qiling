@@ -10,7 +10,7 @@ from qiling import Qiling
 from qiling.exception import QlErrorNotImplemented
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.const import LOCALE
+from qiling.os.windows.const import *
 from qiling.os.windows.handle import Handle
 
 # void __set_app_type (
@@ -135,10 +135,9 @@ def hook__controlfp(ql: Qiling, address: int, params):
 # );
 @winsdkapi(cc=CDECL, params={
     'func' : POINTER
-})
+}, passthru=True)
 def hook_atexit(ql: Qiling, address: int, params):
-    ret = 0
-    return ret
+    return
 
 # char*** __p__environ(void)
 @winsdkapi(cc=CDECL, params={})
@@ -174,17 +173,6 @@ def hook_puts(ql: Qiling, address: int, params):
 def hook__cexit(ql: Qiling, address: int, params):
     pass
 
-# void __cdecl _initterm(
-#    PVFV *,
-#    PVFV *
-# );
-@winsdkapi(cc=CDECL, params={
-    'pfbegin' : POINTER,
-    'pfend'   : POINTER
-})
-def hook__initterm(ql: Qiling, address: int, params):
-    return 0
-
 # void exit(
 #    int const status
 # );
@@ -193,17 +181,6 @@ def hook__initterm(ql: Qiling, address: int, params):
 })
 def hook_exit(ql: Qiling, address: int, params):
     ql.emu_stop()
-
-# int __cdecl _initterm_e(
-#    PVFV *,
-#    PVFV *
-# );
-@winsdkapi(cc=CDECL, params={
-    'pfbegin' : POINTER,
-    'pfend'   : POINTER
-})
-def hook__initterm_e(ql: Qiling, address: int, params):
-    return 0
 
 # char***    __cdecl __p___argv (void);
 @winsdkapi(cc=CDECL, params={})
@@ -233,20 +210,12 @@ def hook___p___argc(ql: Qiling, address: int, params):
     return ret
 
 # TODO: this one belongs to ucrtbase.dll
-@winsdkapi(cc=CDECL, params={})
+@winsdkapi(cc=CDECL, params={}, passthru=True)
 def hook__get_initial_narrow_environment(ql: Qiling, address: int, params):
-    ret = 0
-
-    for i, (k, v) in enumerate(ql.env.items()):
-        entry = bytes(f'{k}={v}', 'ascii') + b'\x00'
-        p_entry = ql.os.heap.alloc(len(entry))
-
-        ql.mem.write(p_entry, entry)
-
-        if i == 0:
-            ret = p_entry
-
-    return ret
+    # If the native version of this function does not
+    # get to run, then debug versions of the CRT DLLs can fail
+    # their initialization.
+    return
 
 # int sprintf ( char * str, const char * format, ... );
 @winsdkapi(cc=CDECL, params={
@@ -302,13 +271,6 @@ def hook_wprintf(ql: Qiling, address: int, params):
     upd_args(params)
 
     return count
-
-# MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
-@winsdkapi(cc=CDECL, params={
-    'idx': UINT
-})
-def hook___acrt_iob_func(ql: Qiling, address: int, params):
-    return 0
 
 def __stdio_common_vfprintf(ql: Qiling, address: int, params, wstring: bool):
     format = params['_Format']
@@ -372,11 +334,35 @@ def hook___stdio_common_vsprintf(ql: Qiling, address: int, params):
     '_Options'     : PARAM_INT64,
     '_Buffer'      : POINTER,
     '_BufferCount' : SIZE_T,
+    '_MaxCount'    : SIZE_T,
+    '_Format'      : STRING,
+    '_Locale'      : DWORD,
+    '_ArgList'     : POINTER
+})
+def hook___stdio_common_vsnprintf(ql: Qiling, address: int, params):
+    return __stdio_common_vsprintf(ql, address, params, False)
+
+@winsdkapi(cc=CDECL, params={
+    '_Options'     : PARAM_INT64,
+    '_Buffer'      : POINTER,
+    '_BufferCount' : SIZE_T,
     '_Format'      : WSTRING,
     '_Locale'      : DWORD,
     '_ArgList'     : POINTER
 })
 def hook___stdio_common_vswprintf(ql: Qiling, address: int, params):
+    return __stdio_common_vsprintf(ql, address, params, True)
+
+@winsdkapi(cc=CDECL, params={
+    '_Options'     : PARAM_INT64,
+    '_Buffer'      : POINTER,
+    '_BufferCount' : SIZE_T,
+    '_MaxCount'    : SIZE_T,
+    '_Format'      : WSTRING,
+    '_Locale'      : DWORD,
+    '_ArgList'     : POINTER
+})
+def hook___stdio_common_vsnwprintf(ql: Qiling, address: int, params):
     return __stdio_common_vsprintf(ql, address, params, True)
 
 # all the "_s" versions are aliases to their non-"_s" counterparts
@@ -416,12 +402,36 @@ def hook___stdio_common_vsprintf_s(ql: Qiling, address: int, params):
     '_Options'     : PARAM_INT64,
     '_Buffer'      : POINTER,
     '_BufferCount' : SIZE_T,
+    '_MaxCount'    : SIZE_T,
+    '_Format'      : STRING,
+    '_Locale'      : DWORD,
+    '_ArgList'     : POINTER
+})
+def hook___stdio_common_vsnprintf_s(ql: Qiling, address: int, params):
+    return hook___stdio_common_vsnprintf.__wrapped__(ql, address, params)
+
+@winsdkapi(cc=CDECL, params={
+    '_Options'     : PARAM_INT64,
+    '_Buffer'      : POINTER,
+    '_BufferCount' : SIZE_T,
     '_Format'      : WSTRING,
     '_Locale'      : DWORD,
     '_ArgList'     : POINTER
 })
 def hook___stdio_common_vswprintf_s(ql: Qiling, address: int, params):
     return hook___stdio_common_vswprintf.__wrapped__(ql, address, params)
+
+@winsdkapi(cc=CDECL, params={
+    '_Options'     : PARAM_INT64,
+    '_Buffer'      : POINTER,
+    '_BufferCount' : SIZE_T,
+    '_MaxCount'    : SIZE_T,
+    '_Format'      : WSTRING,
+    '_Locale'      : DWORD,
+    '_ArgList'     : POINTER
+})
+def hook___stdio_common_vsnwprintf_s(ql: Qiling, address: int, params):
+    return hook___stdio_common_vsnwprintf.__wrapped__(ql, address, params)
 
 @winsdkapi(cc=CDECL, params={})
 def hook___lconv_init(ql: Qiling, address: int, params):
@@ -478,43 +488,42 @@ def hook_strncmp(ql: Qiling, address: int, params):
 
     return result
 
-def __malloc(ql: Qiling, address: int, params):
-    size = params['size']
-
-    return ql.os.heap.alloc(size)
-
 @winsdkapi(cc=CDECL, params={
     'size' : UINT
-})
+}, passthru=True)
 def hook__malloc_base(ql: Qiling, address: int, params):
-    return __malloc(ql, address, params)
+    return
 
 # void* malloc（unsigned int size)
 @winsdkapi(cc=CDECL, params={
     'size' : UINT
-})
+}, passthru=True)
 def hook_malloc(ql: Qiling, address: int, params):
-    size = params['size']
+    return
 
-    return ql.os.heap.alloc(size)
-
-def __free(ql: Qiling, address: int, params):
-    address = params['address']
-
-    ql.os.heap.free(address)
+# void* __cdecl _realloc_base(
+#     void*  const block,
+#     size_t const size
+#     )
+@winsdkapi(cc=CDECL, params={
+    'block' : POINTER,
+    'size' : UINT
+}, passthru=True)
+def hook__realloc_base(ql: Qiling, address: int, params):
+    return
 
 @winsdkapi(cc=CDECL, params={
     'address': POINTER
-})
+}, passthru=True)
 def hook__free_base(ql: Qiling, address: int, params):
-    return __free(ql, address, params)
+    return
 
 # void* free（void *address)
 @winsdkapi(cc=CDECL, params={
     'address': POINTER
-})
+}, passthru=True)
 def hook_free(ql: Qiling, address: int, params):
-    return __free(ql, address, params)
+    return
 
 # _onexit_t _onexit(
 #    _onexit_t function
@@ -530,6 +539,27 @@ def hook__onexit(ql: Qiling, address: int, params):
 
     return addr
 
+# _onexit_t __dllonexit(
+#    _onexit_t func,
+#    _PVFV **  pbegin,
+#    _PVFV **  pend
+#    );
+@winsdkapi(cc=STDCALL, params={
+    'function': POINTER,
+    'pbegin': POINTER,
+    'pend': POINTER
+})
+def hook___dllonexit(ql: Qiling, address: int, params):
+    function = params['function']
+
+    if function:
+        addr = ql.os.heap.alloc(ql.arch.pointersize)
+        ql.mem.write_ptr(addr, function)
+
+        return addr
+    
+    return 0
+
 # void *memset(
 #    void *dest,
 #    int c,
@@ -539,32 +569,16 @@ def hook__onexit(ql: Qiling, address: int, params):
     'dest'  : POINTER,
     'c'     : INT,
     'count' : SIZE_T
-})
+}, passthru=True)
 def hook_memset(ql: Qiling, address: int, params):
-    dest = params["dest"]
-    c = params["c"]
-    count = params["count"]
-
-    ql.mem.write(dest, bytes([c] * count))
-
-    return dest
-
-def __calloc(ql: Qiling, address: int, params):
-    num = params['num']
-    size = params['size']
-
-    count = num * size
-    ret = ql.os.heap.alloc(count)
-    ql.mem.write(ret, bytes([0] * count))
-
-    return ret
+    return
 
 @winsdkapi(cc=CDECL, params={
     'num'  : SIZE_T,
     'size' : SIZE_T
-})
+}, passthru=True)
 def hook__calloc_base(ql: Qiling, address: int, params):
-    return __calloc(ql, address, params)
+    return
 
 # void *calloc(
 #    size_t num,
@@ -573,9 +587,9 @@ def hook__calloc_base(ql: Qiling, address: int, params):
 @winsdkapi(cc=CDECL, params={
     'num'  : SIZE_T,
     'size' : SIZE_T
-})
+}, passthru=True)
 def hook_calloc(ql: Qiling, address: int, params):
-    return __calloc(ql, address, params)
+    return
 
 # void * memmove(
 #   void *dest,
@@ -586,12 +600,9 @@ def hook_calloc(ql: Qiling, address: int, params):
     'dest' : POINTER,
     'src'  : POINTER,
     'num'  : SIZE_T
-})
+}, passthru=True)
 def hook_memmove(ql: Qiling, address: int, params):
-    data = ql.mem.read(params['src'], params['num'])
-    ql.mem.write(params['dest'], bytes(data))
-
-    return params['dest']
+    return
 
 # int _ismbblead(
 #    unsigned int c
@@ -644,3 +655,18 @@ def hook__time64(ql: Qiling, address: int, params):
         ql.mem.write_ptr(dst, time_wasted, 8)
 
     return time_wasted
+
+# void abort( void );
+@winsdkapi(cc=CDECL, params={})
+def hook_abort(ql: Qiling, address: int, params):
+    # During testing, it was found that programs terminating abnormally
+    # via abort() terminated with exit code=STATUS_STACK_BUFFER_OVERRUN.
+    # According to Microsoft's devblog, this does not necessarily mean
+    # that a stack buffer overrun occurred.
+    # Rather, it can indicate abnormal program termination in a variety of
+    # situations, including abort().
+    # https://devblogs.microsoft.com/oldnewthing/20190108-00/?p=100655
+    # 
+    ql.os.exit_code = STATUS_STACK_BUFFER_OVERRUN
+
+    ql.emu_stop()

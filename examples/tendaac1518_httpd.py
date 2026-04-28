@@ -78,6 +78,8 @@ def my_sandbox(path, rootfs):
 
         ql.os.set_syscall('vfork', __vfork)
 
+    os.unlink(fr'{ROOTFS}/proc/sys/kernel/core_pattern')
+
     ql.run()
 
 

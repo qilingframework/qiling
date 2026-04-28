@@ -183,6 +183,7 @@ class QlGdb(QlDebugger):
             from unicorn.arm_const import UC_ARM_REG_R11
             from unicorn.arm64_const import UC_ARM64_REG_X29
             from unicorn.mips_const import UC_MIPS_REG_INVALID
+            from unicorn.ppc_const import UC_PPC_REG_31
 
             arch_uc_bp = {
                 QL_ARCH.X86      : UC_X86_REG_EBP,
@@ -191,7 +192,8 @@ class QlGdb(QlDebugger):
                 QL_ARCH.ARM64    : UC_ARM64_REG_X29,
                 QL_ARCH.MIPS     : UC_MIPS_REG_INVALID, # skipped
                 QL_ARCH.A8086    : UC_X86_REG_EBP,
-                QL_ARCH.CORTEX_M : UC_ARM_REG_R11
+                QL_ARCH.CORTEX_M : UC_ARM_REG_R11,
+                QL_ARCH.PPC      : UC_PPC_REG_31
             }[self.ql.arch.type]
 
             def __get_reg_idx(ucreg: int) -> int:

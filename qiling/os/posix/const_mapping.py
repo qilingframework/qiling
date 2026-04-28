@@ -114,12 +114,12 @@ def ql_open_flag_mapping(ql: Qiling, flags: int) -> int:
     # convert emulated os flags to hosting os flags.
     # flags names are consistent across all classes, even if they are not supported, to maintain compatibility
     for ef in emul_flags:
-        # test whether flag i set, excluding unsupported flags and 0 values
-        if ef and flags & ef.value:
+        # test whether flag is set, excluding unsupported flags
+        if (ef.value != FLAG_UNSUPPORTED) and (flags & ef.value):
             hf = host_flags[ef.name or '']
 
             # if flag is also supported on the host, set it
-            if hf:
+            if hf.value != FLAG_UNSUPPORTED:
                 ret |= hf.value
 
     # NOTE: not sure why this one is needed

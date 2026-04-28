@@ -3,168 +3,184 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+"""Context Render for rendering UI
+"""
 
 
-from capstone import CsInsn
-from typing import Mapping
-import os, copy
+from __future__ import annotations
+
+import os
+
+from typing import TYPE_CHECKING, Callable, Collection, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..context import Context
 from ..const import color
 
 
+if TYPE_CHECKING:
+    from qiling.core import Qiling
+    from ..branch_predictor.branch_predictor import BranchPredictor, Prophecy
+    from ..misc import InsnLike
 
-"""
 
-    Context Render for rendering UI
+COLORS = (
+    color.DARKCYAN,
+    color.BLUE,
+    color.RED,
+    color.YELLOW,
+    color.GREEN,
+    color.PURPLE,
+    color.CYAN,
+    color.WHITE
+)
 
-"""
+RARROW = '\u2192'
+RULER = '\u2500'
 
-COLORS = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
+CURSOR   = '\u25ba'  # current instruction cursor
+GOING_DN = '\u2ba6'  # branching downward to a higher address
+GOING_UP = '\u2ba4'  # branching upward to a lower address
+
 
 class Render:
-    """
-    base class for rendering related functions
+    """Base class for graphical rendering functionality.
+
+    Render objects are agnostic to current emulation state.
     """
 
-    def divider_printer(field_name, ruler="─"):
+    def __init__(self):
+        # make sure mixin classes are properly initialized
+        super().__init__()
+
+        self.regs_a_row = 4  # number of regs to display per row
+        self.stack_num = 8   # number of stack entries to display in context
+        self.disasm_num = 4  # number of instructions to display in context before and after current pc
+
+    @staticmethod
+    def divider_printer(header: str, footer: bool = False):
         """
         decorator function for printing divider and field name
         """
 
-        def decorator(context_dumper):
+        def decorator(wrapped: Callable):
             def wrapper(*args, **kwargs):
                 try:
                     width, _ = os.get_terminal_size()
                 except OSError:
                     width = 130
 
-                bar = (width - len(field_name)) // 2 - 1
-                print(ruler * bar, field_name, ruler * bar)
-                context_dumper(*args, **kwargs)
-                if "DISASM" in field_name:
-                    print(ruler * width)
+                print(header.center(width, RULER))
+                wrapped(*args, **kwargs)
+
+                if footer:
+                    print(RULER * width)
 
             return wrapper
         return decorator
 
-    def __init__(self):
-        self.regs_a_row = 4
-        self.stack_num = 10
-        self.disasm_num = 0x10
-        self.color = color
-
-    def reg_diff(self, cur_regs, saved_reg_dump):
+    def reg_diff(self, curr: Mapping[str, int], prev: Mapping[str, int]) -> List[str]:
         """
         helper function for highlighting register changed during execution
         """
 
-        if saved_reg_dump:
-            reg_dump = copy.deepcopy(saved_reg_dump)
-            if getattr(self, "regs_need_swapped", None):
-                reg_dump = self.swap_reg_name(reg_dump)
+        return [k for k in curr if curr[k] != prev[k]] if prev else []
 
-            return [k for k in cur_regs if cur_regs[k] != reg_dump[k]]
-
-    def render_regs_dump(self, regs, diff_reg=None):
-        """
-        helper function for redering registers dump
+    def render_regs_dump(self, regs: Mapping[str, int], diff_reg: Collection[str]) -> None:
+        """Helper function for rendering registers dump.
         """
 
-        lines = ""
-        for idx, r in enumerate(regs, 1):
-            line = "{}{}: 0x{{:08x}}  {}\t".format(COLORS[(idx-1) // self.regs_a_row], r, color.END)
+        # find the length of the longest reg name to have all regs aligned in columns
+        longest = max(len(name) for name in regs)
 
-            if diff_reg and r in diff_reg:
-                line = f"{color.UNDERLINE}{color.BOLD}{line}"
+        def __render_regs_line() -> Iterator[str]:
+            elements = []
 
-            if idx % self.regs_a_row == 0 and idx != 32:
-                line += "\n"
+            for idx, (name, value) in enumerate(regs.items()):
+                line_color = f'{COLORS[idx // self.regs_a_row]}'
 
-            lines += line
+                if name in diff_reg:
+                    line_color = f'{color.UNDERLINE}{color.BOLD}{line_color}'
 
-        print(lines.format(*regs.values()))
+                elements.append(f'{line_color}{name:{longest}s}: {value:#010x}{color.END}')
 
-    def render_stack_dump(self, arch_sp: int) -> None:
-        """
-        helper function for redering stack dump
-        """
+                if (idx + 1) % self.regs_a_row == 0:
+                    yield '\t'.join(elements)
 
-        # Loops over stack range (last 10 addresses)
-        for idx in range(self.stack_num):
-            addr = arch_sp + idx * self.pointersize
+                    elements.clear()
 
-            '''
-            @NOTE: Implemented new class arch_x8664 in order to bugfix issue with only dereferencing 32-bit pointers
-            on 64-bit emulation passes.
-            '''
-            if (val := self.try_read_pointer(addr)[0]): # defined to be try_read_pointer(addr)[0] - dereferneces pointer
+        for line in __render_regs_line():
+            print(line)
 
-                # @TODO: Bug here where the values on the stack are being displayed in 32-bit format
-                print(f"SP + 0x{idx*self.pointersize:02x}│ [0x{addr:08x}] —▸ 0x{self.unpack(val):08x}", end="")
+    def render_flags(self, flags: Mapping[str, int], before: str = ''):
+        def __set(f: str) -> str:
+            return f'{color.BLUE}{f.upper()}{color.END}'
 
-            # try to dereference wether it's a pointer
-            if (buf := self.try_read_pointer(addr))[0] is not None:
+        def __cleared(f: str) -> str:
+            return f'{color.GREEN}{f.lower()}{color.END}'
 
-                if (addr := self.unpack(buf[0])):
+        s_before = f"[{before}] " if before else ""
+        s_flags = " ".join(__set(f) if val else __cleared(f) for f, val in flags.items())
 
-                    # try to dereference again
-                    if (buf := self.try_read_pointer(addr))[0] is not None:
-                        s = self.try_read_string(addr)
+        print(f'{s_before}[flags: {s_flags}]')
 
-                        if s and s.isprintable():
-                            print(f" ◂— {self.read_string(addr)}", end="")
-                        else:
-                            print(f" ◂— 0x{self.unpack(buf[0]):08x}", end="")
-            print()
-
-    def render_assembly(self, lines) -> None:
-        """
-        helper function for rendering assembly
+    def render_stack_dump(self, sp: int, dump: Sequence[Tuple[int, int, Union[int, str, None]]]) -> None:
+        """Helper function for rendering stack dump.
         """
 
-        # assembly before current location
-        if (backward := lines.get("backward", None)):
-            for line in backward:
-                self.print_asm(line)
+        # number of hexadecimal nibbles to display per value
+        nibbles = self.pointersize * 2
 
-        # assembly for current location
-        if (cur_insn := lines.get("current", None)):
-            prophecy = self.predictor.predict()
-            self.print_asm(cur_insn, to_jump=prophecy.going)
+        for address, value, deref in dump:
+            offset = address - sp
 
-        # assembly after current location
-        if (forward := lines.get("forward", None)):
-            for line in forward:
-                self.print_asm(line)
+            value_str = '(unreachable)' if value is None else f'{value:#0{nibbles + 2}x}'
 
-    def swap_reg_name(self, cur_regs: Mapping[str, int], extra_dict=None) -> Mapping[str, int]:
-        """
-        swap register name with more readable register name
-        """
+            if isinstance(deref, int):
+                deref_str = f'{deref:#0{nibbles + 2}x}'
 
-        target_items = extra_dict.items() if extra_dict else self.regs_need_swapped.items()
+            elif isinstance(deref, str):
+                deref_str = f'"{deref}"'
 
-        for old_reg, new_reg in target_items:
-            cur_regs.update({old_reg: cur_regs.pop(new_reg)})
+            else:
+                deref_str = ''
 
-        return cur_regs 
+            print(f'SP + {offset:#04x} │ {address:#010x} : {value_str}{f" {RARROW} {deref_str}" if deref_str else ""}')
 
-    def print_asm(self, insn: CsInsn, to_jump: bool = False) -> None:
-        """
-        helper function for printing assembly instructions, indicates where we are and the branch prediction
-        provided by BranchPredictor
+    def render_assembly(self, listing: Sequence[InsnLike], pc: int, prediction: Prophecy) -> None:
+        """Helper function for rendering assembly.
         """
 
-        opcode = "".join(f"{b:02x}" for b in insn.bytes)
+        def __render_asm_line(insn: InsnLike) -> str:
+            """Helper function for rendering assembly instructions, indicates where we are and
+            the branch prediction provided by branch predictor
+            """
 
-        trace_line = f"0x{insn.address:08x} │ {opcode:15s} {insn.mnemonic:10} {insn.op_str:35s}"
+            trace_line = f"{insn.address:#010x} │ {insn.bytes.hex():18s} {insn.mnemonic:12} {insn.op_str:35s}"
 
-        cursor = "►" if self.cur_addr == insn.address else " "
+            cursor = ''  # current instruction cursor
+            brmark = ''  # branching mark
 
-        jump_sign = f"{color.RED}✓{color.END}" if to_jump else " "
+            if insn.address == pc:
+                cursor = CURSOR
 
-        print(f"{jump_sign}  {cursor}   {color.DARKGRAY}{trace_line}{color.END}")
+                if prediction.going:
+                    # branch target might be None in case it should have been
+                    # read from memory but that memory could not be reached
+                    bmark = '?' if prediction.where is None else (GOING_DN if prediction.where > pc else GOING_UP)
+
+                    # apply some colors
+                    brmark = f'{color.RED}{bmark}{color.RESET}'
+
+                # <DEBUG>
+                where = '?' if prediction.where is None else f'{prediction.where:#010x}'
+
+                print(f'prediction: {f"taken, {where}" if prediction.going else "not taken"}')
+                # </DEBUG>
+
+            return f"{brmark:1s}  {cursor:1s}   {color.DARKGRAY}{trace_line}{color.RESET}"
+
+        for insn in listing:
+            print(__render_asm_line(insn))
 
 
 class ContextRender(Context, Render):
@@ -172,17 +188,17 @@ class ContextRender(Context, Render):
     base class for context render
     """
 
-    def __init__(self, ql, predictor):
+    def __init__(self, ql: Qiling, predictor: BranchPredictor):
         super().__init__(ql)
-        Render.__init__(self)
+
         self.predictor = predictor
+        self.prev_regs: Dict[str, int] = {}
 
-    def dump_regs(self) -> Mapping[str, int]:
-        """
-        dump all registers
+    def get_regs(self) -> Dict[str, int]:
+        """Save current registers state.
         """
 
-        return {reg_name: self.ql.arch.regs.read(reg_name) for reg_name in self.regs}
+        return {reg_name: self.read_reg(reg_name) for reg_name in self.regs}
 
     @Render.divider_printer("[ STACK ]")
     def context_stack(self) -> None:
@@ -190,50 +206,55 @@ class ContextRender(Context, Render):
         display context stack dump
         """
 
-        self.render_stack_dump(self.ql.arch.regs.arch_sp)
-        
+        sp = self.cur_sp
+        stack_dump = []
+
+        for i in range(self.stack_num):
+            address = sp + i * self.asize
+
+            # attempt to read current stack entry
+            value = self.try_read_pointer(address)
+
+            # treat stack entry as a pointer and attempt to dereference it
+            deref = None if value is None else self.get_deref(value)
+
+            stack_dump.append((address, value, deref))
+
+        self.render_stack_dump(sp, stack_dump)
+
     @Render.divider_printer("[ REGISTERS ]")
-    def context_reg(self, saved_states: Mapping["str", int]) -> None:
-        """
-        display context registers dump
+    def context_reg(self) -> None:
+        """Rendering registers context.
         """
 
-        return NotImplementedError
+        curr = self.get_regs()
+        prev = self.prev_regs
 
-    @Render.divider_printer("[ DISASM ]")
+        curr = self.swap_regs(curr)
+        prev = self.swap_regs(prev)
+
+        diff_reg = self.reg_diff(curr, prev)
+        self.render_regs_dump(curr, diff_reg)
+        self.print_mode_info()
+
+    @Render.divider_printer("[ DISASM ]", footer=True)
     def context_asm(self) -> None:
+        """Disassemble srrounding instructions.
         """
-        read context assembly and render with render_assembly
-        """
 
-        lines = {}
-        past_list = []
-        from_addr = self.cur_addr - self.disasm_num
-        to_addr = self.cur_addr + self.disasm_num
+        address = self.cur_addr
+        prediction = self.predictor.predict()
 
-        cur_addr = from_addr
-        while cur_addr <= to_addr:
-            insn = self.disasm(cur_addr)
-            cur_addr += insn.size
-            past_list.append(insn)
+        # assuming a single instruction is in the same size of a native pointer.
+        # this is not true for all architectures.
+        ptr = address - self.pointersize * self.disasm_num
+        listing = []
 
-        bk_list = []
-        fd_list = []
-        cur_insn = None
-        for each in past_list:
-            if each.address < self.cur_addr:
-                bk_list.append(each)
+        # taking disasm_num instructions before, current, and disasm_num instructions after
+        for _ in range(self.disasm_num * 2 + 1):
+            insn = self.disasm(ptr)
+            listing.append(insn)
 
-            elif each.address > self.cur_addr:
-                fd_list.append(each)
+            ptr += insn.size
 
-            elif each.address == self.cur_addr:
-                cur_insn = each 
-
-        lines.update({
-            "backward": bk_list,
-            "forward": fd_list,
-            "current": cur_insn,
-            })
-
-        self.render_assembly(lines)
+        self.render_assembly(listing, address, prediction)

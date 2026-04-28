@@ -3,10 +3,18 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from ctypes import Structure
-from ctypes import c_uint32, c_uint16
+from __future__ import annotations
+
+from ctypes import Structure, c_uint32, c_uint16
+from functools import lru_cache
+from typing import TYPE_CHECKING, BinaryIO, Dict, Tuple
 
 from .base import QlBaseCoverage
+
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from qiling.loader.loader import QlLoader
 
 
 # Adapted from https://www.ayrx.me/drcov-file-format
@@ -29,36 +37,61 @@ class QlDrCoverage(QlBaseCoverage):
 
     FORMAT_NAME = "drcov"
 
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         super().__init__(ql)
 
         self.drcov_version = 2
         self.drcov_flavor = 'drcov'
-        self.basic_blocks = []
+        self.basic_blocks: Dict[int, bb_entry] = {}
         self.bb_callback = None
 
-    @staticmethod
-    def block_callback(ql, address, size, self):
-        for mod_id, mod in enumerate(ql.loader.images):
-            if mod.base <= address <= mod.end:
-                ent = bb_entry(address - mod.base, size, mod_id)
-                self.basic_blocks.append(ent)
-                break
+    @lru_cache(maxsize=64)
+    def _get_img_base(self, loader: QlLoader, address: int) -> Tuple[int, int]:
+        """Retrieve the containing image of a given address.
 
-    def activate(self):
-        self.bb_callback = self.ql.hook_block(self.block_callback, user_data=self)
+        Addresses are expected to be aligned to page boundary, and cached for faster retrieval.
+        """
 
-    def deactivate(self):
-        self.ql.hook_del(self.bb_callback)
+        return next((i, img.base) for i, img in enumerate(loader.images) if img.base <= address < img.end)
 
-    def dump_coverage(self, coverage_file):
+    def block_callback(self, ql: Qiling, address: int, size: int):
+        if address not in self.basic_blocks:
+            try:
+                # we rely on the fact that images are allocated on page size boundary and
+                # use it to speed up image retrieval. we align the basic block address to
+                # page boundary, knowing basic blocks within the same page belong to the
+                # same image. then we use the aligned address to retreive the containing
+                # image. returned values are cached so subsequent retrievals for basic
+                # blocks within the same page will return the cached value instead of
+                # going through the retreival process again (up to maxsize cached pages)
+
+                i, img_base = self._get_img_base(ql.loader, address & ~(0x1000 - 1))
+            except StopIteration:
+                pass
+            else:
+                self.basic_blocks[address] = bb_entry(address - img_base, size, i)
+
+    def activate(self) -> None:
+        self.bb_callback = self.ql.hook_block(self.block_callback)
+
+    def deactivate(self) -> None:
+        if self.bb_callback:
+            self.ql.hook_del(self.bb_callback)
+
+    def dump_coverage(self, coverage_file: str) -> None:
+        def __write_line(bio: BinaryIO, line: str) -> None:
+            bio.write(f'{line}\n'.encode())
+
         with open(coverage_file, "wb") as cov:
-            cov.write(f"DRCOV VERSION: {self.drcov_version}\n".encode())
-            cov.write(f"DRCOV FLAVOR: {self.drcov_flavor}\n".encode())
-            cov.write(f"Module Table: version {self.drcov_version}, count {len(self.ql.loader.images)}\n".encode())
-            cov.write("Columns: id, base, end, entry, checksum, timestamp, path\n".encode())
+            __write_line(cov, f"DRCOV VERSION: {self.drcov_version}")
+            __write_line(cov, f"DRCOV FLAVOR: {self.drcov_flavor}")
+            __write_line(cov, f"Module Table: version {self.drcov_version}, count {len(self.ql.loader.images)}")
+            __write_line(cov, "Columns: id, base, end, entry, checksum, timestamp, path")
+
             for mod_id, mod in enumerate(self. ql.loader.images):
-                cov.write(f"{mod_id}, {mod.base}, {mod.end}, 0, 0, 0, {mod.path}\n".encode())
-            cov.write(f"BB Table: {len(self.basic_blocks)} bbs\n".encode())
-            for bb in self.basic_blocks:
+                __write_line(cov, f"{mod_id}, {mod.base}, {mod.end}, 0, 0, 0, {mod.path}")
+
+            __write_line(cov, f"BB Table: {len(self.basic_blocks)} bbs")
+
+            for bb in self.basic_blocks.values():
                 cov.write(bytes(bb))

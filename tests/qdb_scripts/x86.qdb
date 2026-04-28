@@ -1,11 +1,37 @@
-# This line is demonstrate comment in qdb script
+# break on entry to main
+b 0x5655551d
 
-x/4wx 0x7ff3cee0
-x $esp
-x $esp + 0x4
-x/5i 0x047bac70
-s
+# break on call to printf
+b 0x56555542
+
+# run till main
+c
+
+# show stack entries
+x/8xw $esp
+
+# run till printf
+c
+
+# show argument passed to printf
+info args 1
+
+# show instructions passed call till end of function
+x/8i ($eip + 5)
+
+# step over call to printf
 n
+
+# show snapshot diff
+info snapshot
+
+# step backwards to start of main
 p
 p
+
+# re-run till the end of program to test that nothing breaks
+c
+c
+
+# quit
 q

@@ -3,92 +3,68 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import AnyStr, Callable, Optional
+from typing import Optional, Union
 
 from dataclasses import dataclass
+from capstone import CsInsn
 
-import ast
-
-def check_and_eval(line: str):
-    """
-    This function will valid all type of nodes and evaluate it if nothing went wrong
-    """
-
-    class AST_checker(ast.NodeVisitor):
-        def generic_visit(self, node):
-            if type(node) in (ast.Module, ast.Expr, ast.BinOp, ast.Constant, ast.Add, ast.Mult, ast.Sub):
-                ast.NodeVisitor.generic_visit(self, node)
-            else:
-                raise ParseError("malform or invalid ast node")
-
-    checker = AST_checker()
-    ast_tree = ast.parse(line)
-    checker.visit(ast_tree)
-
-    return eval(line)
 
 @dataclass
 class InvalidInsn:
     """
     class for displaying invalid instruction
     """
+
     bytes: bytes
-    address: bytes
-    mnemonic: str = 'invalid'
+    address: int
+    mnemonic: str = '(invalid)'
     op_str: str = ''
 
     def __post_init__(self):
-        self.size = len(self.bytes)
+        self.size = len(self.bytes) if self.bytes else 1
 
 
 class Breakpoint:
+    """Dummy class for breakpoints.
     """
-    dummy class for breakpoint
-    """
-    def __init__(self, addr: int):
+
+    # monotonically increasing index counter
+    _counter = 0
+
+    def __init__(self, addr: int, temp: bool = False):
+        """Initialize a breakpoint object.
+
+        Args:
+            addr: address to break upon arrival
+            temp: whether this is a temporary breakpoint. temporary breakpoints
+            get removed after they get hit for the first time
+        """
+
+        self.index = Breakpoint._counter
+        Breakpoint._counter += 1
+
         self.addr = addr
-        self.hitted = False
+        self.temp = temp
+        self.enabled = True
 
 
-class TempBreakpoint(Breakpoint):
+def read_int(s: str, /) -> int:
+    """Turn a numerical string into its integer value.
     """
-    dummy class for temporay breakpoint
-    """
-    def __init__(self, addr: int):
-        super().__init__(addr)
 
-
-def read_int(s: str) -> int:
-    """
-    parse unsigned integer from string
-    """
     return int(s, 0)
 
 
-def try_read_int(s: AnyStr) -> Optional[int]:
+def try_read_int(s: str, /) -> Optional[int]:
+    """Attempt to convert string to an integer value.
     """
-    try to read string as integer is possible
-    """
+
     try:
-        ret = read_int(s)
-    except:
-        ret = None
+        val = read_int(s)
+    except (ValueError, TypeError):
+        val = None
 
-    return ret
-
-
-def parse_int(func: Callable) -> Callable:
-    """
-    function dectorator for parsing argument as integer
-    """
-    def wrap(qdb, s: str = "") -> int:
-        assert type(s) is str
-        ret = try_read_int(s)
-        return func(qdb, ret)
-
-    return wrap
+    return val
 
 
-
-if __name__ == "__main__":
-    pass
+InsnLike = Union[CsInsn, InvalidInsn]

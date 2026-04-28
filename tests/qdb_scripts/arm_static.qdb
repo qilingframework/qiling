@@ -1,0 +1,37 @@
+# break on entry to main
+b 0x000102e4
+
+# break on call to puts
+b 0x000102ee
+
+# run till main
+c
+
+# show stack entries
+x/8xw $sp
+
+# run till puts
+c
+
+# show argument passed to puts
+info args 1
+
+# show instructions passed call till end of function
+x/3i ($pc + 4)
+
+# step over call to puts
+n
+
+# show snapshot diff
+info snapshot
+
+# step backwards to start of main
+p
+p
+
+# re-run till the end of program to test that nothing breaks
+c
+c
+
+# quit
+q

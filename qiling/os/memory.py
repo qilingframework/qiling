@@ -6,15 +6,32 @@
 import bisect
 import os
 import re
-from typing import Any, Callable, Iterator, List, Mapping, Optional, Pattern, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Pattern, Protocol, Sequence, Tuple, Union
 
 from unicorn import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_ALL
 
 from qiling import Qiling
 from qiling.exception import *
 
-# tuple: range start, range end, permissions mask, range label, is mmio?
-MapInfoEntry = Tuple[int, int, int, str, bool]
+
+class QlMmioHandler(Protocol):
+    """A simple MMIO handler boilerplate that can be used to implement memory mapped devices.
+
+    This should be extended to implement mapped devices state machines. Note that the read and write
+    methods are optional, where their existance indicates whether the device supports the corresponding
+    operation. That is, an unimplemented method means the corresponding operation will be silently
+    dropped.
+    """
+
+    def read(self, ql: Qiling, offset: int, size: int) -> int:
+        ...
+
+    def write(self, ql: Qiling, offset: int, size: int, value: int) -> None:
+        ...
+
+
+# tuple: range start, range end, permissions mask, range label, mmio hander object (if mmio range)
+MapInfoEntry = Tuple[int, int, int, str, Optional[QlMmioHandler]]
 
 MmioReadCallback  = Callable[[Qiling, int, int], int]
 MmioWriteCallback = Callable[[Qiling, int, int, int], None]
@@ -29,7 +46,6 @@ class QlMemoryManager:
     def __init__(self, ql: Qiling, pagesize: int = 0x1000):
         self.ql = ql
         self.map_info: List[MapInfoEntry] = []
-        self.mmio_cbs = {}
 
         bit_stuff = {
             64: (1 << 64) - 1,
@@ -48,6 +64,31 @@ class QlMemoryManager:
         # make sure pagesize is a power of 2
         assert self.pagesize & (self.pagesize - 1) == 0, 'pagesize has to be a power of 2'
 
+        self._packers = {
+            (1, True): ql.pack8s,
+            (2, True): ql.pack16s,
+            (4, True): ql.pack32s,
+            (8, True): ql.pack64s,
+
+            (1, False): ql.pack8,
+            (2, False): ql.pack16,
+            (4, False): ql.pack32,
+            (8, False): ql.pack64
+        }
+
+        self._unpackers = {
+            (1, True): ql.unpack8s,
+            (2, True): ql.unpack16s,
+            (4, True): ql.unpack32s,
+            (8, True): ql.unpack64s,
+
+            (1, False): ql.unpack8,
+            (2, False): ql.unpack16,
+            (4, False): ql.unpack32,
+            (8, False): ql.unpack64
+        }
+
+
     def __read_string(self, addr: int) -> str:
         ret = bytearray()
         c = self.read(addr, 1)
@@ -57,7 +98,7 @@ class QlMemoryManager:
             addr += 1
             c = self.read(addr, 1)
 
-        return ret.decode()
+        return ret.decode('latin1')
 
     def __write_string(self, addr: int, s: str, encoding: str):
         self.write(addr, bytes(s, encoding) + b'\x00')
@@ -80,7 +121,7 @@ class QlMemoryManager:
 
         self.__write_string(addr, value, encoding)
 
-    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, is_mmio: bool = False):
+    def add_mapinfo(self, mem_s: int, mem_e: int, mem_p: int, mem_info: str, mmio_ctx: Optional[QlMmioHandler] = None):
         """Add a new memory range to map.
 
         Args:
@@ -88,10 +129,10 @@ class QlMemoryManager:
             mem_e: memory range end
             mem_p: permissions mask
             mem_info: map entry label
-            is_mmio: memory range is mmio
+            mmio_ctx: mmio handler object; if specified the range will be treated as mmio
         """
 
-        bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, is_mmio))
+        bisect.insort(self.map_info, (mem_s, mem_e, mem_p, mem_info, mmio_ctx))
 
     def del_mapinfo(self, mem_s: int, mem_e: int):
         """Subtract a memory range from map.
@@ -105,13 +146,13 @@ class QlMemoryManager:
 
         def __split_overlaps():
             for idx in overlap_ranges:
-                lbound, ubound, perms, label, is_mmio = self.map_info[idx]
+                lbound, ubound, perms, label, mmio_ctx = self.map_info[idx]
 
                 if lbound < mem_s:
-                    yield (lbound, mem_s, perms, label, is_mmio)
+                    yield (lbound, mem_s, perms, label, mmio_ctx)
 
                 if mem_e < ubound:
-                    yield (mem_e, ubound, perms, label, is_mmio)
+                    yield (mem_e, ubound, perms, label, mmio_ctx)
 
         # indices of first and last overlapping ranges. since map info is always
         # sorted, we know that all overlapping rages are consecutive, so i1 > i0
@@ -129,27 +170,30 @@ class QlMemoryManager:
         for entry in new_entries:
             bisect.insort(self.map_info, entry)
 
-    def change_mapinfo(self, mem_s: int, mem_e: int, mem_p: Optional[int] = None, mem_info: Optional[str] = None):
-        tmp_map_info: Optional[MapInfoEntry] = None
-        info_idx: int = -1
+    def change_mapinfo(self, mem_s: int, mem_e: int, *, new_perms: Optional[int] = None, new_info: Optional[str] = None) -> None:
+        if new_perms is None and new_info is None:
+            # nothing to do
+            return
 
-        for idx, map_info in enumerate(self.map_info):
-            if mem_s >= map_info[0] and mem_e <= map_info[1]:
-                tmp_map_info = map_info
-                info_idx = idx
-                break
-
-        if tmp_map_info is None:
+        try:
+            # locate the map info entry to change
+            entry = next(entry for entry in self.map_info if mem_s >= entry[0] and mem_e <= entry[1])
+        except StopIteration:
             self.ql.log.error(f'Cannot change mapinfo at {mem_s:#08x}-{mem_e:#08x}')
             return
 
-        if mem_p is not None:
-            self.del_mapinfo(mem_s, mem_e)
-            self.add_mapinfo(mem_s, mem_e, mem_p, mem_info if mem_info else tmp_map_info[3])
-            return
+        _, _, perms, info, mmio_ctx = entry
 
-        if mem_info is not None:
-            self.map_info[info_idx] = (tmp_map_info[0], tmp_map_info[1], tmp_map_info[2], mem_info, tmp_map_info[4])
+        # caller wants to change perms?
+        if new_perms is not None:
+            perms = new_perms
+
+        # caller wants to change info?
+        if new_info is not None:
+            info = new_info
+
+        self.del_mapinfo(mem_s, mem_e)
+        self.add_mapinfo(mem_s, mem_e, perms, info, mmio_ctx)
 
     def get_mapinfo(self) -> Sequence[Tuple[int, int, str, str, str]]:
         """Get memory map info.
@@ -168,18 +212,18 @@ class QlMemoryManager:
 
             return ''.join(val if idx & ps else '-' for idx, val in perms_d.items())
 
-        def __process(lbound: int, ubound: int, perms: int, label: str, is_mmio: bool) -> Tuple[int, int, str, str, str]:
-            perms_str = __perms_mapping(perms)
+        def __process(entry: MapInfoEntry) -> Tuple[int, int, str, str, str]:
+            lbound, ubound, perms, label, mmio_ctx = entry
 
             if hasattr(self.ql, 'loader'):
                 image = self.ql.loader.find_containing_image(lbound)
-                container = image.path if image and not is_mmio else ''
+                container = image.path if image and mmio_ctx is None else ''
             else:
                 container = ''
 
-            return (lbound, ubound, perms_str, label, container)
+            return (lbound, ubound, __perms_mapping(perms), label, container)
 
-        return tuple(__process(*entry) for entry in self.map_info)
+        return tuple(__process(entry) for entry in self.map_info)
 
     def get_formatted_mapinfo(self) -> Sequence[str]:
         """Get memory map info in a nicely formatted table.
@@ -270,12 +314,13 @@ class QlMemoryManager:
             "mmio" : []
         }
 
-        for lbound, ubound, perm, label, is_mmio in self.map_info:
-            if is_mmio:
-                mem_dict['mmio'].append((lbound, ubound, perm, label, *self.mmio_cbs[(lbound, ubound)]))
+        for lbound, ubound, perm, label, mmio_ctx in self.map_info:
+            if mmio_ctx is None:
+                key, data = 'ram', bytes(self.read(lbound, ubound - lbound))
             else:
-                data = self.read(lbound, ubound - lbound)
-                mem_dict['ram'].append((lbound, ubound, perm, label, bytes(data)))
+                key, data = 'mmio', mmio_ctx
+
+            mem_dict[key].append((lbound, ubound, perm, label, data))
 
         return mem_dict
 
@@ -294,12 +339,12 @@ class QlMemoryManager:
             self.ql.log.debug(f'writing {len(data):#x} bytes at {lbound:#08x}')
             self.write(lbound, data)
 
-        for lbound, ubound, perms, label, read_cb, write_cb in mem_dict['mmio']:
+        for lbound, ubound, perms, label, handler in mem_dict['mmio']:
             self.ql.log.debug(f"restoring mmio range: {lbound:#08x} {ubound:#08x} {label}")
 
             size = ubound - lbound
             if not self.is_mapped(lbound, size):
-                self.map_mmio(lbound, size, read_cb, write_cb, info=label)
+                self.map_mmio(lbound, size, handler, label)
 
     def read(self, addr: int, size: int) -> bytearray:
         """Read bytes from memory.
@@ -328,22 +373,12 @@ class QlMemoryManager:
         if not size:
             size = self.ql.arch.pointersize
 
-        __unpack = ({
-            1: self.ql.unpack8s,
-            2: self.ql.unpack16s,
-            4: self.ql.unpack32s,
-            8: self.ql.unpack64s
-        } if signed else {
-            1: self.ql.unpack8,
-            2: self.ql.unpack16,
-            4: self.ql.unpack32,
-            8: self.ql.unpack64
-        }).get(size)
-
-        if __unpack is None:
+        try:
+            _unpack = self._unpackers[(size, signed)]
+        except KeyError:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        return __unpack(self.read(addr, size))
+        return _unpack(self.read(addr, size))
 
     def write(self, addr: int, data: bytes) -> None:
         """Write bytes to a memory.
@@ -369,22 +404,12 @@ class QlMemoryManager:
         if not size:
             size = self.ql.arch.pointersize
 
-        __pack = ({
-            1: self.ql.pack8s,
-            2: self.ql.pack16s,
-            4: self.ql.pack32s,
-            8: self.ql.pack64s
-        } if signed else {
-            1: self.ql.pack8,
-            2: self.ql.pack16,
-            4: self.ql.pack32,
-            8: self.ql.pack64
-        }).get(size)
-
-        if __pack is None:
+        try:
+            _pack = self._packers[(size, signed)]
+        except KeyError:
             raise QlErrorStructConversion(f"Unsupported pointer size: {size}")
 
-        self.write(addr, __pack(value))
+        self.write(addr, _pack(value))
 
     def search(self, needle: Union[bytes, Pattern[bytes]], begin: Optional[int] = None, end: Optional[int] = None) -> List[int]:
         """Search for a sequence of bytes in memory.
@@ -408,7 +433,7 @@ class QlMemoryManager:
         assert begin < end, 'search arguments do not make sense'
 
         # narrow the search down to relevant ranges; mmio ranges are excluded due to potential read side effects
-        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, is_mmio in self.map_info if not (end < lbound or ubound < begin or is_mmio)]
+        ranges = [(max(begin, lbound), min(ubound, end)) for lbound, ubound, _, _, mmio_ctx in self.map_info if not (end < lbound or ubound < begin or mmio_ctx is not None)]
         results = []
 
         # if needle is a bytes sequence use it verbatim, not as a pattern
@@ -433,9 +458,6 @@ class QlMemoryManager:
 
         self.del_mapinfo(addr, addr + size)
         self.ql.uc.mem_unmap(addr, size)
-
-        if (addr, addr + size) in self.mmio_cbs:
-            del self.mmio_cbs[(addr, addr+size)]
 
     def unmap_between(self, mem_s: int, mem_e: int) -> None:
         """Reclaim any allocated memory region within the specified range.
@@ -595,7 +617,7 @@ class QlMemoryManager:
         aligned_size = self.align_up((addr & (self.pagesize - 1)) + size)
 
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
-        self.change_mapinfo(aligned_address, aligned_address + aligned_size, perms)
+        self.change_mapinfo(aligned_address, aligned_address + aligned_size, new_perms=perms)
 
     def map(self, addr: int, size: int, perms: int = UC_PROT_ALL, info: Optional[str] = None):
         """Map a new memory range.
@@ -617,17 +639,17 @@ class QlMemoryManager:
             raise QlMemoryMappedError('Requested memory is unavailable')
 
         self.ql.uc.mem_map(addr, size, perms)
-        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', is_mmio=False)
+        self.add_mapinfo(addr, addr + size, perms, info or '[mapped]', None)
 
-    def map_mmio(self, addr: int, size: int, read_cb: Optional[MmioReadCallback], write_cb: Optional[MmioWriteCallback], info: str = '[mmio]'):
+    def map_mmio(self, addr: int, size: int, handler: QlMmioHandler, info: str = '[mmio]'):
         # TODO: mmio memory overlap with ram? Is that possible?
         # TODO: Can read_cb or write_cb be None? How uc handle that access?
         prot = UC_PROT_NONE
 
-        if read_cb:
+        if hasattr(handler, 'read'):
             prot |= UC_PROT_READ
 
-        if write_cb:
+        if hasattr(handler, 'write'):
             prot |= UC_PROT_WRITE
 
         # generic mmio read wrapper
@@ -642,10 +664,8 @@ class QlMemoryManager:
 
             cb(self.ql, offset, size, value)
 
-        self.ql.uc.mmio_map(addr, size, __mmio_read, read_cb, __mmio_write, write_cb)
-        self.add_mapinfo(addr, addr + size, prot, info, is_mmio=True)
-
-        self.mmio_cbs[(addr, addr + size)] = (read_cb, write_cb)
+        self.ql.uc.mmio_map(addr, size, __mmio_read, handler.read, __mmio_write, handler.write)
+        self.add_mapinfo(addr, addr + size, prot, info, handler)
 
 
 class Chunk:

@@ -38,6 +38,7 @@ STATUS_INVALID_HANDLE = 0xC0000008
 STATUS_PROCEDURE_NOT_FOUND = 0xC000007A
 STATUS_DLL_NOT_FOUND = 0xC0000135
 STATUS_PORT_NOT_SET = 0xC0000353
+STATUS_STACK_BUFFER_OVERRUN = 0xC0000409
 STATUS_NO_YIELD_PERFORMED = 0x40000024
 # ...
 
@@ -638,6 +639,7 @@ ProcessProtectionInformation = 61
 ProcessDebugObjectHandle = 30
 ProcessDebugFlags = 31
 ProcessExecuteFlags = 34
+ProcessCookie = 36
 ProcessImageInformation = 37
 ProcessMitigationPolicy = 52
 ProcessFaultInformation = 63

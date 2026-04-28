@@ -70,3 +70,9 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+# AI
+CLAUDE.md
+.claude
+.codex
+.AGENT.md
