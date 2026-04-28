@@ -142,7 +142,7 @@ def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s):
     """
     times is nullable for utime(2), utimes(2), and utimensat(2)
     """
-    if times is NULL:
+    if times is None:
         return handle_null_times(real_file)
 
 
@@ -217,7 +217,7 @@ def do_utime_fd_ns(
     # transform to real path, which ensures that we are
     # operating inside of the qiling root
     unpacked_filename = ql.os.path.transform_to_real_path(ql.mem.string(filename))
-    if utimes is NULL:
+    if utimes is None:
         return handle_null_times(unpacked_filename)
     timespec_struct = make_timespec_buf(ql.arch.bits, ql.arch.endian)
     atime_nsec = mtime_nsec = 0
