@@ -11,10 +11,10 @@ jobs:
       matrix:
         #os: [windows-2019, macos-10.15, ubuntu-18.04, ubuntu-20.04]
         os: [windows-latest, ubuntu-latest]
-        python-version: ["3.9", "3.11"]
+        python-version: ["3.11", "3.13"]
         include:
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: "3.13"
             container: Docker
 
     steps:
