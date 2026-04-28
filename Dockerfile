@@ -1,4 +1,4 @@
-FROM python:3-slim AS base
+FROM python:3.13-slim-bookworm AS base
 
 WORKDIR /qiling
 
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get -y upgrade && rm -rf /var/lib/apt/lists/*
 FROM base AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-	cmake build-essential gcc git \
+	cmake build-essential gcc git pkg-config \
 	&& rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml poetry.lock ./
