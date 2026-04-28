@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm AS base
+FROM python:3.12-slim-bookworm AS base
 
 WORKDIR /qiling
 
@@ -33,7 +33,7 @@ WORKDIR /qiling
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends unzip apt-utils \
 	&& rm -rf /var/lib/apt/lists/* \
-	&& pip3 install --no-deps --no-cache-dir dist/*.whl \
+	&& pip3 install --no-cache-dir dist/*.whl \
 	&& rm -rf ./dist/
 
 CMD ["bash"]
