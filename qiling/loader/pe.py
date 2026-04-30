@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, NamedTuple, O
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
+from unicorn.unicorn_const import UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC, UC_PROT_NONE
 
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
 from qiling.const import QL_ARCH, QL_STATE
@@ -381,7 +382,7 @@ class Process:
         dll_len = image_size
 
         self.dll_size += dll_len
-        self.ql.mem.map(dll_base, dll_len, info=dll_name)
+        _map_pe_(self.ql, dll, dll_base, dll_len, dll_name)
         self.ql.mem.write(dll_base, bytes(data))
 
         if dll_base == self.dll_last_address:
@@ -814,6 +815,39 @@ class Process:
 
         self.ql.mem.write_ptr(cookie_rva + image_base, cookie)
 
+def _map_pe_(ql : Qiling, pe : pefile.PE, image_base: int, image_size : int, image_name : str):
+            """Load file sections to memory, each in its own memory region protected by
+            its defined permissions. That allows separation of code and data, which makes
+            it easier to detect abnomal behavior or memory corruptions.
+            """
+
+            # if sections are aligned to page, we can map them separately
+            sec_alignment = pe.OPTIONAL_HEADER.SectionAlignment
+            if (sec_alignment % ql.mem.pagesize) != 0:
+                ql.mem.map(image_base, image_size, info=f'{image_name}')
+                return
+
+            # load the header
+            hdr_base = image_base
+            hdr_perm = UC_PROT_READ
+
+            ql.mem.map(hdr_base, image_size, hdr_perm, image_name)
+
+            # load sections
+            for section in pe.sections:
+                sec_name = section.Name.rstrip(b'\x00').decode()
+                sec_base = image_base + section.VirtualAddress
+                sec_size = ql.mem.align_up(section.Misc_VirtualSize, sec_alignment)
+
+                sec_perm = sum((
+                    section.IMAGE_SCN_MEM_READ * UC_PROT_READ,
+                    section.IMAGE_SCN_MEM_WRITE * UC_PROT_WRITE,
+                    section.IMAGE_SCN_MEM_EXECUTE * UC_PROT_EXEC
+                ))
+
+                ql.mem.protect(sec_base, sec_size, sec_perm)
+                ql.mem.change_mapinfo(sec_base, sec_base+sec_size, new_perms=sec_perm, new_info=f'{image_name} {sec_name}')
+
 class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql: Qiling, libcache: bool):
         super().__init__(ql)
@@ -890,6 +924,9 @@ class QlLoaderPE(QlLoader, Process):
             image_base = pe.OPTIONAL_HEADER.ImageBase
             image_size = self.ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
 
+            if pe.OPTIONAL_HEADER.DllCharacteristics & pefile.DLL_CHARACTERISTICS['IMAGE_DLLCHARACTERISTICS_NX_COMPAT']:
+                self.ql.mem.protect(self.stack_address, self.stack_size, UC_PROT_WRITE | UC_PROT_READ)
+
             # if default base address is taken, use the one specified in profile
             if not self.ql.mem.is_available(image_base, image_size):
                 image_base = self.image_address
@@ -902,7 +939,8 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            self.ql.mem.map(image_base, image_size, info=f'{image_name}')
+            _map_pe_(self.ql, pe, image_base, image_size, image_name)
+
             self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
 
             if self.is_driver:
