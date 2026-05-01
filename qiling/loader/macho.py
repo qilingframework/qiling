@@ -13,7 +13,6 @@ from qiling.exception import *
 from qiling.const import *
 from qiling.os.macos.kernel_api.hook import *
 from qiling.os.memory import QlMemoryHeap
-
 from qiling.os.macos.const import *
 from qiling.os.macos.task import MachoTask
 from qiling.os.macos.kernel_func import FileSystem, map_commpage

@@ -6,11 +6,11 @@
 import io
 import os
 
+import struct
 from enum import IntEnum
 from typing import Optional, Sequence, Mapping, Tuple
 
 import lief
-import struct
 from unicorn.unicorn_const import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling import Qiling

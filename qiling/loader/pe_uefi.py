@@ -5,13 +5,13 @@
 
 import lief
 
-from qiling.loader.pe import _pe_build_mapped_image, _pe_apply_relocations
 from typing import Any, Mapping, Optional, Sequence
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
+from qiling.loader.pe import _pe_build_mapped_image, _pe_apply_relocations
 from qiling.os.const import PARAM_INTN, POINTER
 
 from qiling.os.uefi import st, smst, utils
