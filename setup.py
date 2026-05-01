@@ -11,10 +11,9 @@ VERSION = "1.4.4"
 requirements = [
     "capstone>=4.0.1",
     "unicorn>=2.0.0",
-    "pefile>=2022.5.30",
+    "lief>=0.14.0",
     "python-registry>=1.3.1",
     "keystone-engine>=0.9.2",
-    "pyelftools>=0.28",
     "gevent>=20.9.0",
     "multiprocess>=0.70.12.2",
     "windows-curses>=2.1.0;platform_system=='Windows'",
@@ -22,6 +21,10 @@ requirements = [
 ]
 
 extras = {
+    "debug": [
+        "pyelftools>=0.28",
+        "pefile>=2022.5.30",
+    ],
     "evm": [
         "blake2b-py>=0.1.2",
         "cached-property>=1.5.2;python_version<'3.8'",

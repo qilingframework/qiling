@@ -3,7 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from pefile import PE
+import lief
+
+from qiling.loader.pe import _pe_build_mapped_image, _pe_apply_relocations
 from typing import Any, Mapping, Optional, Sequence
 
 from qiling import Qiling
@@ -91,25 +93,31 @@ class QlLoaderPE_UEFI(QlLoader):
         """
 
         ql = self.ql
-        pe = PE(path, fast_load=True)
+
+        with open(path, 'rb') as f:
+            pe_raw = f.read()
+
+        pe = lief.PE.parse(path)
+
+        if pe is None:
+            raise QlMemoryMappedError(f'Failed to parse UEFI module: {path}')
 
         # use image base only if it does not point to NULL
-        image_base = pe.OPTIONAL_HEADER.ImageBase or context.next_image_base
-        image_size = ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
+        image_base = pe.optional_header.imagebase or context.next_image_base
+        image_size = ql.mem.align_up(pe.optional_header.sizeof_image)
 
         assert (image_base % ql.mem.pagesize) == 0, 'image base is expected to be page-aligned'
 
-        if image_base != pe.OPTIONAL_HEADER.ImageBase:
-            pe.relocate_image(image_base)
+        pe_data = _pe_build_mapped_image(pe, pe_raw)
 
-        pe.parse_data_directories()
-        data = bytes(pe.get_memory_mapped_image())
+        if image_base != pe.optional_header.imagebase:
+            _pe_apply_relocations(pe_data, pe, image_base)
 
         ql.mem.map(image_base, image_size, info="[module]")
-        ql.mem.write(image_base, data)
+        ql.mem.write(image_base, bytes(pe_data))
         ql.log.info(f'Module {path} loaded to {image_base:#x}')
 
-        entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+        entry_point = image_base + pe.optional_header.addressof_entrypoint
         ql.log.info(f'Module entry point at {entry_point:#x}')
 
         # the 'entry_point' member is used by the debugger. if not set, set it

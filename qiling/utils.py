@@ -230,37 +230,39 @@ def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
     return arch, ostype, endian
 
 def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
-    import pefile
+    import lief
 
     try:
-        pe = pefile.PE(path, fast_load=True)
-    except:
+        pe = lief.PE.parse(path)
+    except Exception:
         return None, None, None
 
-    arch = None
+    if pe is None:
+        return None, None, None
+
+    M = lief.PE.Header.MACHINE_TYPES
+    machine_map = {
+        M.I386  : QL_ARCH.X86,
+        M.AMD64 : QL_ARCH.X8664,
+        M.ARM   : QL_ARCH.ARM,
+        M.ARMNT : QL_ARCH.ARM,   # Thumb (0x01c2)
+        M.ARM64 : QL_ARCH.ARM64,
+    }
+
+    arch = machine_map.get(pe.header.machine)
     ostype = None
     archendian = None
 
-    machine_map = {
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']  : QL_ARCH.X86,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64'] : QL_ARCH.X8664,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']   : QL_ARCH.ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB'] : QL_ARCH.ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64'] : QL_ARCH.ARM64
-    }
-
-    # get arch
-    arch = machine_map.get(pe.FILE_HEADER.Machine)
-
     if arch:
+        S = lief.PE.OptionalHeader.SUBSYSTEM
         subsystem_uefi = (
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_APPLICATION'],
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER'],
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER'],
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_ROM']
+            S.EFI_APPLICATION,
+            S.EFI_BOOT_SERVICE_DRIVER,
+            S.EFI_RUNTIME_DRIVER,
+            S.EFI_ROM,
         )
 
-        if pe.OPTIONAL_HEADER.Subsystem in subsystem_uefi:
+        if pe.optional_header.subsystem in subsystem_uefi:
             ostype = QL_OS.UEFI
         else:
             ostype = QL_OS.WINDOWS
