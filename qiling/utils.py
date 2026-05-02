@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -8,19 +8,22 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-from functools import partial
-from pathlib import Path
-import importlib, inspect, os
+import importlib
+import inspect
+import os
 
+from functools import partial
 from configparser import ConfigParser
+from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar, Union
 
 from unicorn import UC_ERR_READ_UNMAPPED, UC_ERR_FETCH_UNMAPPED
 
-from qiling.exception import *
+from qiling.arch.models import QL_CPU
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_DEBUGGER
 from qiling.const import debugger_map, arch_map, os_map, arch_os_map
+from qiling.exception import *
 
 if TYPE_CHECKING:
     from qiling import Qiling
@@ -32,41 +35,38 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 QlClassInit = Callable[['Qiling'], T]
 
-def catch_KeyboardInterrupt(ql: 'Qiling', func: Callable):
-    def wrapper(*args, **kw):
-        try:
-            return func(*args, **kw)
-        except BaseException as e:
-            ql.stop()
-            ql._internal_exception = e
-
-    return wrapper
 
 def __name_to_enum(name: str, mapping: Mapping[str, T], aliases: Mapping[str, str] = {}) -> Optional[T]:
     key = name.casefold()
 
     return mapping.get(aliases.get(key) or key)
 
+
 def os_convert(os: str) -> Optional[QL_OS]:
     alias_map = {
-        'darwin' : 'macos'
+        'darwin': 'macos'
     }
 
     return __name_to_enum(os, os_map, alias_map)
 
+
 def arch_convert(arch: str) -> Optional[QL_ARCH]:
     alias_map = {
-        'x86_64'  : 'x8664',
-        'riscv32' : 'riscv'
+        'amd64': 'x8664',
+        'x86_64':  'x8664',
+        'riscv32': 'riscv'
     }
 
     return __name_to_enum(arch, arch_map, alias_map)
 
+
 def debugger_convert(debugger: str) -> Optional[QL_DEBUGGER]:
     return __name_to_enum(debugger, debugger_map)
 
+
 def arch_os_convert(arch: QL_ARCH) -> Optional[QL_OS]:
     return arch_os_map.get(arch)
+
 
 def ql_get_module(module_name: str) -> ModuleType:
     try:
@@ -75,6 +75,7 @@ def ql_get_module(module_name: str) -> ModuleType:
         raise QlErrorModuleNotFound(f'Unable to import module {module_name}')
 
     return module
+
 
 def ql_get_module_function(module_name: str, member_name: str):
     module = ql_get_module(module_name)
@@ -85,6 +86,7 @@ def ql_get_module_function(module_name: str, member_name: str):
         raise QlErrorModuleFunctionNotFound(f'Unable to import {member_name} from {module_name}')
 
     return member
+
 
 def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     if os.path.isdir(path) and path.endswith('.kext'):
@@ -98,6 +100,7 @@ def __emu_env_from_pathname(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_O
 
     return None, None, None
 
+
 def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     # instead of using full-blown elffile parsing, we perform a simple parsing to avoid
     # external dependencies for target systems that do not need them.
@@ -108,7 +111,7 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     ELFCLASS32 = 1    # 32-bit
     ELFCLASS64 = 2    # 64-bit
 
-    #ei_data
+    # ei_data
     ELFDATA2LSB = 1   # little-endian
     ELFDATA2MSB = 2   # big-endian
 
@@ -129,9 +132,9 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     EM_RISCV   = 243
     EM_PPC     = 20
 
-    endianess = {
-        ELFDATA2LSB : (QL_ENDIAN.EL, 'little'),
-        ELFDATA2MSB : (QL_ENDIAN.EB, 'big')
+    endianness = {
+        ELFDATA2LSB: (QL_ENDIAN.EL, 'little'),
+        ELFDATA2MSB: (QL_ENDIAN.EB, 'big')
     }
 
     machines32 = {
@@ -149,8 +152,8 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     }
 
     classes = {
-        ELFCLASS32 : machines32,
-        ELFCLASS64 : machines64
+        ELFCLASS32: machines32,
+        ELFCLASS64: machines64
     }
 
     abis = {
@@ -179,14 +182,14 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
 
     if e_ident[:4] == b'\x7fELF':
         ei_class = e_ident[4]   # arch bits
-        ei_data  = e_ident[5]   # arch endianess
+        ei_data  = e_ident[5]   # arch endianness
         ei_osabi = e_ident[7]
 
         if ei_class in classes:
             machines = classes[ei_class]
 
-            if ei_data in endianess:
-                archendian, endian = endianess[ei_data]
+            if ei_data in endianness:
+                archendian, endian = endianness[ei_data]
 
                 machine = int.from_bytes(e_machine, endian)
 
@@ -200,6 +203,7 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
                         ostype = QL_OS.QNX
 
     return archtype, ostype, archendian
+
 
 def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     macho_macos_sig64 = b'\xcf\xfa\xed\xfe'
@@ -228,6 +232,7 @@ def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
             arch = QL_ARCH.ARM64
 
     return arch, ostype, endian
+
 
 def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     import lief
@@ -271,6 +276,7 @@ def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Op
 
     return arch, ostype, archendian
 
+
 def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
     guessing_methods = (
         __emu_env_from_pathname,
@@ -289,12 +295,12 @@ def ql_guess_emu_env(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Opt
 
     return arch, ostype, endian
 
-def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
-    if ostype == QL_OS.WINDOWS:
-        kwargs = {'libcache' : libcache}
 
-    else:
-        kwargs = {}
+def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
+    kwargs = {}
+
+    if ostype is QL_OS.WINDOWS:
+        kwargs['libcache'] = libcache
 
     module = {
         QL_OS.LINUX   : r'elf',
@@ -304,7 +310,6 @@ def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
         QL_OS.WINDOWS : r'pe',
         QL_OS.UEFI    : r'pe_uefi',
         QL_OS.DOS     : r'dos',
-        QL_OS.EVM     : r'evm',
         QL_OS.MCU     : r'mcu',
         QL_OS.BLOB    : r'blob'
     }[ostype]
@@ -316,6 +321,7 @@ def select_loader(ostype: QL_OS, libcache: bool) -> QlClassInit['QlLoader']:
 
     return partial(obj, **kwargs)
 
+
 def select_component(component_type: str, component_name: str, **kwargs) -> QlClassInit[Any]:
     component_path = f'.{component_type}.{component_name}'
     component_class = f'Ql{component_name.capitalize()}Manager'
@@ -323,6 +329,7 @@ def select_component(component_type: str, component_name: str, **kwargs) -> QlCl
     obj = ql_get_module_function(component_path, component_class)
 
     return partial(obj, **kwargs)
+
 
 def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugger']]:
     if options is True:
@@ -345,15 +352,18 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
                     return None
 
             # qdb init args are independent and may include any combination of: rr enable, init hook and script
-            for a in args:
-                if a == 'rr':
+            arg_init_hook = []
+            for arg in args:
+                if arg == 'rr':
                     kwargs['rr'] = True
 
-                elif __int_nothrow(a) is not None:
-                    kwargs['init_hook'] = a
+                elif __int_nothrow(arg) is not None:
+                     arg_init_hook.append(arg)
 
                 else:
-                    kwargs['script'] = a
+                    kwargs['script'] = arg
+            else:
+                kwargs['init_hook'] = arg_init_hook
 
         else:
             raise QlErrorOutput('Debugger not supported')
@@ -364,17 +374,18 @@ def select_debugger(options: Union[str, bool]) -> Optional[QlClassInit['QlDebugg
 
     return None
 
-def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
-    # set endianess and thumb mode for arm-based archs
-    if archtype == QL_ARCH.ARM:
-        kwargs = {'endian' : endian, 'thumb' : thumb}
 
-    # set endianess for mips arch
-    elif archtype == QL_ARCH.MIPS:
-        kwargs = {'endian' : endian}
+def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN, thumb: bool) -> QlClassInit['QlArch']:
+    kwargs = {'cputype': cputype}
 
-    else:
-        kwargs = {}
+    # set endianness and thumb mode for arm-based archs
+    if archtype is QL_ARCH.ARM:
+        kwargs['endian'] = endian
+        kwargs['thumb'] = thumb
+
+    # set endianness for mips arch
+    elif archtype is QL_ARCH.MIPS:
+        kwargs['endian'] = endian
 
     module = {
         QL_ARCH.A8086    : r'x86',
@@ -383,7 +394,6 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
         QL_ARCH.ARM      : r'arm',
         QL_ARCH.ARM64    : r'arm64',
         QL_ARCH.MIPS     : r'mips',
-        QL_ARCH.EVM      : r'evm.evm',
         QL_ARCH.CORTEX_M : r'cortex_m',
         QL_ARCH.RISCV    : r'riscv',
         QL_ARCH.RISCV64  : r'riscv64',
@@ -397,6 +407,7 @@ def select_arch(archtype: QL_ARCH, endian: QL_ENDIAN, thumb: bool) -> QlClassIni
 
     return partial(obj, **kwargs)
 
+
 def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
     qlos_name = ostype.name
     qlos_path = f'.os.{qlos_name.lower()}.{qlos_name.lower()}'
@@ -406,14 +417,15 @@ def select_os(ostype: QL_OS) -> QlClassInit['QlOs']:
 
     return partial(obj)
 
+
 def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
     # mcu uses a yaml-based config
-    if ostype == QL_OS.MCU:
+    if ostype is QL_OS.MCU:
         import yaml
 
         if user_config:
             with open(user_config) as f:
-                config = yaml.load(f, Loader=yaml.Loader)
+                config = yaml.load(f, Loader=yaml.SafeLoader)
         else:
             config = {}
 
@@ -422,7 +434,7 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
         int_converter = partial(int, base=0)
         config = ConfigParser(converters={'int': int_converter})
 
-        qiling_home = Path(inspect.getfile(inspect.currentframe())).parent
+        qiling_home = Path(inspect.getfile(profile_setup)).parent
         os_profile = qiling_home / 'profiles' / f'{ostype.name.lower()}.ql'
 
         # read default profile first
@@ -434,8 +446,9 @@ def profile_setup(ostype: QL_OS, user_config: Optional[Union[str, dict]]):
 
         elif user_config:
             config.read(user_config)
-        
+
     return config
+
 
 # verify if emulator returns properly
 def verify_ret(ql: 'Qiling', err):
@@ -460,22 +473,22 @@ def verify_ret(ql: 'Qiling', err):
 
         if ql.arch.type == QL_ARCH.X8664: # Win64
             if ql.os.init_sp == ql.arch.regs.arch_sp or ql.os.init_sp + 8 == ql.arch.regs.arch_sp or ql.os.init_sp + 0x10 == ql.arch.regs.arch_sp:  # FIXME
-                # 0x11626	 c3	  	ret
+                # 0x11626     c3          ret
                 # print("OK, stack balanced!")
                 pass
             else:
                 raise
         else:   # Win32
             if ql.os.init_sp + 12 == ql.arch.regs.arch_sp:   # 12 = 8 + 4
-                # 0x114dd	 c2 08 00	  	ret 	8
+                # 0x114dd     c2 08 00          ret     8
                 pass
             else:
                 raise
     else:
         raise
 
+
 __all__ = [
-    'catch_KeyboardInterrupt',
     'os_convert',
     'arch_convert',
     'debugger_convert',

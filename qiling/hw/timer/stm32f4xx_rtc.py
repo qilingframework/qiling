@@ -13,30 +13,30 @@ from qiling.hw.const.stm32f4xx_rtc import RTC_TR, RTC_ISR
 class STM32F4xxRtc(QlPeripheral):
     class Type(ctypes.Structure):
         """ the structure is available in :
-		        stm32f423xx.h
-		        stm32f469xx.h
-		        stm32f427xx.h
-		        stm32f479xx.h
-		        stm32f413xx.h
-		        stm32f429xx.h
-		        stm32f439xx.h
-		        stm32f415xx.h
-		        stm32f412cx.h
-		        stm32f412rx.h
-		        stm32f410tx.h
-		        stm32f410cx.h
-		        stm32f412zx.h
-		        stm32f405xx.h
-		        stm32f407xx.h
-		        stm32f417xx.h
-		        stm32f446xx.h
-		        stm32f401xc.h
-		        stm32f437xx.h
-		        stm32f401xe.h
-		        stm32f412vx.h
-		        stm32f410rx.h
-		        stm32f411xe.h 
-		"""
+                stm32f423xx.h
+                stm32f469xx.h
+                stm32f427xx.h
+                stm32f479xx.h
+                stm32f413xx.h
+                stm32f429xx.h
+                stm32f439xx.h
+                stm32f415xx.h
+                stm32f412cx.h
+                stm32f412rx.h
+                stm32f410tx.h
+                stm32f410cx.h
+                stm32f412zx.h
+                stm32f405xx.h
+                stm32f407xx.h
+                stm32f417xx.h
+                stm32f446xx.h
+                stm32f401xc.h
+                stm32f437xx.h
+                stm32f401xe.h
+                stm32f412vx.h
+                stm32f410rx.h
+                stm32f411xe.h 
+        """
 
         _fields_ = [
             ('TR'          , ctypes.c_uint32),  # RTC time register,                                        Address offset: 0x00
@@ -84,7 +84,7 @@ class STM32F4xxRtc(QlPeripheral):
     def __init__(self, ql, label, wkup_intn=None, alarm_intn=None):
         super().__init__(ql, label)
 
-        self.rtc = self.struct(
+        self.instance = self.struct(
             DR   = 0x00002101,
             ISR  = 0x00000007,
             PRER = 0x007F00FF,
@@ -97,7 +97,7 @@ class STM32F4xxRtc(QlPeripheral):
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.rtc) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
@@ -113,16 +113,16 @@ class STM32F4xxRtc(QlPeripheral):
                 RTC_ISR.RSF
             ]:
                 if value & bitmask == 0:
-                    self.rtc.ISR &= ~bitmask
+                    self.instance.ISR &= ~bitmask
 
-            self.rtc.ISR = (self.rtc.ISR & ~RTC_ISR.INIT) | (value & RTC_ISR.INIT)            
+            self.instance.ISR = (self.instance.ISR & ~RTC_ISR.INIT) | (value & RTC_ISR.INIT)            
             return
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.rtc) + offset, data, size)    
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)    
 
     def step(self):
-        if self.rtc.ISR & RTC_ISR.INIT:
-            self.rtc.ISR |= RTC_ISR.INITF
+        if self.instance.ISR & RTC_ISR.INIT:
+            self.instance.ISR |= RTC_ISR.INITF
 
-        self.rtc.ISR |= RTC_ISR.RSF
+        self.instance.ISR |= RTC_ISR.RSF

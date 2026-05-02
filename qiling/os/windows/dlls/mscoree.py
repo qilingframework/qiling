@@ -15,4 +15,3 @@ from qiling.os.windows.fncc import *
 })
 def hook_CorExitProcess(ql: Qiling, address: int, params):
     ql.emu_stop()
-    ql.os.PE_RUN = False

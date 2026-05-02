@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import ctypes
 
 from qiling.core import Qiling
 from qiling.hw.peripheral import QlPeripheral
@@ -24,3 +25,10 @@ class QlTimerPeripheral(QlPeripheral):
     @ratio.setter
     def ratio(self, value):
         self.set_ratio(value)
+
+    def save(self):
+        return (self._ratio, bytes(self.instance))
+
+    def restore(self, data):
+        self._ratio, raw = data
+        ctypes.memmove(ctypes.addressof(self.instance), raw, len(raw))

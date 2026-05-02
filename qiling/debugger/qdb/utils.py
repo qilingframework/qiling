@@ -4,283 +4,284 @@
 #
 
 from __future__ import annotations
-from typing import Callable, Optional, Mapping, Tuple
 
-from capstone import CsInsn
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, Type, TypeVar, Union
 
-from qiling import Qiling
 from qiling.const import QL_ARCH
 
-from .context import Context
-
 from .render import (
-        ContextRenderX86,
-        ContextRenderX8664,
-        ContextRenderARM,
-        ContextRenderCORTEX_M,
-        ContextRenderMIPS
-        )
+    ContextRender,
+    ContextRenderX86,
+    ContextRenderX64,
+    ContextRenderARM,
+    ContextRenderCORTEX_M,
+    ContextRenderMIPS
+)
 
 from .branch_predictor import (
-        BranchPredictorX86,
-        BranchPredictorX8664,
-        BranchPredictorARM,
-        BranchPredictorCORTEX_M,
-        BranchPredictorMIPS,
-        )
+    BranchPredictor,
+    BranchPredictorX86,
+    BranchPredictorX64,
+    BranchPredictorARM,
+    BranchPredictorCORTEX_M,
+    BranchPredictorMIPS,
+)
 
 from .const import color, QDB_MSG
 
-    
 
-def qdb_print(msgtype: QDB_MSG, msg: str) -> None:
-    """
-    color printing
-    """
+if TYPE_CHECKING:
+    from qiling import Qiling
+    from .qdb import QlQdb
 
-    def print_error(msg):
-        return f"{color.RED}[!] {msg}{color.END}"
 
-    def print_info(msg):
-        return f"{color.CYAN}[+] {msg}{color.END}"
+_K = TypeVar('_K')
+_V = TypeVar('_V')
 
-    color_coated = {
-            QDB_MSG.ERROR: print_error,
-            QDB_MSG.INFO : print_info,
-            }.get(msgtype)(msg)
 
-    print(color_coated)
-
-"""
-
-    class Marker provide the ability for marking an address as a more easier rememberable alias
-
-"""
-
-def setup_address_marker():
-
-    class Marker:
-        def __init__(self):
-            self._mark_list = {}
-
-        def get_symbol(self, sym):
-            """
-            get the mapped address to a symbol if it's in the mark_list
-            """
-
-            return self._mark_list.get(sym, None)
-
-        @property
-        def mark_list(self):
-            """
-            get a list about what we marked
-            """
-
-            return self._mark_list.items()
-
-        def gen_sym_name(self):
-            """
-            generating symbol name automatically
-            """
-
-            sym_name, idx = "sym0", 0
-            while sym_name in self._mark_list:
-                idx += 1
-                sym_name = f"sym{idx}"
-
-            return sym_name
-
-        def mark_only_loc(self, loc):
-            """
-            mark when location provided only
-            """
-
-            sym_name = self.gen_sym_name()
-            self.mark(sym_name, loc)
-            return sym_name
-
-        def mark(self, sym: str, loc: int):
-            """
-            mark loc as sym
-            """
-
-            if sym not in self.mark_list:
-                self._mark_list.update({sym: loc})
-            else:
-                return f"dumplicated symbol name: {sym} at address: 0x{loc:08x}"
-
-    return Marker()
-
-"""
-
-    helper functions for setting proper branch predictor and context render depending on different arch
-
-"""
-
-def setup_branch_predictor(ql):
-    """
-    setup BranchPredictor correspondingly
+def qdb_print(level: QDB_MSG, msg: str) -> None:
+    """Log printing.
     """
 
-    return {
-            QL_ARCH.X86: BranchPredictorX86,
-            QL_ARCH.X8664: BranchPredictorX8664,
-            QL_ARCH.ARM: BranchPredictorARM,
-            QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
-            QL_ARCH.MIPS: BranchPredictorMIPS,
-            }.get(ql.arch.type)(ql)
+    decorations = {
+        QDB_MSG.ERROR: ('!', color.RED),
+        QDB_MSG.INFO : ('+', color.CYAN),
+    }
 
-def setup_context_render(ql, predictor):
-    """
-    setup context render correspondingly
-    """
+    tag, col = decorations[level]
 
-    return {
-            QL_ARCH.X86: ContextRenderX86,
-            QL_ARCH.X8664: ContextRenderX8664,
-            QL_ARCH.ARM: ContextRenderARM,
-            QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
-            QL_ARCH.MIPS: ContextRenderMIPS,
-            }.get(ql.arch.type)(ql, predictor)
-
-def run_qdb_script(qdb, filename: str) -> None:
-    with open(filename) as fd:
-        for line in iter(fd.readline, ""):
-
-            # skip commented and empty line 
-            if line.startswith("#") or line == "\n":
-                continue
-
-            cmd, arg, _ = qdb.parseline(line)
-            func = getattr(qdb, f"do_{cmd}")
-            if arg:
-                func(arg)
-            else:
-                func()
+    print(f'{col}[{tag}] {msg}{color.END}')
 
 
-"""
-
-    For supporting Qdb features like:
-    1. record/replay debugging
-    2. memory access in gdb-style
-
-"""
-
-class SnapshotManager:
-    """
-    for functioning differential snapshot
+class Marker:
+    """provide the ability to mark an address as a more easier rememberable alias
     """
 
-    class State:
+    def __init__(self):
+        self._mark_list: Dict[str, int] = {}
+
+    def get_address(self, sym: str) -> Optional[int]:
         """
-        internal container for storing raw state from qiling
+        get the mapped address to a symbol if it's in the mark_list
         """
 
-        def __init__(self, saved_state):
-            self.reg, self.ram = SnapshotManager.transform(saved_state)
+        return self._mark_list.get(sym)
 
-    class DiffedState:
+    @property
+    def mark_list(self):
         """
-        internal container for storing diffed state
+        get a list about what we marked
         """
 
-        def __init__(self, diffed_st):
-            self.reg, self.ram = diffed_st
+        return self._mark_list.items()
+
+    def gen_sym_name(self) -> str:
+        """
+        generating symbol name automatically
+        """
+
+        syms = len(self._mark_list)
+
+        # find the next available 'sym#'
+        return next((f'sym{i}' for i in range(syms) if f'sym{i}' not in self._mark_list), f'sym{syms}')
+
+    def mark(self, loc: int, sym: Optional[str] = None) -> str:
+        """
+        mark loc as sym
+        """
+
+        sym = sym or self.gen_sym_name()
+
+        if sym in self._mark_list:
+            return ''
+
+        self._mark_list[sym] = loc
+
+        return sym
+
+
+# helper functions for setting proper branch predictor and context render depending on different arch
+def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
+    """Setup BranchPredictor according to arch.
+    """
+
+    preds: Dict[QL_ARCH, Type[BranchPredictor]] = {
+        QL_ARCH.X86:      BranchPredictorX86,
+        QL_ARCH.X8664:    BranchPredictorX64,
+        QL_ARCH.ARM:      BranchPredictorARM,
+        QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
+        QL_ARCH.MIPS:     BranchPredictorMIPS
+    }
+
+    p = preds[ql.arch.type]
+
+    return p(ql)
+
+def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRender:
+    """Setup context render according to arch.
+    """
+
+    rends: Dict[QL_ARCH, Type[ContextRender]] = {
+        QL_ARCH.X86:      ContextRenderX86,
+        QL_ARCH.X8664:    ContextRenderX64,
+        QL_ARCH.ARM:      ContextRenderARM,
+        QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
+        QL_ARCH.MIPS:     ContextRenderMIPS
+    }
+
+    r = rends[ql.arch.type]
+
+    return r(ql, predictor)
+
+
+class MemDiff(Enum):
+    ADD = '+'
+    REM = '-'
+    MOD = '*'
+
+
+RamKey = Tuple[int, int]
+RamVal = Tuple[int, str, bytes]
+
+RamDiffKey = Tuple[int, int]
+RamDiffVal = Tuple[MemDiff, Tuple[int, str, Union[bytes, Tuple]]]
+
+
+class DiffedState:
+    """
+    internal container for storing diffed state
+    """
+
+    def __init__(self, reg, xreg, ram, loader):
+        self.reg: Dict[str, int] = reg
+        self.xreg: Dict[str, int] = xreg
+        self.ram: Dict[RamDiffKey, RamDiffVal] = ram
+        self.loader: Dict[str, Any] = loader
+
+
+class State:
+    """
+    internal container for storing raw state from qiling
+    """
+
+    def __init__(self, saved: Mapping[str, Mapping]):
+        self.reg: Dict[str, int] = saved.get("reg") or {}
+        self.xreg: Dict[str, int] = saved.get("cpr") or saved.get("msr") or {}
+
+        mem = saved.get("mem") or {}
+        ram = mem.get("ram") or []
+
+        # saved ram lists might not match in order, we turn them into dicts to work around
+        # that. in these dicts every memory content is mapped to its memory entry's properties
+        self.ram: Dict[RamKey, RamVal] = {(lbound, ubound): (perms, label, data) for lbound, ubound, perms, label, data in ram}
+
+        self.loader: Dict[str, Any] = saved.get('loader') or {}
 
     @staticmethod
-    def transform(st):
+    def __dict_diff(d0: Mapping[_K, _V], d1: Mapping[_K, _V]) -> Dict[_K, _V]:
+        return {k: v for k, v in d0.items() if v != d1.get(k)}
+
+    def _diff_reg(self, other: State) -> Dict[str, int]:
+        return State.__dict_diff(self.reg, other.reg)
+
+    def _diff_xreg(self, other: State) -> Dict[str, int]:
+        return State.__dict_diff(self.xreg, other.xreg)
+
+    def _diff_ram(self, other: State) -> Dict[RamDiffKey, RamDiffVal]:
+        ram0 = self.ram
+        ram1 = other.ram
+
+        ram_diff: Dict[RamDiffKey, RamDiffVal] = {}
+
+        removed  = [rng for rng in ram0 if rng not in ram1]
+        added    = [rng for rng in ram1 if rng not in ram0]
+        modified = [rng for rng in ram0 if rng in ram1 and ram0[rng] != ram1[rng]]
+
+        # memory regions that got removed should be re-added
+        for rng in removed:
+            ram_diff[rng] = (MemDiff.ADD, ram0[rng])
+
+        # memory regions that got added should be removed
+        for rng in added:
+            _, label, _ = ram1[rng]
+
+            # though we discard data as it is not required anymore, label is still required
+            # to determine the method of removing the region: brk, mmap, or ordinary map
+            ram_diff[rng] = (MemDiff.REM, (-1, label, b''))
+
+        # memory regions that fot modified should be reverted back
+        for rng in modified:
+            perms0, label0, data0 = ram0[rng]
+            perms1, label1, data1 = ram1[rng]
+
+            perms = -1 if perms0 == perms1 else perms0
+
+            assert label0 == label1, 'memory region label changed unexpectedly'
+            assert len(data0) == len(data1), 'memory contents differ in size'
+
+            # scan both data chunks and keep the index and byte value of the unmatched ones.
+            # if memory contents are identical, this will result in an empty tuple
+            data_diff = tuple((i, b0) for i, (b0, b1) in enumerate(zip(data0, data1)) if b0 != b1)
+
+            ram_diff[rng] = (MemDiff.MOD, (perms, label0, data_diff))
+
+        # <DEBUG>
+        # for rng, (opcode, diff) in sorted(ram_diff.items()):
+        #     lbound, ubound = rng
+        #     perms, label, data = diff
+        #
+        #     print(f'{opcode.name} {lbound:010x} - {ubound:010x} {perms:03b} {label:24s} ~{len(data)}')
+        # </DEBUG>
+
+        return ram_diff
+
+    def diff(self, other: State) -> DiffedState:
+        """Diff between previous and current state.
         """
-        transform saved context into binary set
-        """
 
-        reg = st["reg"] if "reg" in st else st[0]
+        return DiffedState(
+            self._diff_reg(other),
+            self._diff_xreg(other),
+            self._diff_ram(other),
+            self.loader
+        )
 
-        if "mem" not in st:
-            return (reg, st[1])
 
-        ram = []
-        for mem_seg in st["mem"]["ram"]:
-            lbound, ubound, perms, label, raw_bytes = mem_seg
-            rb_set = {(idx, val) for idx, val in enumerate(raw_bytes)}
-            ram.append((lbound, ubound, perms, label, rb_set))
+class SnapshotManager:
+    """Differential snapshot object.
+    """
 
-        return (reg, ram)
-
-    def __init__(self, ql):
+    def __init__(self, ql: Qiling):
         self.ql = ql
-        self.layers = []
+        self.layers: List[DiffedState] = []
 
-    def _save(self) -> State:
+    def save(self) -> State:
         """
         acquire current State by wrapping saved context from ql.save()
         """
 
-        return self.State(self.ql.save())
+        return State(self.ql.save(reg=True, mem=True, loader=True))
 
-    def diff_reg(self, prev_reg, cur_reg):
-        """
-        diff two register values
-        """
-
-        diffed = filter(lambda t: t[0] != t[1], zip(prev_reg.items(), cur_reg.items()))
-        return {prev[0]: prev[1] for prev, _ in diffed}
-
-    def diff_ram(self, prev_ram, cur_ram):
-        """
-        diff two ram data if needed
-        """
-
-        if any((cur_ram is None, prev_ram is None, prev_ram == cur_ram)):
-            return
-
-        ram = []
-        paired = zip(prev_ram, cur_ram)
-        for each in paired:
-            # lbound, ubound, perm, label, data
-            *prev_others, prev_rb_set = each[0]
-            *cur_others, cur_rb_set = each[1]
-
-            if prev_others == cur_others and cur_rb_set != prev_rb_set:
-                diff_set = prev_rb_set - cur_rb_set
-            else:
-                continue
-
-            ram.append((*cur_others, diff_set))
-
-        return ram
-
-    def diff(self, before_st, after_st):
-        """
-        diff between previous and current state
-        """
-
-        # prev_st = self.layers.pop()
-        diffed_reg = self.diff_reg(before_st.reg, after_st.reg)
-        diffed_ram = self.diff_ram(before_st.ram, after_st.ram)
-        # diffed_reg = self.diff_reg(prev_st.reg, cur_st.reg)
-        # diffed_ram = self.diff_ram(prev_st.ram, cur_st.ram)
-        return self.DiffedState((diffed_reg, diffed_ram))
-
-    def snapshot(func):
+    @staticmethod
+    def snapshot(func: Callable) -> Callable:
         """
         decorator function for saving differential context on certian qdb command
         """
 
-        def magic(self, *args, **kwargs):
+        def magic(self: QlQdb, *args, **kwargs):
             if self.rr:
                 # save State before execution
-                p_st = self.rr._save()
+                before = self.rr.save()
 
                 # certian execution to be snapshot
                 func(self, *args, **kwargs)
 
                 # save State after execution
-                q_st = self.rr._save()
+                after = self.rr.save()
 
                 # merge two saved States into a DiffedState
-                st = self.rr.diff(p_st, q_st)
-                self.rr.layers.append(st)
+                self.rr.layers.append(before.diff(after))
             else:
                 func(self, *args, **kwargs)
 
@@ -291,35 +292,65 @@ class SnapshotManager:
         helper function for restoring running state from an existing incremental snapshot
         """
 
-        prev_st = self.layers.pop()
-        cur_st = self._save()
+        prev_st = self.layers.pop()  # DiffedState
+        curr_st = self.save()        # State, expected to be identical to 'after' State in snapshot method
 
-        for reg_name, reg_value in prev_st.reg.items():
-            cur_st.reg[reg_name] = reg_value
+        curr_st.reg.update(prev_st.reg)
+        curr_st.xreg.update(prev_st.xreg)
 
-        to_be_restored = {"reg": cur_st.reg}
+        if prev_st.ram:
+            diff_ram = prev_st.ram
+            curr_ram = curr_st.ram
 
-        if getattr(prev_st, "ram", None) and prev_st.ram != cur_st.ram:
+            # we must begin by removing unwanted memory regions, otherwise we would not be able to
+            # add new ones in case they overlap. here we iterate over the diff dictionary but handle
+            # only remove opcodes
+            for rng, (opcode, props) in diff_ram.items():
+                lbound, ubound = rng
+                size = ubound - lbound
 
-            ram = []
-            # lbound, ubound, perm, label, data
-            for each in prev_st.ram:
-                *prev_others, prev_rb_set = each
-                for *cur_others, cur_rb_set in cur_st.ram:
-                    if prev_others == cur_others:
-                        cur_rb_dict = dict(cur_rb_set)
-                        for idx, val in prev_rb_set:
-                            cur_rb_dict[idx] = val
+                if opcode is MemDiff.REM:
+                    # NOTE: it doesn't seem like distinguishing between brk, mmap, mmap annonymous
+                    # and regular maps is actually required
+                    self.ql.mem.unmap(lbound, size)
 
-                        bs = bytes(dict(sorted(cur_rb_dict.items())).values())
-                        ram.append((*cur_others, bs))
+            # doind a second pass, but this time handling add and modify opcodes
+            for rng, (opcode, props) in diff_ram.items():
+                lbound, ubound = rng
+                perms, label, data = props
+                size = ubound - lbound
 
-            to_be_restored.update({"mem": {"ram": ram, "mmio": {}}})
+                if opcode is MemDiff.ADD:
+                    # TODO: distinguish between brk, mmap, mmap annonymous and regular maps
 
-        self.ql.restore(to_be_restored)
+                    self.ql.mem.map(lbound, size, perms, label)
+                    self.ql.mem.write(lbound, data)
 
+                elif opcode is MemDiff.MOD:
+                    if perms != -1:
+                        self.ql.mem.protect(lbound, size, perms)
 
+                    # is there a diff for this memory range?
+                    if data:
+                        # get current memory content
+                        _, _, curr_data = curr_ram[rng]
+                        curr_data = bytearray(curr_data)
 
+                        # patch with existing diff
+                        for i, b in data:
+                            curr_data[i] = b
 
-if __name__ == "__main__":
-    pass
+                        # write patched data
+                        self.ql.mem.write(lbound, bytes(curr_data))
+
+        self.ql.restore({
+            'reg': curr_st.reg,
+
+            # though we have arch-specific context to restore, we want to keep this arch-agnostic.
+            # one way to work around that is to include 'xreg' both as msr (intel) and cpr (arm).
+            # only the relevant one will be picked up while the other one will be discarded
+            'msr': curr_st.xreg,
+            'cpr': curr_st.xreg,
+
+            'loader': prev_st.loader
+        })

@@ -23,6 +23,7 @@ KI_USER_SHARED_DATA = 0x7ffe0000
 [CODE]
 # ram_size 0xa00000 is 10MB
 ram_size = 0xa00000
+load_address = 0x1000000
 entry_point = 0x1000000
 
 [KERNEL]

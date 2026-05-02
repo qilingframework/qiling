@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -48,7 +48,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
             index = ql.os.gdtm.get_free_idx(12)
 
         if index in (12, 13, 14):
-            access = QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT
+            access = QL_X86_A_PRESENT | QL_X86_A_PRIV_3 | QL_X86_A_DESC_DATA | QL_X86_A_DATA | QL_X86_A_DATA_E | QL_X86_A_DATA_W
 
             ql.os.gdtm.register_gdt_segment(index, base, limit, access)
             ql.mem.write_ptr(u_info_addr, index, 4)
@@ -68,11 +68,12 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
 
 
 def ql_syscall_set_tls(ql: Qiling, address: int):
-    if ql.arch.type == QL_ARCH.ARM:
-        ql.arch.regs.c13_c0_3 = address
+    if ql.arch.type is QL_ARCH.ARM:
+        ql.arch.cpr.TPIDRURO = address
         ql.mem.write_ptr(ql.arch.arm_get_tls_addr + 16, address, 4)
         ql.arch.regs.r0 = address
-        ql.log.debug("settls(0x%x)" % address)
+
+        ql.log.debug("settls(%#x)", address)
 
 def ql_syscall_clock_gettime(ql: Qiling, clock_id: int, tp: int):
     ts_obj = __get_timespec_obj(ql.arch.bits)

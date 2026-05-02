@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Iterable, Tuple, TypeVar
+from typing import Iterable, Optional, Tuple, TypeVar
 
 from unicorn import UcError
 
@@ -16,6 +16,7 @@ from qiling.os.windows.structs import *
 from qiling.utils import verify_ret
 
 Comparable = TypeVar('Comparable', str, int)
+
 
 # an alternative to Python2 cmp builtin which no longer exists in Python3
 def cmp(a: Comparable, b: Comparable) -> int:
@@ -110,7 +111,7 @@ def io_Write(ql: Qiling, in_buffer: bytes) -> int:
     ql.log.info(f'Executing from {major_func:#x}')
 
     try:
-        # now emulate 
+        # now emulate
         ql.run(major_func)
     except UcError as err:
         verify_ret(ql, err)
@@ -123,6 +124,7 @@ def io_Write(ql: Qiling, in_buffer: bytes) -> int:
     __free_all(allocations)
 
     return info
+
 
 # Emulate DeviceIoControl() of Windows
 # BOOL DeviceIoControl(
@@ -264,3 +266,31 @@ def ioctl(ql: Qiling, params: Tuple[Tuple, int, bytes]) -> Tuple[int, int, bytes
     __free_all(allocations)
 
     return status, info, output_data
+
+
+def read_pansi_string(ql: Qiling, ptr: int) -> Optional[str]:
+    """Read and decode the string referenced by a PANSI_STRING structure. It is
+    the caller responsibility to make sure the pointer to the structure is accesible.
+    """
+
+    astr_obj = make_ansi_string(ql.arch.bits).load_from(ql.mem, ptr)
+
+    if astr_obj.Buffer and astr_obj.Length:
+        return ql.os.utils.read_cstring(astr_obj.Buffer, maxlen=astr_obj.Length)
+
+    return None
+
+
+def read_punicode_string(ql: Qiling, ptr: int) -> Optional[str]:
+    """Read and decode the string referenced by a PUNICODE_STRING structure. It is
+    the caller responsibility to make sure the pointer to the structure is accesible.
+    """
+
+    ucstr_obj = make_unicode_string(ql.arch.bits).load_from(ql.mem, ptr)
+
+    if ucstr_obj.Buffer and ucstr_obj.Length:
+        assert ucstr_obj.Length % 2 == 0, f'wide string size is expected to be a multiplication of 2. got: {ucstr_obj.Length}'
+
+        return ql.os.utils.read_wstring(ucstr_obj.Buffer, maxlen=ucstr_obj.Length // 2)
+
+    return None

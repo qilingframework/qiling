@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 from Registry import Registry
@@ -35,7 +35,10 @@ STATUS_UNSUCCESSFUL = 0xC0000001
 STATUS_INFO_LENGTH_MISMATCH = 0xC0000004
 STATUS_INVALID_PARAMETER = 0xC000000D
 STATUS_INVALID_HANDLE = 0xC0000008
+STATUS_PROCEDURE_NOT_FOUND = 0xC000007A
+STATUS_DLL_NOT_FOUND = 0xC0000135
 STATUS_PORT_NOT_SET = 0xC0000353
+STATUS_STACK_BUFFER_OVERRUN = 0xC0000409
 STATUS_NO_YIELD_PERFORMED = 0x40000024
 # ...
 
@@ -471,6 +474,24 @@ CRYPT_STRING_BINARY = 2
 CRYPT_STRING_BASE64REQUESTHEADER = 3
 # ...
 
+# File Access Rights Constants
+# https://learn.microsoft.com/en-us/windows/win32/fileio/file-access-rights-constants
+FILE_ADD_FILE = 0x0002
+FILE_ADD_SUBDIRECTORY = 0x0004
+FILE_APPEND_DATA = 0x0004
+FILE_CREATE_PIPE_INSTANCE = 0x0004
+FILE_DELETE_CHILD = 0x0040
+FILE_EXECUTE = 0x0020
+FILE_LIST_DIRECTORY = 0x0001
+FILE_READ_ATTRIBUTES = 0x0080
+FILE_READ_DATA = 0x0001
+FILE_READ_EA = 0x0008
+FILE_TRAVERSE = 0x0020
+FILE_WRITE_ATTRIBUTES = 0x0100
+FILE_WRITE_DATA = 0x0002
+FILE_WRITE_EA = 0x0010
+# ...
+
 # File Attribtues Constantsc
 # https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
 FILE_ATTRIBUTE_ARCHIVE = 0x0020
@@ -618,6 +639,7 @@ ProcessProtectionInformation = 61
 ProcessDebugObjectHandle = 30
 ProcessDebugFlags = 31
 ProcessExecuteFlags = 34
+ProcessCookie = 36
 ProcessImageInformation = 37
 ProcessMitigationPolicy = 52
 ProcessFaultInformation = 63
@@ -784,3 +806,10 @@ TIME_ZONE_ID_INVALID  = -1
 TIME_ZONE_ID_UNKNOWN  = 0
 TIME_ZONE_ID_STANDARD = 1
 TIME_ZONE_ID_DAYLIGHT = 2
+
+# heap management flags
+HEAP_NO_SERIALIZE = 0x00000001
+HEAP_GENERATE_EXCEPTIONS = 0x00000004
+HEAP_ZERO_MEMORY = 0x00000008
+HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010
+HEAP_CREATE_ENABLE_EXECUTE = 0x00040000

@@ -7,7 +7,7 @@ import ctypes
 
 from qiling.hw.peripheral import QlPeripheral
 from qiling.hw.connectivity import QlConnectivityPeripheral
-from qiling.hw.const.sam3xa_uart import SR
+from qiling.hw.const.sam3xa_uart import SR, IER, CR
 
 
 class SAM3xaUart(QlConnectivityPeripheral):
@@ -38,21 +38,41 @@ class SAM3xaUart(QlConnectivityPeripheral):
     def __init__(self, ql, label, intn = None):
         super().__init__(ql, label)
 
-        self.uart = self.struct(
+        self.instance = self.struct(
             SR = SR.TXRDY
         )
         self.intn = intn
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
+        if offset == self.struct.RHR.offset:
+            if self.has_input():
+                self.instance.SR &= ~SR.RXRDY
+                return self.recv_from_user()
+
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.uart) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):      
         if offset == self.struct.THR.offset:
             self.send_to_user(value)
+        
+        elif offset == self.struct.IDR.offset:
+            self.instance.IER &= ~value
+        
+        elif offset == self.struct.IER.offset:
+            self.instance.IER |= value
+        
+        else:
+            data = (value).to_bytes(size, byteorder='little')
+            ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
-        data = (value).to_bytes(size, byteorder='little')
-        ctypes.memmove(ctypes.addressof(self.uart) + offset, data, size)
+    def step(self):
+        if  self.instance.IER & IER.RXRDY and \
+            self.instance.CR  & CR.RXEN   and \
+            self.has_input():
+            
+            self.instance.SR |= SR.RXRDY            
+            self.ql.hw.nvic.set_pending(self.intn)

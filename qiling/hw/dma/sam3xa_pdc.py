@@ -26,4 +26,4 @@ class SAM3xaPdc(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.pdc = self.struct()
+        self.instance = self.struct()

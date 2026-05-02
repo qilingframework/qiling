@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -11,12 +11,15 @@
 # 5. rm -rf webroot && mv webroot_ro webroot
 # 5. mv etc_ro etc
 
-import os, pickle, socket, sys, threading
+import os
 
+import sys
 sys.path.append("../../../")
-from qiling import *
+
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions.afl import ql_afl_fuzz
+
 
 def patcher(ql):
     br0_addr = ql.mem.search("br0".encode() + b'\x00')
@@ -44,14 +47,14 @@ def main(input_file, enable_trace=False):
         ql_afl_fuzz(_ql, input_file=input_file, place_input_callback=place_input_callback, exits=[ql.os.exit_point])
 
     ql.hook_address(callback=start_afl, address=0x10930+8)
-    
+
     try:
         ql.run(begin = 0x10930+4, end = 0x7a0cc+4)
         os._exit(0)
     except:
         if enable_trace:
             print("\nFuzzer Went Shit")
-        os._exit(0)        
+        os._exit(0)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

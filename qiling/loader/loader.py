@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os
-from typing import Any, Mapping, MutableSequence, NamedTuple, Optional
+from __future__ import annotations
 
-from qiling import Qiling
+import os
+from typing import TYPE_CHECKING, Any, Mapping, MutableSequence, NamedTuple, Optional
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
 
 class Image(NamedTuple):
     base: int
     end: int
     path: str
+
 
 class QlLoader:
     def __init__(self, ql: Qiling):

@@ -31,6 +31,20 @@ class PeripheralTube(queue.Queue):
         for byte in bytearray(data):
             self.put(byte)
 
+    def save(self):
+        data = bytearray()        
+        while self.readable():
+            data.append(self.get())
+        
+        self.write(data)
+        return bytes(data)
+
+    def restore(self, data: bytes):
+        while self.readable():
+            self.get()
+        
+        self.write(data)
+
 
 class QlConnectivityPeripheral(QlPeripheral):
     class Type(ctypes.Structure):
@@ -108,3 +122,13 @@ class QlConnectivityPeripheral(QlPeripheral):
             func(self)
         
         return wrapper
+
+    def save(self):
+        return self.itube.save(), self.otube.save(), bytes(self.instance)
+
+    def restore(self, data):
+        itube, otube, instance = data
+        
+        self.itube.restore(itube)
+        self.otube.restore(otube)
+        ctypes.memmove(ctypes.addressof(self.instance), instance, len(data))

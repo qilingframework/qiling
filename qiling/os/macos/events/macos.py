@@ -582,30 +582,30 @@ class QlMacOSEvManager:
 
 # arguments passed to KAUTH_FILEOP_OPEN listeners
 #           arg0 is pointer to vnode (vnode *) for given user path.
-# 	    arg1 is pointer to path (char *) passed in to open.
+#         arg1 is pointer to path (char *) passed in to open.
 # arguments passed to KAUTH_FILEOP_CLOSE listeners
 #           arg0 is pointer to vnode (vnode *) for file to be closed.
-# 	    arg1 is pointer to path (char *) of file to be closed.
-# 	    arg2 is close flags.
+#         arg1 is pointer to path (char *) of file to be closed.
+#         arg2 is close flags.
 # arguments passed to KAUTH_FILEOP_WILL_RENAME listeners
-# 	    arg0 is pointer to vnode (vnode *) of the file being renamed
-# 	    arg1 is pointer to the "from" path (char *)
-# 	    arg2 is pointer to the "to" path (char *)
+#         arg0 is pointer to vnode (vnode *) of the file being renamed
+#         arg1 is pointer to the "from" path (char *)
+#         arg2 is pointer to the "to" path (char *)
 # arguments passed to KAUTH_FILEOP_RENAME listeners
-# 	    arg0 is pointer to "from" path (char *).
-# 	    arg1 is pointer to "to" path (char *).
+#         arg0 is pointer to "from" path (char *).
+#         arg1 is pointer to "to" path (char *).
 # arguments passed to KAUTH_FILEOP_EXCHANGE listeners
-# 	    arg0 is pointer to file 1 path (char *).
-# 	    arg1 is pointer to file 2 path (char *).
+#         arg0 is pointer to file 1 path (char *).
+#         arg1 is pointer to file 2 path (char *).
 # arguments passed to KAUTH_FILEOP_LINK listeners
-# 	    arg0 is pointer to path to file we are linking to (char *).
-# 	    arg1 is pointer to path to the new link file (char *).
+#         arg0 is pointer to path to file we are linking to (char *).
+#         arg1 is pointer to path to the new link file (char *).
 # arguments passed to KAUTH_FILEOP_EXEC listeners
-# 	    arg0 is pointer to vnode (vnode *) for executable.
-# 	    arg1 is pointer to path (char *) to executable.
+#         arg0 is pointer to vnode (vnode *) for executable.
+#         arg1 is pointer to path (char *) to executable.
 # arguments passed to KAUTH_FILEOP_DELETE listeners
-# 	    arg0 is pointer to vnode (vnode *) of file/dir that was deleted.
-# 	    arg1 is pointer to path (char *) of file/dir that was deleted.
+#         arg0 is pointer to vnode (vnode *) of file/dir that was deleted.
+#         arg1 is pointer to path (char *) of file/dir that was deleted.
     @init_ev_ctx
     def kauth_fileop(self, action, params={}):
         path = self.ql.os.heap.alloc(len(self.current_proc) + 1)

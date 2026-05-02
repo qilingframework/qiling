@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys
 from typing import Sequence
 
+import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions import pipe
+
 
 def instruction_count(ql: Qiling, address: int, size: int, user_data):
     user_data[0] += 1

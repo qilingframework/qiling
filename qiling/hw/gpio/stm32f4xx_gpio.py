@@ -36,7 +36,7 @@ class STM32F4xxGpio(STM32F1xxGpio):
             stm32f410cx.h
             stm32f405xx.h
             stm32f411xe.h 
-		"""
+        """
 
         _fields_ = [
             ('MODER'  , ctypes.c_uint32),      # GPIO port mode register,               Address offset: 0x00
@@ -59,7 +59,7 @@ class STM32F4xxGpio(STM32F1xxGpio):
         QlPeripheral.__init__(self, ql, label)
         GpioHooks.__init__(self, ql, 16)
 
-        self.gpio = self.struct(
+        self.instance = self.struct(
             MODER   = moder_reset,
             OSPEEDR = ospeedr_reset,
             PUPDR   = pupdr_reset,

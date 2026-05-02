@@ -23,7 +23,7 @@ class GD32VF1xxCrc(QlPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.crc = self.struct(
+        self.instance = self.struct(
             DATA  =  0xffffffff,
             FDATA =  0x00000000,
             CTL   =  0x00000000,

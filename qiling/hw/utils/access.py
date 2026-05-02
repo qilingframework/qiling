@@ -8,14 +8,14 @@ from collections import deque
 from typing import List
 
 
-class Op(IntEnum):
+class Action(IntEnum):
     READ  = 0
     WRITE = 1
 
 
 class Access:
-    def __init__(self, op: Op, offset: int, value: int = 0):
-        self.op = op
+    def __init__(self, action: Action, offset: int, value: int = 0):
+        self.action = action
         self.offset = offset
         self.value = value
 
@@ -23,10 +23,10 @@ class Access:
         if not isinstance(o, Access):
             return False
 
-        if self.op != o.op or self.offset != o.offset:
+        if self.action != o.action or self.offset != o.offset:
             return False
 
-        return True if self.op == Op.READ else self.value == o.value
+        return True if self.action == Action.READ else self.value == o.value
 
 
 class AccessSequence:

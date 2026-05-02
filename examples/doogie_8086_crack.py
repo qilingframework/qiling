@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, curses, math, struct, string, time
+import curses
+import math
+import string
+import time
+
+from struct import pack
+
+import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
 from qiling.const import *
 from qiling.os.disk import QlDisk
 from qiling.os.dos.utils import BIN2BCD
-from struct import pack
 
 
 # https://stackoverflow.com/questions/9829578/fast-way-of-counting-non-zero-bits-in-positive-integer
@@ -129,9 +136,7 @@ def show_once(ql: Qiling, key):
 # In this stage, we show every key.
 def third_stage(keys):
     # To setup terminal again, we have to restart the whole program.
-    ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], 
-                 "rootfs/8086",
-                 console=False)
+    ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], "rootfs/8086", console=False)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     ql.os.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
@@ -170,21 +175,22 @@ def read_until_zero(ql: Qiling, addr):
         addr += 1
     return buf
 
+
 def set_required_datetime(ql: Qiling):
     ql.log.info("Setting Feburary 06, 1990")
     ql.arch.regs.ch = BIN2BCD(19)
-    ql.arch.regs.cl = BIN2BCD(1990%100)
+    ql.arch.regs.cl = BIN2BCD(1990 % 100)
     ql.arch.regs.dh = BIN2BCD(2)
     ql.arch.regs.dl = BIN2BCD(6)
+
 
 def stop(ql, addr, data):
     ql.emu_stop()
 
+
 # In this stage, we get the encrypted data which xored with the specific date.
 def first_stage():
-    ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], 
-                 "rootfs/8086",
-                 console=False)
+    ql = Qiling(["rootfs/8086/doogie/doogie.DOS_MBR"], "rootfs/8086", console=False)
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.DOS_MBR", 0x80))
     # Doogie suggests that the datetime should be 1990-02-06.
     ql.os.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)

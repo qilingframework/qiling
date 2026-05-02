@@ -5,16 +5,31 @@
 
 stm32f479 = {
     "SRAM BB": {
-        "alias": 0x22000000,
-        "base": 0x20000000,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x22000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x20000000,
+            "size": 0x100000,
+        }
     },
     "PERIP BB": {
-        "alias": 0x42000000,
-        "base": 0x40000000,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x42000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x40000000,
+            "size": 0x100000,
+        }
+    },
+    "REMAP": {
+        "base": 0x0,
+        "struct": "MemoryRemap",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x8000000,
+            "size": 0x200000,
+        }
     },
     "SYSTICK": {
         "base": 0xe000e010,
@@ -60,6 +75,21 @@ stm32f479 = {
         "base": 0xe0000000,
         "size": 0x100000,
         "type": "mmio"
+    },
+    "SRAM BBR": {
+        "base": 0x22000000,
+        "size": 0x2000000,
+        "type": "mmio"
+    },
+    "PERIP BBR": {
+        "base": 0x42000000,
+        "size": 0x2000000,
+        "type": "mmio"
+    },
+    "REMAP REGION": {
+        "base": 0x0,
+        "size": 0x200000,
+        "type": "mmio",
     },
     "TIM2": {
         "base": 0x40000000,
@@ -283,10 +313,10 @@ stm32f479 = {
         "base": 0x40010000,
         "struct": "STM32F4xxTim",
         "kwargs": {
-            "brk_tim9_intn": 0x18,
+            "brk_intn": 0x18,
             "cc_intn": 0x1b,
-            "trg_com_tim11_intn": 0x1a,
-            "up_tim10_intn": 0x19
+            "trg_com_intn": 0x1a,
+            "up_intn": 0x19
         },
         "type": "peripheral"
     },
@@ -294,10 +324,10 @@ stm32f479 = {
         "base": 0x40010400,
         "struct": "STM32F4xxTim",
         "kwargs": {
-            "brk_tim12_intn": 0x2b,
+            "brk_intn": 0x2b,
             "cc_intn": 0x2e,
-            "trg_com_tim14_intn": 0x2d,
-            "up_tim13_intn": 0x2c
+            "trg_com_intn": 0x2d,
+            "up_intn": 0x2c
         },
         "type": "peripheral"
     },
@@ -590,10 +620,4 @@ stm32f479 = {
         },
         "type": "peripheral"
     },
-    "CODE": {
-        "base": 0x8000000,
-        "size": 0x200000,
-        "alias": 0x0,
-        "type": "remap"
-    }
 }

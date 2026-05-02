@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 from qiling import Qiling
 from qiling.const import QL_INTERCEPT
 
-def dxeapi(params: Mapping[str, Any] = {}):
+def dxeapi(params: Optional[Mapping[str, Any]] = None, passthru: bool = False):
     def decorator(func):
         def wrapper(ql: Qiling):
             pc = ql.arch.regs.arch_pc
@@ -18,7 +18,7 @@ def dxeapi(params: Mapping[str, Any] = {}):
             onenter = ql.os.user_defined_api[QL_INTERCEPT.ENTER].get(fname)
             onexit = ql.os.user_defined_api[QL_INTERCEPT.EXIT].get(fname)
 
-            return ql.os.call(pc, f, params, onenter, onexit)
+            return ql.os.call(pc, f, params or {}, onenter, onexit, passthru)
 
         return wrapper
 

@@ -4,10 +4,9 @@
 #
 
 import sys
-
 sys.path.append("..")
 
-from qiling import *
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from qiling.extensions.report import generate_report
 

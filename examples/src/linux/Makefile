@@ -33,6 +33,7 @@ TARGETS =					\
  	x8664_hello_cpp			\
 	x8664_hello_cpp_static	\
 	x8664_cloexec_test		\
+	x8664_linux_onestraw	\
 	patch_test.bin
 
 .PHONY: all clean
@@ -124,7 +125,10 @@ libpatch_test.so: patch_test.so.h patch_test.so.c
 	$(CC) $(CPPFLAGS) -Wall -s -O0 -shared -fpic -o $@ patch_test.so.c
 
 patch_test.bin: patch_test.bin.c libpatch_test.so
+
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^
+x8664_onestraw_server: x8664_linux_onestraw.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -m64 -o $@ $<
 
 $(OBJS):%.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@

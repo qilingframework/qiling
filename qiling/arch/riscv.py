@@ -1,28 +1,40 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
 from functools import cached_property
+from typing import Optional
 
 from unicorn import Uc, UC_ARCH_RISCV, UC_MODE_RISCV32
 from capstone import Cs
 from keystone import Ks
 
+from qiling import Qiling
 from qiling.arch.arch import QlArch
+from qiling.arch.models import RISCV_CPU_MODEL
 from qiling.arch.register import QlRegisterManager
 from qiling.arch import riscv_const
 from qiling.arch.riscv_const import *
 from qiling.const import QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorNotImplemented
 
+
 class QlArchRISCV(QlArch):
     type = QL_ARCH.RISCV
     bits = 32
 
+    def __init__(self, ql: Qiling, *, cputype: Optional[RISCV_CPU_MODEL] = None):
+        super().__init__(ql, cputype=cputype)
+
     @cached_property
     def uc(self) -> Uc:
-        return Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
+        obj = Uc(UC_ARCH_RISCV, UC_MODE_RISCV32)
+
+        if self.cpu is not None:
+            obj.ctl_set_cpu_model(self.cpu.value)
+
+        return obj
 
     @cached_property
     def regs(self) -> QlRegisterManager:
@@ -59,35 +71,10 @@ class QlArchRISCV(QlArch):
 
     def init_context(self):
         self.regs.pc = 0x08000000
-        
-    def soft_interrupt_handler(self, ql, intno):
-        if intno == 2:            
-            try:
-                address, size = ql.arch.regs.pc - 4, 4
-                tmp = ql.mem.read(address, size)
-                qd = ql.arch.disassembler
 
-                insn = '\n> '.join(f'{insn.mnemonic} {insn.op_str}' for insn in qd.disasm(tmp, address))
-            except QlErrorNotImplemented:
-                insn = ''
-                
-            ql.log.warning(f'[{hex(address)}] Illegal instruction ({insn})')
+    def unicorn_exception_handler(self, ql: Qiling, intno: int):
+        if intno == 2:
+            ql.log.warning(f'[{hex(self.regs.arch_pc)}] Illegal instruction')
+
         else:
             raise QlErrorNotImplemented(f'Unhandled interrupt number ({intno})')
-    
-    def step(self):
-        self.ql.emu_start(self.regs.arch_pc, 0, count=1)
-        self.ql.hw.step()
-
-    def stop(self):
-        self.runable = False
-
-    def run(self, count=-1, end=None):
-        self.runable = True
-
-        while self.runable and count != 0:
-            if self.regs.arch_pc == end:
-                break
-
-            self.step()
-            count -= 1

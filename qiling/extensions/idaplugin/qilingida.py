@@ -5,7 +5,6 @@ UseAsScript = True
 
 import sys
 import collections
-import time
 import struct
 import re
 import logging
@@ -37,9 +36,6 @@ import ida_auto
 import ida_netnode
 import ida_hexrays
 import ida_range
-# PyQt
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 # Qiling
 from qiling import Qiling
@@ -55,7 +51,6 @@ from qiling import __version__ as QLVERSION
 from qiling.os.filestruct import ql_file
 from keystone import *
 
-
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
@@ -69,7 +64,27 @@ class Colors(Enum):
     Gray = 0xd9d9d9
     Beige = 0xCCF2FF
 
-class IDA:
+def _load_qt_bindings():
+    if IDA_SDK_VERSION >= 900:
+        try:
+            from PySide6 import QtCore, QtWidgets
+            from PySide6.QtWidgets import (QPushButton, QHBoxLayout)
+            logging.info("Using PySide6 for Qt bindings (IDA >= 9).")
+            return QtCore, QtWidgets, QPushButton, QHBoxLayout
+        except Exception as e:
+            logging.warning("Failed to import PySide6: %s. Trying PyQt5 fallback.", e)
+    try:
+        from PyQt5 import QtCore, QtWidgets
+        from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+        logging.info("Using PyQt5 for Qt bindings (IDA < 9 or fallback).")
+        return QtCore, QtWidgets, QPushButton, QHBoxLayout
+    except Exception as e:
+        logging.error("Failed to import PyQt bindings: %s", e)
+        raise
+
+QtCore, QtWidgets, QPushButton, QHBoxLayout = _load_qt_bindings()
+
+class IDABase:
     def __init__(self):
         pass
 
@@ -79,15 +94,15 @@ class IDA:
 
     @staticmethod
     def get_function_start(addr):
-        return IDA.get_function(addr).start_ea
+        return IDABase.get_function(addr).start_ea
 
     @staticmethod
     def get_function_end(addr):
-        return IDA.get_function(addr).end_ea
+        return IDABase.get_function(addr).end_ea
 
     @staticmethod
     def get_function_framesize(addr):
-        return IDA.get_function(addr).frsize
+        return IDABase.get_function(addr).frsize
 
     @staticmethod
     def get_function_name(addr):
@@ -95,7 +110,7 @@ class IDA:
 
     @staticmethod
     def get_functions():
-        return [IDA.get_function(func) for func in idautils.Functions()]
+        return [IDABase.get_function(func) for func in idautils.Functions()]
 
     @staticmethod
     def set_color(addr, what, color):
@@ -104,7 +119,7 @@ class IDA:
     @staticmethod
     def color_block(bb, color):
         for i in range(bb.start_ea, bb.end_ea):
-            IDA.set_color(i, idc.CIC_ITEM, color)
+            IDABase.set_color(i, idc.CIC_ITEM, color)
 
     # note:
     # corresponds to IDA graph view
@@ -113,8 +128,8 @@ class IDA:
     # arg can be a function or a (start, end) tuple or an address in the function
     @staticmethod
     def get_flowchart(arg):
-        if type(arg) is int:
-            func = IDA.get_function(arg)
+        if isinstance(arg, int):
+            func = IDABase.get_function(arg)
             if func is None:
                 return None
             return ida_gdl.FlowChart(func)
@@ -122,7 +137,9 @@ class IDA:
 
     @staticmethod
     def get_block(addr):
-        flowchart = IDA.get_flowchart(addr)
+        flowchart = IDABase.get_flowchart(addr)
+        if flowchart is None:
+            return None
         for bb in flowchart:
             if bb.start_ea <= addr and addr < bb.end_ea:
                 return bb
@@ -143,10 +160,10 @@ class IDA:
 
     @staticmethod
     def get_starting_block(addr):
-        flowchart = IDA.get_flowchart(addr)
+        flowchart = IDABase.get_flowchart(addr)
         if flowchart is None:
             return None
-        func = IDA.get_function(addr)
+        func = IDABase.get_function(addr)
         for bb in flowchart:
             if bb.start_ea == func.start_ea:
                 return bb
@@ -154,8 +171,10 @@ class IDA:
 
     @staticmethod
     def get_terminating_blocks(addr):
-        flowchart = IDA.get_flowchart(addr)
-        return [bb for bb in flowchart if IDA.block_is_terminating(bb)]
+        flowchart = IDABase.get_flowchart(addr)
+        if flowchart is None:
+            return []
+        return [bb for bb in flowchart if IDABase.block_is_terminating(bb)]
 
     @staticmethod
     def get_prev_head(addr, minea=0):
@@ -180,46 +199,45 @@ class IDA:
 
     @staticmethod
     def __addr_in_seg(addr):
-        segs = IDA.get_segments()
+        segs = IDABase.get_segments()
         for seg in segs:
             if addr < seg.end_ea and addr >= seg.start_ea:
                 return seg
         return None
 
-    # note: accept name and address in the segment
     @staticmethod
     def get_segment(arg):
-        if type(arg) is int:
-            return IDA.__addr_in_seg(arg)
-        else: # str
-            return IDA.get_segment_by_name(arg)
+        if isinstance(arg, int):
+            return IDABase.__addr_in_seg(arg)
+        else:
+            return IDABase.get_segment_by_name(arg)
 
     @staticmethod
     def get_segment_start(arg):
-        seg = IDA.get_segment(arg)
+        seg = IDABase.get_segment(arg)
         if seg is not None:
             return seg.start_ea
         return None
 
     @staticmethod
     def get_segment_end(arg):
-        seg = IDA.get_segment(arg)
+        seg = IDABase.get_segment(arg)
         if seg is not None:
             return seg.end_ea
         return None
 
     @staticmethod
     def get_segment_perm(arg):
-        seg = IDA.get_segment(arg)
+        seg = IDABase.get_segment(arg)
         if seg is not None:
-            return seg.perm # RWX e.g. 0b101 = R + X
+            return seg.perm
         return None
 
     @staticmethod
     def get_segment_type(arg):
-        seg = IDA.get_segment(arg)
+        seg = IDABase.get_segment(arg)
         if seg is not None:
-            return seg.type # 0x1 SEG_DATA 0x2 SEG_CODE See doc for details
+            return seg.type
         return None
 
     @staticmethod
@@ -229,12 +247,10 @@ class IDA:
             return None
         return r
 
-    # immidiate value
     @staticmethod
     def get_operand(addr, n):
         return (idc.get_operand_type(addr, n), idc.get_operand_value(addr, n))
 
-    # eax, ecx, etc
     @staticmethod
     def print_operand(addr, n):
         return idc.print_operand(addr, n)
@@ -248,7 +264,7 @@ class IDA:
         p = begin
         cnt = 0
         while p < end:
-            sz = IDA.get_instruction_size(p)
+            sz = IDABase.get_instruction_size(p)
             cnt += 1
             p += sz
         return cnt
@@ -294,95 +310,33 @@ class IDA:
         return ida_nalt.get_input_file_path()
 
     @staticmethod
-    def get_info_structure():
-        return ida_idaapi.get_inf_structure()
-
-    @staticmethod
-    def get_main_address():
-        return IDA.get_info_structure().main
-
-    @staticmethod
-    def get_max_address():
-        return IDA.get_info_structure().max_ea
-
-    @staticmethod
-    def get_min_address():
-        return IDA.get_info_structure().min_ea
-
-    @staticmethod
-    def is_big_endian():
-        return IDA.get_info_structure().is_be()
-
-    @staticmethod
-    def is_little_endian():
-        return not IDA.is_big_endian()
-
-    @staticmethod
-    def get_filetype():
-        info = IDA.get_info_structure()
-        ftype = info.filetype
-        if ftype == ida_ida.f_MACHO:
-            return "macho"
-        elif ftype == ida_ida.f_PE or ftype == ida_ida.f_EXE or ftype == ida_ida.f_EXE_old: # is this correct?
-            return "pe"
-        elif ftype == ida_ida.f_ELF:
-            return "elf"
-        else:
-            return None
-
-    @staticmethod
-    def get_ql_arch_string():
-        info = IDA.get_info_structure()
-        proc = info.procname.lower()
-        result = None
-        if proc == "metapc":
-            result = "x86"
-            if info.is_64bit():
-                result = "x8664"
-        elif "mips" in proc:
-            result = "mips"
-        elif "arm" in proc:
-            result = "arm32"
-            if info.is_64bit():
-                result = "arm64"
-        # That's all we support :(
-        return result
-
-    @staticmethod
     def get_current_address():
         return ida_kernwin.get_screen_ea()
 
-    # return (?, start, end)
     @staticmethod
     def get_last_selection():
         return ida_kernwin.read_range_selection(None)
 
-    # Use with skipcalls
-    # note that the address is the end of target instruction
-    # e.g.:
-    # 0x1 push eax
-    # 0x4 mov eax, 0
-    # call get_frame_sp_delta(0x4) and get -4.
     @staticmethod
     def get_frame_sp_delta(addr):
-        return ida_frame.get_sp_delta(IDA.get_function(addr), addr)
+        return ida_frame.get_sp_delta(IDABase.get_function(addr), addr)
 
     @staticmethod
     def patch_bytes(addr, bs):
         return ida_bytes.patch_bytes(addr, bs)
 
     @staticmethod
-    def fill_bytes(start, end, bs = b'\x90'):
+    def fill_bytes(start, end, bs=b'\x90'):
         return ida_bytes.patch_bytes(start, bs*(end-start))
 
     @staticmethod
     def nop_selection():
-        _, start, end = IDA.get_last_selection()
-        return IDA.fill_bytes(start, end)
+        _, start, end = IDABase.get_last_selection()
+        return IDABase.fill_bytes(start, end)
 
     @staticmethod
     def fill_block(bb, bs=b'\x90'):
-        return IDA.fill_bytes(bb.start_ea, bb.end_ea, bs)
+        return IDABase.fill_bytes(bb.start_ea, bb.end_ea, bs)
 
     @staticmethod
     def assemble(ea, cs, ip, use32, line):
@@ -394,7 +348,7 @@ class IDA:
 
     @staticmethod
     def create_bytes_array(start, end):
-        return IDA.create_data(start, ida_bytes.byte_flag(), end-start)
+        return IDABase.create_data(start, ida_bytes.byte_flag(), end-start)
 
     @staticmethod
     def create_byte(ea, length, force=False):
@@ -418,13 +372,12 @@ class IDA:
 
     @staticmethod
     def get_item(ea):
-        return (IDA.get_item_head(ea), IDA.get_item_end(ea))
+        return (IDABase.get_item_head(ea), IDABase.get_item_end(ea))
 
     @staticmethod
     def is_colored_item(ea):
         return ida_nalt.is_colored_item(ea)
 
-    # NOTE: The [start, end) range should include all control flows except long calls.
     @staticmethod
     def get_micro_code_mba(start, end, decomp_flags=ida_hexrays.DECOMP_WARNINGS, maturity=7):
         mbrgs = ida_hexrays.mba_ranges_t()
@@ -443,6 +396,112 @@ class IDA:
             yield cur
             cur = cur.next
         return
+
+class IDA7(IDABase):
+    @staticmethod
+    def get_info_structure():
+        return ida_idaapi.get_inf_structure()
+
+    @staticmethod
+    def get_main_address():
+        return IDA7.get_info_structure().main
+
+    @staticmethod
+    def get_max_address():
+        return IDA7.get_info_structure().max_ea
+
+    @staticmethod
+    def get_min_address():
+        return IDA7.get_info_structure().min_ea
+
+    @staticmethod
+    def is_big_endian():
+        return IDA7.get_info_structure().is_be
+
+    @staticmethod
+    def is_little_endian():
+        return not IDA7.is_big_endian()
+
+    @staticmethod
+    def get_filetype():
+        ftype = IDA7.get_info_structure().filetype
+        if ftype in (ida_ida.f_PE, ida_ida.f_EXE, ida_ida.f_EXE_old):
+            return "pe"
+        elif ftype == ida_ida.f_MACHO:
+            return "macho"
+        elif ftype == ida_ida.f_ELF:
+            return "elf"
+        return None
+
+    @staticmethod
+    def get_ql_arch_string():
+        proc = IDA7.get_info_structure().procname.lower()
+        is_64_bit = IDA7.get_info_structure().is_64bit()
+        if proc == "metapc":
+            return "x8664" if is_64_bit else "x86"
+        if "mips" in proc:
+            return "mips"
+        if "arm" in proc:
+            return "arm64" if is_64_bit else "arm32"
+        return None
+
+class IDA9(IDABase):
+    @staticmethod
+    def get_info_structure():
+        return ida_idaapi.get_inf_structure()
+
+    @staticmethod
+    def get_main_address():
+        return ida_ida.inf_get_main()
+
+    @staticmethod
+    def get_max_address():
+        return ida_ida.inf_get_max_ea()
+
+    @staticmethod
+    def get_min_address():
+        return ida_ida.inf_get_min_ea()
+
+    @staticmethod
+    def is_big_endian():
+        return ida_ida.inf_is_be()
+
+    @staticmethod
+    def is_little_endian():
+        return not ida_ida.inf_is_be()
+
+    @staticmethod
+    def get_filetype():
+        ftype = ida_ida.inf_get_filetype()
+        if ftype in (ida_ida.f_PE, ida_ida.f_EXE, ida_ida.f_EXE_old):
+            return "pe"
+        elif ftype == ida_ida.f_MACHO:
+            return "macho"
+        elif ftype == ida_ida.f_ELF:
+            return "elf"
+        return None
+
+    @staticmethod
+    def get_ql_arch_string():
+        proc = ida_ida.inf_get_procname().lower()
+        is_64_bit = ida_ida.inf_is_64bit()
+        if proc == "metapc":
+            return "x8664" if is_64_bit else "x86"
+        if "mips" in proc:
+            return "mips"
+        if "arm" in proc:
+            return "arm64" if is_64_bit else "arm32"
+        return None
+
+def get_ida_instance():
+    if IDA_SDK_VERSION >= 900:
+        logging.info("Using IDA9 compatibility layer")
+        return IDA9()
+    else:
+        logging.info("Using IDA7 compatibility layer")
+        return IDA7()
+
+IDA = get_ida_instance()
 
 ### View Class
 
@@ -501,6 +560,7 @@ class QlEmuRegView(simplecustviewer_t):
         line = ""
         cols = 3
         reglist = [reglist[i:i+cols] for i in range(0,len(reglist),cols)]
+        arch = ql.arch.type
         for regs in reglist:
             for reg in regs:
                 line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
@@ -885,7 +945,13 @@ class QlEmuQiling:
         self.env = {}
 
     def start(self, *args, **kwargs):
-        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, log_plain=True, *args, **kwargs)
+        # ida replaces sys.stderr with their own customized class that is not fully compatible with the
+        # standard stream protocol. here we patch stderr replacement to make it look like a proper file.
+        # this has to happen before Qiling init
+        if not hasattr(sys.stderr, 'fileno'):
+            setattr(sys.stderr, 'fileno', lambda: sys.__stderr__.fileno())
+
+        self.ql = Qiling(argv=self.path, rootfs=self.rootfs, verbose=QL_VERBOSE.DEBUG, env=self.env, *args, **kwargs)
 
         if sys.platform != 'win32':
             self.ql.os.stdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
@@ -898,14 +964,14 @@ class QlEmuQiling:
             elffile = ELFFile(f)
             elf_header = elffile.header
             if elf_header['e_type'] == 'ET_EXEC':
-                self.baseaddr = self.ql.os.elf_mem_start
+                self.baseaddr = self.ql.loader.images[0].base
             elif elf_header['e_type'] == 'ET_DYN':
                 if self.ql.arch.bits == 32:
                     self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
                 elif self.ql.arch.bits == 64:
                     self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
-            self.baseaddr = 0x0
+            self.baseaddr = get_imagebase()
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -999,7 +1065,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def init(self):
         # init data
         logging.info('---------------------------------------------------------------------------------------')
-        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
+        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2025'.format(QLVERSION))
         logging.info('Based on Qiling v{0}'.format(QLVERSION))
         logging.info('Find more information about Qiling at https://qiling.io')
         logging.info('---------------------------------------------------------------------------------------')
@@ -1114,7 +1180,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_set_pc(self):
         if self.qlinit:
-            ea = IDA.get_current_address()
+            ea = self.qlemu.ql_addr_from_ida(IDA.get_current_address())
             self.qlemu.ql.arch.regs.arch_pc = ea
             logging.info(f"QIling PC set to {hex(ea)}")
             self.qlemu.status = self.qlemu.ql.save()
@@ -2026,6 +2092,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 module = importlib.import_module(scriptname)
 
                 if is_reload:
+                    del self.userobj
                     importlib.reload(module)
                 cls = getattr(module, classname)
                 return cls()

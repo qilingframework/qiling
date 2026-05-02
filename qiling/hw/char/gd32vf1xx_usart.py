@@ -27,7 +27,7 @@ class GD32VF1xxUsart(QlConnectivityPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.usart = self.struct(
+        self.instance = self.struct(
             STAT =  0x000000c0,
             DATA =  0x00000000,
             BAUD =  0x00000000,
@@ -36,7 +36,3 @@ class GD32VF1xxUsart(QlConnectivityPeripheral):
             CTL2 =  0x00000000,
             GP   =  0x00000000,
         )
-
-    @QlConnectivityPeripheral.device_handler
-    def step(self):
-        pass

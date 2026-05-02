@@ -10,5 +10,4 @@ stack_size = 0x4000
 base_address = 0x7000 
 
 [MISC]
-automatize_input = False
 current_path = A:\

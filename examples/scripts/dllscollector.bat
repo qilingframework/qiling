@@ -4,6 +4,13 @@
 :: Create the emulated Windows directory structure and registry ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+:: Test for Admin privileges
+NET SESSIONS > NUL 2>&1
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO Error: This script requires administrative privileges.
+	EXIT /B 1
+)
+
 :: Host system directories
 SET SYSDIR32="%WINDIR%\SysWOW64"
 SET SYSDIR64="%WINDIR%\System32"
@@ -73,6 +80,7 @@ CALL :collect_dll32 setupapi.dll
 CALL :collect_dll32 shell32.dll
 CALL :collect_dll32 shlwapi.dll
 CALL :collect_dll32 sspicli.dll
+CALL :collect_dll32 symcryptk.dll
 CALL :collect_dll32 ucrtbase.dll
 CALL :collect_dll32 ucrtbased.dll
 CALL :collect_dll32 urlmon.dll
@@ -87,6 +95,9 @@ CALL :collect_dll32 wininet.dll
 CALL :collect_dll32 winmm.dll
 CALL :collect_dll32 ws2_32.dll
 CALL :collect_dll32 wsock32.dll
+CALL :collect_dll32 msvcp140.dll
+CALL :collect_dll32 msvcp140_1.dll
+CALL :collect_dll32 msvcp140_2.dll
 
 CALL :collect_dll32 downlevel\api-ms-win-core-fibers-l1-1-1.dll
 CALL :collect_dll32 downlevel\api-ms-win-core-localization-l1-2-1.dll
@@ -115,13 +126,19 @@ CALL :collect_dll64 rpcrt4.dll
 CALL :collect_dll64 sechost.dll
 CALL :collect_dll64 shell32.dll
 CALL :collect_dll64 shlwapi.dll
+CALL :collect_dll64 symcryptk.dll
 CALL :collect_dll64 user32.dll
 CALL :collect_dll64 vcruntime140.dll
 CALL :collect_dll64 vcruntime140d.dll
+CALL :collect_dll64 vcruntime140_1.dll
+CALL :collect_dll64 vcruntime140_1d.dll
 CALL :collect_dll64 win32u.dll
 CALL :collect_dll64 winhttp.dll
 CALL :collect_dll64 wininet.dll
 CALL :collect_dll64 ws2_32.dll
+CALL :collect_dll64 msvcp140.dll
+CALL :collect_dll64 msvcp140_1.dll
+CALL :collect_dll64 msvcp140_2.dll
 
 CALL :collect_dll64 downlevel\api-ms-win-crt-heap-l1-1-0.dll
 CALL :collect_dll64 downlevel\api-ms-win-crt-locale-l1-1-0.dll

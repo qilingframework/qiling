@@ -1,31 +1,37 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import ctypes
-from contextlib import contextmanager
-from typing import Mapping, MutableMapping, Sequence, Optional
+from __future__ import annotations
 
-from qiling import Qiling
+import ctypes
+
+from functools import lru_cache
+from typing import Mapping, Sequence, Union
+
+from qiling.os.struct import BaseStructEL
+
 
 bits = 64
 psize = bits // 8
 
-dummy_ptr_type = {
-	32 : ctypes.c_uint32,
-	64 : ctypes.c_uint64
-}[bits]
+@lru_cache(maxsize=None)
+def PTR(ptype: Union[type, None]) -> type:
+    """Generate a pseudo pointer type.
+    """
 
-_pointer_type_cache: MutableMapping[str, type] = {}
+    pname = 'c_void' if ptype is None else ptype.__name__
 
-def PTR(ptype: Optional[type]) -> type:
-	pname = 'c_void' if ptype is None else ptype.__name__
+    return type(f'LP_{psize}_{pname}', (UINTN,), {})
 
-	if pname not in _pointer_type_cache:
-		_pointer_type_cache[pname] = type(f'LP_{psize}_{pname}', (dummy_ptr_type,), {})
 
-	return _pointer_type_cache[pname]
+def FUNCPTR(rettype: Union[type, None], *argtypes: type) -> type:
+    """Generate a pseudo function pointer type.
+    """
+
+    return PTR(ctypes.CFUNCTYPE(rettype, *argtypes))
+
 
 VOID = None
 INT8  = ctypes.c_int8
@@ -44,118 +50,64 @@ BOOLEAN = UINT8
 CHAR8 = UINT8
 CHAR16 = UINT16
 
-FUNCPTR = lambda *args: PTR(ctypes.CFUNCTYPE(*args))
+STRUCT = BaseStructEL
 UNION = ctypes.Union
 
 CPU_STACK_ALIGNMENT = 16
 PAGE_SIZE = 0x1000
 
-class STRUCT(ctypes.LittleEndianStructure):
-	"""An abstract class for C structures.
-	"""
-
-	# Structures are packed by default; when needed, padding should be added
-	# manually through placeholder fields
-	_pack_ = 1
-
-	def __init__(self):
-		pass
-
-	def saveTo(self, ql: Qiling, address: int) -> None:
-		"""Store self contents to a specified memory address.
-		"""
-
-		data = bytes(self)
-
-		ql.mem.write(address, data)
-
-	@classmethod
-	def loadFrom(cls, ql: Qiling, address: int) -> 'STRUCT':
-		"""Construct an instance of the structure from saved contents.
-		"""
-
-		data = bytes(ql.mem.read(address, cls.sizeof()))
-
-		return cls.from_buffer_copy(data)
-
-	@classmethod
-	@contextmanager
-	def bindTo(cls, ql: Qiling, address: int):
-		instance = cls.loadFrom(ql, address)
-
-		try:
-			yield instance
-		finally:
-			instance.saveTo(ql, address)
-
-	@classmethod
-	def sizeof(cls) -> int:
-		"""Get the C structure size in bytes.
-		"""
-
-		return ctypes.sizeof(cls)
-
-	@classmethod
-	def offsetof(cls, fname: str) -> int:
-		"""Get the offset of a field in the C structure.
-		"""
-
-		return getattr(cls, fname).offset
-
-	@classmethod
-	def memberat(cls, offset: int) -> Optional[str]:
-		"""Get the member name at a given offset.
-		"""
-
-		return next((fname for fname, *_ in cls._fields_ if cls.offsetof(fname) == offset), None)
 
 class EnumMeta(type(ctypes.c_int)):
-	def __getattr__(self, key):
-		return self._members_.index(key)
+    def __getattr__(self, key):
+        return self._members_.index(key)
+
 
 class ENUM(ctypes.c_int, metaclass=EnumMeta):
-	"""An abstract class for continuous C enums.
-	"""
+    """An abstract class for continuous C enums.
+    """
 
-	# a list or tuple of names (strings)
-	# names will be enumerate by their corresponding index in the list
-	_members_: Sequence[str] = []
+    # a list or tuple of names (strings)
+    # names will be enumerate by their corresponding index in the list
+    _members_: Sequence[str] = []
+
 
 class EnumUCMeta(type(ctypes.c_int)):
-	def __getattr__(self, key):
-		return self._members_[key]
+    def __getattr__(self, key):
+        return self._members_[key]
+
 
 class ENUM_UC(ctypes.c_int, metaclass=EnumUCMeta):
-	"""An abstract class for uncontinuous C enums.
-	"""
+    """An abstract class for uncontinuous C enums.
+    """
 
-	# a dictionary of (names : str, value : int) tuples
-	# names will be enumerate by their paired value
-	_members_: Mapping[str, int] = {}
+    # a dictionary of (names : str, value : int) tuples
+    # names will be enumerate by their paired value
+    _members_: Mapping[str, int] = {}
+
 
 __all__ = [
-	'VOID',
-	'INT8',
-	'INT16',
-	'INT32',
-	'INT64',
-	'INTN',
-	'UINT8',
-	'UINT16',
-	'UINT32',
-	'UINT64',
-	'UINTN',
-	'BOOLEAN',
-	'CHAR8',
-	'CHAR16',
+    'VOID',
+    'INT8',
+    'INT16',
+    'INT32',
+    'INT64',
+    'INTN',
+    'UINT8',
+    'UINT16',
+    'UINT32',
+    'UINT64',
+    'UINTN',
+    'BOOLEAN',
+    'CHAR8',
+    'CHAR16',
 
-	'PTR',
-	'FUNCPTR',
-	'STRUCT',
-	'UNION',
-	'ENUM',
-	'ENUM_UC',
+    'PTR',
+    'FUNCPTR',
+    'STRUCT',
+    'UNION',
+    'ENUM',
+    'ENUM_UC',
 
-	'CPU_STACK_ALIGNMENT',
-	'PAGE_SIZE'
+    'CPU_STACK_ALIGNMENT',
+    'PAGE_SIZE'
 ]

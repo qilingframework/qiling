@@ -5,16 +5,31 @@
 
 sam3x8e = {
     "SRAM BB": {
-        "alias": 0x22000000,
-        "base": 0x20000000,
-        "size": 0x200000,
-        "type": "bitband"
+        "base": 0x22000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x20000000,
+            "size": 0x200000,
+        }
     },
     "PERIP BB": {
-        "alias": 0x42000000,
-        "base": 0x40000000  ,
-        "size": 0x100000,
-        "type": "bitband"
+        "base": 0x42000000,
+        "struct": "CortexMBitband",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x40000000,
+            "size": 0x100000,
+        }
+    },
+    "REMAP": {
+        "base": 0x0,
+        "struct": "MemoryRemap",
+        "type": "core",
+        "kwargs":  {
+            "base": 0x80000,
+            "size": 0x80000,
+        }
     },
     "SYSTICK": {
         "base": 0xe000e010,
@@ -55,6 +70,21 @@ sam3x8e = {
         "base": 0xe0000000,
         "size": 0x100000,
         "type": "mmio"
+    },
+    "SRAM BBR": {
+        "base": 0x22000000,
+        "size": 0x4000000,
+        "type": "mmio"
+    },
+    "PERIP BBR": {
+        "base": 0x42000000,
+        "size": 0x2000000,
+        "type": "mmio"
+    },
+    "REMAP REGION": {
+        "base": 0x0,
+        "size": 0x80000,
+        "type": "mmio",
     },
     "HSMCI": {
         "base": 0x40000000,
@@ -256,15 +286,15 @@ sam3x8e = {
             "intn": 0x27
         }
     },
-    "DACC": {
+    "DAC": {
         "base": 0x400c8000,
-        "struct": "SAM3xaDacc",
+        "struct": "SAM3xaDac",
         "type": "peripheral",
         "kwargs": {
             "intn": 0x26
         }
     },
-    "PDC_DACC": {
+    "PDC_DAC": {
         "base": 0x400c8100,
         "struct": "SAM3xaPdc",
         "type": "peripheral"
@@ -401,10 +431,4 @@ sam3x8e = {
         "struct": "SAM3xaGpbr",
         "type": "peripheral"
     },
-    "CODE": {
-        "base": 0x80000,
-        "size": 0x80000,
-        "alias": 0x0,
-        "type": "remap"
-    }
 }

@@ -29,7 +29,7 @@ class GD32VF1xxI2c(QlConnectivityPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.i2c = self.struct(
+        self.instance = self.struct(
             CTL0   =  0x00000000,
             CTL1   =  0x00000000,
             SADDR0 =  0x00000000,

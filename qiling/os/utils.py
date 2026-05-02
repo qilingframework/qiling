@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -16,42 +16,80 @@ from qiling.const import QL_VERBOSE
 # TODO: separate windows-specific implementation
 from qiling.os.windows.structs import make_unicode_string
 
-class QlOsUtils:
 
+class QlOsUtils:
     ELLIPSIS_PREF = r'__qlva_'
 
     def __init__(self, ql: Qiling):
         self.ql = ql
 
     @staticmethod
-    def read_string(ql: Qiling, address: int, terminator: bytes) -> str:
-        result = bytearray()
+    def as_signed(value: int, nbits: int) -> int:
+        """Transform an unsigned integer value into its 2's complement signed value
+        equivalent. This method has no effect on signed integers.
+
+        Args:
+            value: an unsigned integer to transform
+            nbits: value bit size
+
+        Returns: a signed integer
+        """
+
+        # truncate value to specified bit size
+        value &= (1 << nbits) - 1
+
+        msb = 1 << (nbits - 1)
+
+        return -(value & ~(msb - 1)) | value
+
+    def read_string(self, address: int, encoding: str, maxlen: int = 0) -> str:
+        """Read a null-terminated string from memory.
+
+        Args:
+            address : starting address
+            encoding: string encoding to use
+            maxlen  : limit number of characters to read before reaching null terminator,
+                      0 for unlimited length
+
+        Returns: decoded string
+        """
+
+        terminator = '\x00'.encode(encoding)
+
+        data = bytearray()
         charlen = len(terminator)
+        strlen = 0
 
-        char = ql.mem.read(address, charlen)
+        while True:
+            char = self.ql.mem.read(address, charlen)
 
-        while char != terminator:
+            if char == terminator:
+                break
+
+            data += char
+            strlen += 1
+
+            if strlen == maxlen:
+                break
+
             address += charlen
-            result += char
-            char = ql.mem.read(address, charlen)
 
-        return result.decode(errors="ignore")
-
-    def read_wstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, b'\x00\x00')
-
-        # We need to remove \x00 inside the string. Compares do not work otherwise
-        s = s.replace("\x00", "")
+        s = data.decode(encoding, errors='backslashreplace')
         self.ql.os.stats.log_string(s)
 
         return s
 
-    def read_cstring(self, address: int) -> str:
-        s = QlOsUtils.read_string(self.ql, address, b'\x00')
+    def read_wstring(self, address: int, maxlen: int = 0) -> str:
+        """Read a null-terminated wide string from memory.
+        """
 
-        self.ql.os.stats.log_string(s)
+        return self.read_string(address, 'utf-16le', maxlen)
 
-        return s
+    def read_cstring(self, address: int, maxlen: int = 0) -> str:
+        """Read a null-terminated ASCII string from memory.
+        """
+
+        return self.read_string(address, 'latin1', maxlen)
 
     def read_guid(self, address: int) -> UUID:
         raw_guid = self.ql.mem.read(address, 16)
@@ -134,7 +172,10 @@ class QlOsUtils:
 
         va_list = __dup(va_args, orig_args)
 
-        read_string = self.read_wstring if wstring else self.read_cstring
+        read_str = {
+            False: self.read_cstring,
+            True:  self.read_wstring
+        }
 
         def __repl(m: re.Match) -> str:
             """Convert printf format string tokens into Python's.
@@ -168,9 +209,13 @@ class QlOsUtils:
                 typ = m['type']
                 arg = next(va_list)
 
-                if typ in 'sS':
+                if typ == 's':
                     typ = 's'
-                    arg = read_string(arg)
+                    arg = read_str[wstring](arg)
+
+                elif typ == 'S':
+                    typ = 's'
+                    arg = read_str[not wstring](arg)
 
                 elif typ == 'Z':
                     # note: ANSI_STRING and UNICODE_STRING have identical layout
@@ -178,7 +223,7 @@ class QlOsUtils:
 
                     with ucstr_struct.ref(self.ql.mem, arg) as ucstr_obj:
                         typ = 's'
-                        arg = read_string(ucstr_obj.Buffer)
+                        arg = read_str[wstring](ucstr_obj.Buffer)
 
                 elif typ == 'p':
                     pound = '#'

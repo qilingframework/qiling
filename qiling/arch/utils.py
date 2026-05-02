@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -18,6 +18,7 @@ from keystone import (Ks, KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_MIPS, KS_ARCH_X86,
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN, QL_VERBOSE
 
+
 class QlArchUtils:
     def __init__(self, ql: Qiling):
         self.ql = ql
@@ -27,14 +28,27 @@ class QlArchUtils:
 
     @lru_cache(maxsize=64)
     def get_base_and_name(self, addr: int) -> Tuple[int, str]:
-        for begin, end, _, name, _ in self.ql.mem.map_info:
+        # executable images may be mapped in multiple consecutive regions, so locating
+        # an address within a region doesn't mean its base address is the base of the
+        # image. here we iterate through memory map regions as if they have been coalesced
+        # by label to find the image base address.
+
+        base_label = '?'
+        base_addr = -1
+
+        for begin, end, _, label, _ in self.ql.mem.map_info:
+            # reached a different image?
+            if label != base_label:
+                base_addr = begin
+                base_label = label
+
             if begin <= addr < end:
-                return begin, basename(name)
+                return base_addr, basename(label)
 
         return addr, '-'
 
     def disassembler(self, ql: Qiling, address: int, size: int):
-        data = ql.mem.read(address, size)
+        data = memoryview(ql.mem.read(address, size))
 
         # knowing that all binary sections are aligned to page boundary allows
         # us to 'cheat' and search for the containing image using the aligned
@@ -50,11 +64,14 @@ class QlArchUtils:
         ba, name = self.get_base_and_name(ql.mem.align(address))
 
         anibbles = ql.arch.bits // 4
+        pos = 0
 
-        for insn in ql.arch.disassembler.disasm(data, address):
-            offset = insn.address - ba
+        for iaddr, isize, mnem, ops in ql.arch.disassembler.disasm_lite(data, address):
+            offset = iaddr - ba
+            ibytes = data[pos:pos + isize]
 
-            ql.log.info(f'{insn.address:0{anibbles}x} [{name:20s} + {offset:#08x}]  {insn.bytes.hex(" "):20s} {insn.mnemonic:20s} {insn.op_str}')
+            ql.log.info(f'{iaddr:0{anibbles}x} [{name:20s} + {offset:#08x}]  {ibytes.hex():22s} {mnem:16s} {ops}')
+            pos += isize
 
         if ql.verbose >= QL_VERBOSE.DUMP:
             for reg in ql.arch.regs.register_mapping:
@@ -83,34 +100,36 @@ class QlArchUtils:
             if verbosity >= QL_VERBOSE.DUMP:
                 self._block_hook = self.ql.hook_block(ql_hook_block_disasm)
 
+
 # used by qltool prior to ql instantiation. to get an assembler object
 # after ql instantiation, use the appropriate ql.arch method
-def assembler(arch: QL_ARCH, endianess: QL_ENDIAN, is_thumb: bool) -> Ks:
+def assembler(arch: QL_ARCH, endianness: QL_ENDIAN, is_thumb: bool) -> Ks:
     """Instantiate an assembler object for a specified architecture.
 
     Args:
         arch: architecture type
-        endianess: architecture endianess
+        endianness: architecture endianness
         is_thumb: thumb mode for ARM (ignored otherwise)
 
     Returns: an assembler object
     """
 
     endian = {
-        QL_ENDIAN.EL : KS_MODE_LITTLE_ENDIAN,
-        QL_ENDIAN.EB : KS_MODE_BIG_ENDIAN
-    }[endianess]
+        QL_ENDIAN.EL: KS_MODE_LITTLE_ENDIAN,
+        QL_ENDIAN.EB: KS_MODE_BIG_ENDIAN
+    }[endianness]
 
     thumb = KS_MODE_THUMB if is_thumb else 0
 
     asm_map = {
-        QL_ARCH.ARM   : (KS_ARCH_ARM, KS_MODE_ARM + endian + thumb),
-        QL_ARCH.ARM64 : (KS_ARCH_ARM64, KS_MODE_ARM),
-        QL_ARCH.MIPS  : (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
-        QL_ARCH.A8086 : (KS_ARCH_X86, KS_MODE_16),
-        QL_ARCH.X86   : (KS_ARCH_X86, KS_MODE_32),
-        QL_ARCH.X8664 : (KS_ARCH_X86, KS_MODE_64),
-        QL_ARCH.PPC   : (KS_ARCH_PPC, KS_MODE_PPC32 + KS_MODE_BIG_ENDIAN)
+        QL_ARCH.CORTEX_M: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_LITTLE_ENDIAN + KS_MODE_THUMB),
+        QL_ARCH.ARM:      (KS_ARCH_ARM, KS_MODE_ARM + endian + thumb),
+        QL_ARCH.ARM64:    (KS_ARCH_ARM64, KS_MODE_ARM),
+        QL_ARCH.MIPS:     (KS_ARCH_MIPS, KS_MODE_MIPS32 + endian),
+        QL_ARCH.A8086:    (KS_ARCH_X86, KS_MODE_16),
+        QL_ARCH.X86:      (KS_ARCH_X86, KS_MODE_32),
+        QL_ARCH.X8664:    (KS_ARCH_X86, KS_MODE_64),
+        QL_ARCH.PPC:      (KS_ARCH_PPC, KS_MODE_PPC32 + KS_MODE_BIG_ENDIAN)
     }
 
     if arch in asm_map:

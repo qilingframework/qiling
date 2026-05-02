@@ -3,15 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+
 import os, lief, pickle, secrets, ntpath
-from typing import Any, Dict, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
 
-from qiling import Qiling
 from qiling.arch.x86_const import FS_SEGMENT_ADDR, GS_SEGMENT_ADDR
-from qiling.const import QL_ARCH
+from qiling.const import QL_ARCH, QL_STATE
 from qiling.exception import QlErrorArch
 from qiling.os.const import POINTER
 from qiling.os.windows.api import HINSTANCE, DWORD, LPVOID
@@ -19,6 +20,18 @@ from qiling.os.windows.fncc import CDECL
 from qiling.os.windows.utils import has_lib_ext
 from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
+
+if TYPE_CHECKING:
+    from qiling import Qiling
+
+
+class ForwardedExport(NamedTuple):
+    source_dll: str
+    source_ordinal: int
+    source_symbol: Optional[bytes]
+    target_dll: str
+    target_symbol: str
+
 
 def _pe_build_mapped_image(binary: lief.PE.Binary, raw_bytes: bytes) -> bytearray:
     """Build a flat virtual-address-mapped PE image (equivalent to pefile.get_memory_mapped_image)."""
@@ -100,6 +113,16 @@ class Process:
     export_symbols: MutableMapping[int, Dict[str, Any]]
     libcache: Optional[QlPeCache]
 
+    # maps image base to RVA of its function table
+    function_table_lookup: Dict[int, int]
+
+    # maps image base to its list of function table entries
+    function_tables: MutableMapping[int, List]
+
+    # List of exports which have been forwarded from
+    # one DLL to another.
+    forwarded_exports: List[ForwardedExport]
+
     def __init__(self, ql: Qiling):
         self.ql = ql
 
@@ -126,6 +149,105 @@ class Process:
         vpath = ntpath.join(dirname, basename)
 
         return self.ql.os.path.virtual_to_host_path(vpath), basename.casefold()
+    
+    def init_function_tables(self, pe: lief.PE.Binary, image_base: int):
+        """Parse function table data for the given PE file.
+        Only relevant for non-x86 images.
+
+        Args:
+            pe: the PE image whose function data should be parsed
+            image_base: the absolute address at which the image was loaded
+        """
+        if self.ql.arch.type is QL_ARCH.X86:
+            return
+
+        exc_dir = pe.data_directory(lief.PE.DataDirectory.TYPES.EXCEPTION_TABLE)
+
+        if exc_dir is None or exc_dir.rva == 0:
+            self.ql.log.debug('Image has no exception directory; skipping exception data')
+            return
+
+        self.function_table_lookup[image_base] = exc_dir.rva
+
+        if image_base not in self.function_tables:
+            self.function_tables[image_base] = []
+
+        runtime_functions = list(pe.exception_functions) if hasattr(pe, 'exception_functions') else []
+        self.function_tables[image_base].extend(runtime_functions)
+
+        self.ql.log.debug(f'Parsed {len(runtime_functions)} exception directory entries')
+
+    def lookup_function_entry(self, base_addr: int, control_pc: int):
+        """Look up a RUNTIME_FUNCTION entry and its index in a module's
+        function table, such that the given program counter falls within
+        the entry's begin and end range.
+
+        Args:
+            base_addr: The base address of the image whose exception directory to search.
+            control_pc: The program counter.
+
+        Returns:
+            A tuple (index, runtime_function)
+        """
+        function_table = self.function_tables[base_addr]
+
+        # Initiate a search of the function table for a RUNTIME_FUNCTION
+        # entry such that the provided PC falls within its start and end range.
+        return next(((i, rtfunc) for i, rtfunc in enumerate(function_table)
+                     if rtfunc.struct.BeginAddress <= control_pc - base_addr < rtfunc.struct.EndAddress),
+                     (None, None))
+    
+    def resolve_forwarded_exports(self):
+        while self.forwarded_exports:
+            forwarded_export = self.forwarded_exports.pop()
+
+            source_dll = forwarded_export.source_dll
+            source_ordinal = forwarded_export.source_ordinal
+            source_symbol = forwarded_export.source_symbol
+            target_dll = forwarded_export.target_dll
+            target_symbol = forwarded_export.target_symbol
+
+            if not source_symbol:
+                # Some DLLs (shlwapi.dll) have a bunch of forwarded
+                # exports with ordinals but no symbols.
+                # These are really annoying to deal with, but they are
+                # used extremely rarely, so we will ignore them.
+                continue
+
+            target_iat = self.import_address_table.get(target_dll)
+
+            if not target_iat:
+                # If IAT was not found, it is probably a virtual library.
+                continue
+
+            # If we have an existing entry in the process IAT for the code
+            # this entry forwards to, then we will point the symbol there
+            # rather than the symbol string in the exporter's data section.
+            forward_ea = target_iat.get(target_symbol)
+
+            if not forward_ea:
+                self.ql.log.warning(f"Forwarding symbol {source_dll}.{source_symbol} to {target_dll}.{target_symbol}: Failed to resolve address")
+                continue
+
+            self.import_address_table[source_dll][source_symbol] = forward_ea
+            self.import_address_table[source_dll][source_ordinal] = forward_ea
+
+            # Register the new address as having the source symbol/ordinal.
+            # This way, hooks on forward source symbols will function
+            # correctly.
+
+            self.import_symbols[forward_ea] = {
+                'name'    : source_symbol,
+                'ordinal' : source_ordinal,
+                'dll'     : source_dll.split('.')[0]
+            }
+
+            # TODO: With the above code, hooks on functions which are
+            # forward targets may not work correctly.
+            # The most correct way to resolve this would be to add
+            # support for addresses to be associated with multiple symbols.
+
+            self.ql.log.debug(f"Forwarding symbol {source_dll}.{source_symbol} to {target_dll}.{target_symbol}: Resolved symbol to ({forward_ea:#x})")
 
     def load_dll(self, name: str, is_driver: bool = False) -> int:
         dll_path, dll_name = self.__get_path_elements(name)
@@ -214,8 +336,11 @@ class Process:
             data = _pe_build_mapped_image(dll, dll_raw)
 
             if relocate:
-                with ShowProgress(0.1337):
+                with ShowProgress(self.ql.log, 0.1337):
                     _pe_apply_relocations(data, dll, image_base)
+
+            # initialize the function tables only after possible relocation
+            self.init_function_tables(dll, image_base)
 
             assert image_size >= len(data)
 
@@ -226,6 +351,17 @@ class Process:
 
                 for sym in (dll_export.entries if dll_export else []):
                     sym_name = sym.name.encode() if sym.name else None
+
+                    if sym.is_forwarded:
+                        # track forwarded exports for diagnostics
+                        fi = sym.forward_information
+                        self.forwarded_exports.append(ForwardedExport(
+                            source_dll=dll_name,
+                            source_ordinal=sym.ordinal,
+                            source_symbol=sym_name,
+                            target_dll=(fi.library.lower() + '.dll').casefold(),
+                            target_symbol=fi.function
+                        ))
 
                     if sym.is_forwarded:
                         # Resolve PE export forward (e.g. NTDLL → RtlInitializeCriticalSection)
@@ -263,6 +399,8 @@ class Process:
         self.import_address_table[dll_name] = import_table
         self.import_symbols.update(import_symbols)
 
+        self.resolve_forwarded_exports()
+
         dll_base = image_base
         dll_len = image_size
 
@@ -293,13 +431,8 @@ class Process:
             #
             # in case of a dll loaded from a hooked API call, failures would not be
             # recoverable and we have to give up its DllMain.
-            if not self.ql.os.PE_RUN:
-
-                # temporarily set PE_RUN to allow proper fcall unwinding during
-                # execution of DllMain
-                self.ql.os.PE_RUN = True
+            if self.ql.emu_state is not QL_STATE.STARTED:
                 self.call_dll_entrypoint(dll, dll_base, dll_len, dll_name)
-                self.ql.os.PE_RUN = False
 
         self.ql.log.info(f'Done loading {dll_name}')
 
@@ -322,8 +455,8 @@ class Process:
         # the blacklist may be revisited from time to time to see if any of the file
         # can be safely unlisted.
         blacklist = {
-            32 : ('gdi32.dll',),
-            64 : ('gdi32.dll',)
+            32 : ('gdi32.dll','user32.dll',),
+            64 : ('gdi32.dll','user32.dll',)
         }[self.ql.arch.bits]
 
         if dll_name in blacklist:
@@ -537,6 +670,7 @@ class Process:
 
                 # DLLs that seem to contain most of the requested symbols
                 key_dlls = (
+                    'kernel32.dll',
                     'ntdll.dll',
                     'kernelbase.dll',
                     'ucrtbase.dll'
@@ -600,6 +734,7 @@ class Process:
     def init_exports(self, pe: lief.PE.Binary):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_EXPORT'):
             return
+
 
         iat = {}
         pe_export = pe.get_export()
@@ -713,12 +848,14 @@ class QlLoaderPE(QlLoader, Process):
     def run(self):
         self.init_dlls = (
             'ntdll.dll',
-            'kernel32.dll',
+            'kernelbase.dll', # kernel32 forwards some exports to kernelbase
+            'kernel32.dll',   # for efficiency, load kernelbase first
             'user32.dll'
         )
 
         self.sys_dlls = (
             'ntdll.dll',
+            'kernelbase.dll',
             'kernel32.dll',
             'mscoree.dll',
             'ucrtbase.dll'
@@ -755,6 +892,9 @@ class QlLoaderPE(QlLoader, Process):
         self.export_symbols = {}
         self.import_address_table = {}
         self.ldr_list = []
+        self.function_tables = {}
+        self.function_table_lookup = {}
+        self.forwarded_exports = []
         self.pe_image_address = 0
         self.pe_image_size = 0
         self.dll_size = 0
@@ -884,6 +1024,9 @@ class QlLoaderPE(QlLoader, Process):
 
                 self.ql.os.fcall.call_native(self.entry_point, args, None)
 
+            # Initialize the function tables
+            super().init_function_tables(pe, image_base)
+
         elif pe is None:
             self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode]")
 
@@ -916,45 +1059,125 @@ class QlLoaderPE(QlLoader, Process):
         self.ql.os.entry_point = self.entry_point
         self.init_sp = self.ql.arch.regs.arch_sp
 
+
 class ShowProgress:
-    """Display a progress animation while performing a time
-    consuming task.
+    """Display a progress animation while performing a time consuming task.
 
     Example:
-        >>> with ShowProgress(0.1):
+        >>> with ShowProgress(logger, 0.15):
         ...     do_some_time_consuming_task()
     """
 
-    def __init__(self, interval: float) -> None:
-        import sys
-        from threading import Thread, Event
+    # animation frames: a sequence of chars or strings to display. any sequence of string elements
+    # may be used as long as they are of the same length.
+    #
+    # for example: ['>   ', '>>  ', ' >> ', '  >>', '   >', '    ']
+    _frames_ = r'/-\|'
 
-        # animation frames; any sequence of chars or strings may be used, as long
-        # as they are of the same length. e.g. ['>   ', '>>  ', ' >> ', '  >>', '   >', '    ']
-        frames = r'/-\|'
-        stream = sys.stderr
+    # animation marker: this is used to tell animation log records from the rest.
+    _marker_ = r'$__ql_anim__'
+
+    def __init__(self, logger, interval: float) -> None:
+        from typing import List, Callable
+        from threading import Thread, Event
 
         def show_animation():
             i = 0
 
             while not self.stopped.wait(interval):
-                # TODO: find a proper way to use the logger for that
-                print(f'[{frames[i % len(frames)]}]', end='\r', flush=True, file=stream)
+                frame = self._frames_[i % len(self._frames_)]
+                logger.info(f'{self._marker_}{frame}')
+
                 i += 1
 
-        def show_nothing():
-            pass
-
-        # avoid flooding log files with animation frames
-        action = show_animation if stream.isatty() else show_nothing
-
         self.stopped = Event()
-        self.thread = Thread(target=action)
+        self.thread = Thread(target=show_animation)
+
+        self.logger = logger
+        self.handlers_restorers: List[Callable[[], None]] = []
+
+    def __setup_handlers(self):
+        from logging import Filter, Formatter, LogRecord, StreamHandler
+
+        # while progress animation is useful on tty streams, it is not very useful on log files
+        # and most probably just flood the log files with animation frames.
+        #
+        # to avoid such flooding an animation filter is added to the non-tty stream handlers to
+        # filter out the animation records. in addition, tty stream handlers are assigned with
+        # an animation formatter to display the animation frames nicely.
+        #
+        # when the animation context exits, all the changes made to the handlers are reverted.
+
+        def has_anim_marker(rec: LogRecord) -> bool:
+            """Tell whether a log record is an animation record or not.
+            """
+
+            return rec.getMessage().startswith(ShowProgress._marker_)
+
+        def strip_anim_marker(rec: LogRecord) -> None:
+            """Remove animation marker from log record.
+            """
+
+            rec.message = rec.message[len(ShowProgress._marker_):]
+
+        class AnimFormatter(Formatter):
+            """A log record formatter that removes animation markers.
+            """
+
+            def formatMessage(self, record: LogRecord) -> str:
+                if has_anim_marker(record):
+                    strip_anim_marker(record)
+
+                return super().formatMessage(record)
+
+        class AnimFilter(Filter):
+            """A log record filter that thwarts animation records.
+            """
+
+            def filter(self, record: LogRecord) -> bool:
+                return not has_anim_marker(record)
+
+        # the animation frames will be displayed within brackets
+        anim_formatter = AnimFormatter('[%(message)s]')
+        anim_filter = AnimFilter()
+
+        for h in self.logger.handlers:
+            # if this is a tty stream handler, modify some of its attributes to
+            # let the animation display correctly
+            if isinstance(h, StreamHandler) and h.stream.isatty():
+                orig_terminator = h.terminator
+                orig_formatter = h.formatter
+
+                h.terminator = '\r'
+                h.setFormatter(anim_formatter)
+
+                def __restore_modified() -> None:
+                    h.terminator = orig_terminator
+                    h.setFormatter(orig_formatter)
+
+                restorer = __restore_modified
+
+            # otherwise, apply a filter that will ignore animation records
+            else:
+                h.addFilter(anim_filter)
+
+                def __restore_silenced() -> None:
+                    h.removeFilter(anim_filter)
+
+                restorer = __restore_silenced
+
+            self.handlers_restorers.append(restorer)
+
+    def __restore_handlers(self) -> None:
+        for restorer in self.handlers_restorers:
+            restorer()
 
     def __enter__(self):
+        self.__setup_handlers()
         self.thread.start()
 
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, extype, value, traceback):
         self.stopped.set()
+        self.__restore_handlers()

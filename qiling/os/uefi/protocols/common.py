@@ -1,134 +1,139 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from qiling.os.uefi.const import EFI_SUCCESS, EFI_NOT_FOUND, EFI_UNSUPPORTED, EFI_BUFFER_TOO_SMALL, EFI_INVALID_PARAMETER
-from qiling.os.uefi.utils import read_int64, write_int64
 from qiling.os.uefi.UefiSpec import EFI_LOCATE_SEARCH_TYPE
 
-def LocateHandles(context, params):
-	SearchType = params["SearchType"]
-	Protocol = params["Protocol"]
+if TYPE_CHECKING:
+    from qiling.os.uefi.context import UefiContext
 
-	# get all handles
-	if SearchType == EFI_LOCATE_SEARCH_TYPE.AllHandles:
-		handles = context.protocols.keys()
+def LocateHandles(context: UefiContext, params):
+    SearchType = params["SearchType"]
+    Protocol = params["Protocol"]
 
-	# get all handles that support the specified protocol
-	elif SearchType == EFI_LOCATE_SEARCH_TYPE.ByProtocol:
-		handles = [handle for handle, guid_dic in context.protocols.items() if Protocol in guid_dic]
+    # get all handles
+    if SearchType == EFI_LOCATE_SEARCH_TYPE.AllHandles:
+        handles = context.protocols.keys()
 
-	else:
-		handles = []
+    # get all handles that support the specified protocol
+    elif SearchType == EFI_LOCATE_SEARCH_TYPE.ByProtocol:
+        handles = [handle for handle, guid_dic in context.protocols.items() if Protocol in guid_dic]
 
-	return len(handles) * context.ql.arch.pointersize, handles
+    else:
+        handles = []
 
-def InstallProtocolInterface(context, params):
-	handle = read_int64(context.ql, params["Handle"])
+    return len(handles) * context.ql.arch.pointersize, handles
 
-	if handle == 0:
-		handle = context.heap.alloc(1)
+def InstallProtocolInterface(context: UefiContext, params):
+    handle = context.ql.mem.read_ptr(params["Handle"])
 
-	dic = context.protocols.get(handle, {})
+    if handle == 0:
+        handle = context.heap.alloc(1)
 
-	dic[params["Protocol"]] = params["Interface"]
-	context.protocols[handle] = dic
+    dic = context.protocols.get(handle, {})
 
-	write_int64(context.ql, params["Handle"], handle)
-	context.notify_protocol(params['Handle'], params['Protocol'], params['Interface'], True)
+    dic[params["Protocol"]] = params["Interface"]
+    context.protocols[handle] = dic
 
-	return EFI_SUCCESS
+    context.ql.mem.write_ptr(params["Handle"], handle)
+    context.notify_protocol(params['Handle'], params['Protocol'], params['Interface'], True)
 
-def ReinstallProtocolInterface(context, params):
-	handle = params["Handle"]
+    return EFI_SUCCESS
 
-	if handle not in context.protocols:
-		return EFI_NOT_FOUND
+def ReinstallProtocolInterface(context: UefiContext, params):
+    handle = params["Handle"]
 
-	dic = context.protocols[handle]
-	protocol = params["Protocol"]
+    if handle not in context.protocols:
+        return EFI_NOT_FOUND
 
-	if protocol not in dic:
-		return EFI_NOT_FOUND
+    dic = context.protocols[handle]
+    protocol = params["Protocol"]
 
-	dic[protocol] = params["NewInterface"]
+    if protocol not in dic:
+        return EFI_NOT_FOUND
 
-	return EFI_SUCCESS
+    dic[protocol] = params["NewInterface"]
 
-def UninstallProtocolInterface(context, params):
-	handle = params["Handle"]
+    return EFI_SUCCESS
 
-	if handle not in context.protocols:
-		return EFI_NOT_FOUND
+def UninstallProtocolInterface(context: UefiContext, params):
+    handle = params["Handle"]
 
-	dic = context.protocols[handle]
-	protocol = params["Protocol"]
+    if handle not in context.protocols:
+        return EFI_NOT_FOUND
 
-	if protocol not in dic:
-		return EFI_NOT_FOUND
+    dic = context.protocols[handle]
+    protocol = params["Protocol"]
 
-	del dic[protocol]
+    if protocol not in dic:
+        return EFI_NOT_FOUND
 
-	return EFI_SUCCESS
+    del dic[protocol]
 
-def HandleProtocol(context, params):
-	handle = params["Handle"]
-	protocol = params["Protocol"]
-	interface = params['Interface']
+    return EFI_SUCCESS
 
-	if handle in context.protocols:
-		supported = context.protocols[handle]
+def HandleProtocol(context: UefiContext, params):
+    handle = params["Handle"]
+    protocol = params["Protocol"]
+    interface = params['Interface']
 
-		if protocol in supported:
-			write_int64(context.ql, interface, supported[protocol])
+    if handle in context.protocols:
+        supported = context.protocols[handle]
 
-			return EFI_SUCCESS
+        if protocol in supported:
+            context.ql.mem.write_ptr(interface, supported[protocol])
 
-	return EFI_UNSUPPORTED
+            return EFI_SUCCESS
 
-def LocateHandle(context, params):
-	buffer_size, handles = LocateHandles(context, params)
+    return EFI_UNSUPPORTED
 
-	if len(handles) == 0:
-		return EFI_NOT_FOUND
+def LocateHandle(context: UefiContext, params):
+    buffer_size, handles = LocateHandles(context, params)
 
-	ret = EFI_BUFFER_TOO_SMALL
+    if len(handles) == 0:
+        return EFI_NOT_FOUND
 
-	if read_int64(context.ql, params["BufferSize"]) >= buffer_size:
-		ptr = params["Buffer"]
+    ret = EFI_BUFFER_TOO_SMALL
 
-		for handle in handles:
-			write_int64(context.ql, ptr, handle)
-			ptr += context.ql.arch.pointersize
+    if context.ql.mem.read_ptr(params["BufferSize"]) >= buffer_size:
+        ptr = params["Buffer"]
 
-		ret = EFI_SUCCESS
+        for handle in handles:
+            context.ql.mem.write_ptr(ptr, handle)
+            ptr += context.ql.arch.pointersize
 
-	write_int64(context.ql, params["BufferSize"], buffer_size)
+        ret = EFI_SUCCESS
 
-	return ret
+    context.ql.mem.write_ptr(params["BufferSize"], buffer_size)
 
-def LocateProtocol(context, params):
-	protocol = params['Protocol']
+    return ret
 
-	for handle, guid_dic in context.protocols.items():
-		if "Handle" in params and params["Handle"] != handle:
-			continue
+def LocateProtocol(context: UefiContext, params):
+    protocol = params['Protocol']
 
-		if protocol in guid_dic:
-			# write protocol address to out variable Interface
-			write_int64(context.ql, params['Interface'], guid_dic[protocol])
-			return EFI_SUCCESS
+    for handle, guid_dic in context.protocols.items():
+        if "Handle" in params and params["Handle"] != handle:
+            continue
 
-	return EFI_NOT_FOUND
+        if protocol in guid_dic:
+            # write protocol address to out variable Interface
+            context.ql.mem.write_ptr(params['Interface'], guid_dic[protocol])
+            return EFI_SUCCESS
 
-def InstallConfigurationTable(context, params):
-	guid = params["Guid"]
-	table = params["Table"]
+    return EFI_NOT_FOUND
 
-	if not guid:
-		return EFI_INVALID_PARAMETER
+def InstallConfigurationTable(context: UefiContext, params):
+    guid = params["Guid"]
+    table = params["Table"]
 
-	context.conftable.install(guid, table)
+    if not guid:
+        return EFI_INVALID_PARAMETER
 
-	return EFI_SUCCESS
+    context.conftable.install(guid, table)
+
+    return EFI_SUCCESS

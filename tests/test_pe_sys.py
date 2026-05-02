@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
@@ -9,6 +9,7 @@ from typing import List
 from unicorn import UcError
 
 sys.path.append("..")
+from qiling.os.stats import QlWinNullStats
 from qiling import Qiling
 from qiling.const import QL_STOP, QL_VERBOSE
 from qiling.os.const import POINTER, DWORD, HANDLE
@@ -181,6 +182,9 @@ class PETest(unittest.TestCase):
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/sality.dll"], "../examples/rootfs/x86_windows", verbose=QL_VERBOSE.DEBUG)
 
+        # discard strings and api calls stats to gain a bit of speedup
+        ql.os.stats = QlWinNullStats()
+
         # emulate some Windows API
         ql.os.set_api("CreateThread", hook_CreateThread)
         ql.os.set_api("CreateFileA", hook_CreateFileA)
@@ -215,8 +219,8 @@ class PETest(unittest.TestCase):
         fcall.writeParams(((DWORD, 0),))
 
         # run until third stop
-        # TODO: Should stop at 0x10423, but for now just stop at 0x0001066a
-        amsint32.hook_address(hook_third_stop_address, 0x0001066a, stops)
+        # TODO: Should stop at 0x10423, but for now just stop at 0x10430
+        amsint32.hook_address(hook_third_stop_address, 0x10430, stops)
         amsint32.run(begin=0x102D0)
 
         self.assertTrue(stops[0])

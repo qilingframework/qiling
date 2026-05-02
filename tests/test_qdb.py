@@ -1,41 +1,58 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import sys, unittest
+import sys
+import unittest
 
 sys.path.append("..")
 from qiling import Qiling
+from qiling.const import QL_VERBOSE
+
 
 class DebuggerTest(unittest.TestCase):
 
-    def test_qdb_mips32el_hello(self):
-        rootfs = "../examples/rootfs/mips32el_linux"
-        path = rootfs + "/bin/mips32el_hello"
+    def __test_common(self, vpath: str, rootfs: str, script: str) -> None:
+        """Load a common setup for all test cases.
+        """
 
-        ql = Qiling([path], rootfs)
-        ql.debugger = "qdb::rr:qdb_scripts/mips32el.qdb"
-        ql.run()
-        del ql
+        ql = Qiling([f'{rootfs}{vpath}'], rootfs, verbose=QL_VERBOSE.DEBUG)
+        ql.debugger = f'qdb::rr:{script}'
+
+        try:
+            ql.run()
+        except SystemExit as ex:
+            self.assertEqual(ex.code, 0)
+
+    def test_qdb_mips32el_hello(self):
+        self.__test_common(
+            r'/bin/mips32el_hello',
+            r'../examples/rootfs/mips32el_linux',
+            r'qdb_scripts/mips32el.qdb'
+        )
 
     def test_qdb_arm_hello(self):
-        rootfs = "../examples/rootfs/arm_linux"
-        path = rootfs + "/bin/arm_hello"
+        self.__test_common(
+            r'/bin/arm_hello',
+            r'../examples/rootfs/arm_linux',
+            r'qdb_scripts/arm.qdb'
+        )
 
-        ql = Qiling([path], rootfs)
-        ql.debugger = "qdb::rr:qdb_scripts/arm.qdb"
-        ql.run()
-        del ql
+    def test_qdb_arm_hello_static(self):
+        self.__test_common(
+            r'/bin/arm_hello_static',
+            r'../examples/rootfs/arm_linux',
+            r'qdb_scripts/arm_static.qdb'
+        )
 
     def test_qdb_x86_hello(self):
-        rootfs = "../examples/rootfs/x86_linux"
-        path = rootfs + "/bin/x86_hello"
+        self.__test_common(
+            r'/bin/x86_hello',
+            r'../examples/rootfs/x86_linux',
+            r'qdb_scripts/x86.qdb'
+        )
 
-        ql = Qiling([path], rootfs)
-        ql.debugger = "qdb::rr:qdb_scripts/x86.qdb"
-        ql.run()
-        del ql
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

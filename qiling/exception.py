@@ -74,6 +74,9 @@ class QlMemoryMappedError(QlErrorBase):
 class QlGDTError(QlErrorBase):
     pass
 
+class QlProxyConnectionError(QlErrorBase):
+    pass
+
 class QlSyscallError(QlErrorBase):
     def __init__(self, errno, msg):
         super(QlSyscallError, self).__init__(msg)

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from typing import ClassVar, Optional
 
 from unicorn import Uc
 from unicorn.unicorn import UcContext
@@ -12,15 +13,20 @@ from keystone import Ks
 
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_ENDIAN
+
+from .models import QL_CPU
 from .register import QlRegisterManager
 from .utils import QlArchUtils
 
-class QlArch:
-    type: QL_ARCH
-    bits: int
 
-    def __init__(self, ql: Qiling):
+class QlArch(ABC):
+    type: ClassVar[QL_ARCH]
+    bits: ClassVar[int]
+
+    def __init__(self, ql: Qiling, *, cputype: Optional[QL_CPU] = None):
         self.ql = ql
+
+        self.cpu = cputype
         self.utils = QlArchUtils(ql)
 
     @property
@@ -57,7 +63,6 @@ class QlArch:
 
         return self.regs.arch_sp
 
-
     def stack_pop(self) -> int:
         """Pop a value from the architectural stack.
 
@@ -68,7 +73,6 @@ class QlArch:
         self.regs.arch_sp += self.pointersize
 
         return data
-
 
     def stack_read(self, offset: int) -> int:
         """Peek the architectural stack at a specified offset from its top, without affecting
@@ -86,7 +90,6 @@ class QlArch:
 
         return self.ql.mem.read_ptr(self.regs.arch_sp + offset)
 
-
     def stack_write(self, offset: int, value: int) -> None:
         """Write a value to the architectural stack at a specified offset from its top, without
         affecting the top of the stack.
@@ -101,16 +104,13 @@ class QlArch:
 
         self.ql.mem.write_ptr(self.regs.arch_sp + offset, value)
 
-
     # Unicorn's CPU state save
     def save(self) -> UcContext:
         return self.uc.context_save()
 
-
     # Unicorn's CPU state restore method
     def restore(self, saved_context: UcContext):
         self.uc.context_restore(saved_context)
-
 
     @property
     @abstractmethod
@@ -119,7 +119,6 @@ class QlArch:
         """
 
         pass
-
 
     @property
     @abstractmethod
@@ -132,7 +131,7 @@ class QlArch:
     @property
     @abstractmethod
     def endian(self) -> QL_ENDIAN:
-        """Get processor endianess.
+        """Get processor endianness.
         """
 
         pass

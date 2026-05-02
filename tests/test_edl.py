@@ -3,46 +3,49 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-import os, sys, time, unittest
-from struct import pack
+import time
+import unittest
 
+from struct import pack
+from typing import Callable
+
+import sys
 sys.path.append("..")
-from qiling import *
+
+from qiling import Qiling
 from qiling.const import QL_VERBOSE
 from unicorn import *
-from unicorn.arm64_const import *
 
-def replace_function(ql,addr,callback):
-    def runcode(ql):
-        ret=callback(ql)
-        ql.arch.regs.x0=ret
-        ql.arch.regs.pc=ql.arch.regs.x30 #lr
-    ql.hook_address(runcode,addr)
 
-def hook_mem_invalid(uc, access, address, size, value, user_data):
-    pc = uc.reg_read(UC_ARM64_REG_PC)
-    if access == UC_MEM_WRITE:
-        info=("invalid WRITE of 0x%x at 0x%X, data size = %u, data value = 0x%x" % (address, pc, size, value))
-    if access == UC_MEM_READ:
-        info=("invalid READ of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_FETCH:
-        info=("UC_MEM_FETCH of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_READ_UNMAPPED:
-        info=("UC_MEM_READ_UNMAPPED of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_WRITE_UNMAPPED:
-        info=("UC_MEM_WRITE_UNMAPPED of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_FETCH_UNMAPPED:
-        info=("UC_MEM_FETCH_UNMAPPED of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_WRITE_PROT:
-        info=("UC_MEM_WRITE_PROT of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_FETCH_PROT:
-        info=("UC_MEM_FETCH_PROT of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_FETCH_PROT:
-        info=("UC_MEM_FETCH_PROT of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    if access == UC_MEM_READ_AFTER:
-        info=("UC_MEM_READ_AFTER of 0x%x at 0x%X, data size = %u" % (address, pc, size))
-    print(info)
+def replace_function(ql: Qiling, addr: int, callback: Callable):
+    def runcode(ql: Qiling):
+        ret = callback(ql)
+        ql.arch.regs.x0 = ret
+        ql.arch.regs.pc = ql.arch.regs.x30  # lr
+
+    ql.hook_address(runcode, addr)
+
+
+def hook_mem_invalid(ql: Qiling, access: int, address: int, size: int, value: int, user_data):
+    pc = ql.arch.regs.arch_pc
+
+    info = {
+        UC_MEM_WRITE:           f"invalid WRITE {address:#x} at {pc:#X}, data size = {size:d}, data value = {value:#x}",
+        UC_MEM_READ:            f"invalid READ {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_FETCH:           f"UC_MEM_FETCH {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_READ_UNMAPPED:   f"UC_MEM_READ_UNMAPPED {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_WRITE_UNMAPPED:  f"UC_MEM_WRITE_UNMAPPED {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_FETCH_UNMAPPED:  f"UC_MEM_FETCH_UNMAPPED {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_WRITE_PROT:      f"UC_MEM_WRITE_PROT of {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_FETCH_PROT:      f"UC_MEM_FETCH_PROT of {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_FETCH_PROT:      f"UC_MEM_FETCH_PROT of {address:#x} at {pc:#X}, data size = {size:d}",
+        UC_MEM_READ_AFTER:      f"UC_MEM_READ_AFTER of {address:#x} at {pc:#X}, data size = {size:d}"
+    }
+
+    print(info[access])
+
     return False
+
 
 class TestAndroid(unittest.TestCase):
     def test_edl_arm64(self):
@@ -91,6 +94,7 @@ class TestAndroid(unittest.TestCase):
         self.assertEqual("ACK", ql.buf_out)
 
         del ql
+
 
 if __name__ == "__main__":
     unittest.main()

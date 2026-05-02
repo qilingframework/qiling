@@ -22,30 +22,32 @@ class CortexMSysTick(QlTimerPeripheral):
     def __init__(self, ql, label):
         super().__init__(ql, label)
 
-        self.systick = self.struct(
+        self.instance = self.struct(
             CALIB = 0xC0000000
         )
 
     def step(self):
-        if not self.systick.CTRL & SYSTICK_CTRL.ENABLE:
+        if not self.instance.CTRL & SYSTICK_CTRL.ENABLE:
             return
 
-        if self.systick.VAL <= 0:
-            self.systick.VAL = self.systick.LOAD
-            self.systick.CTRL |= SYSTICK_CTRL.COUNTFLAG
-
-            if self.systick.CTRL & SYSTICK_CTRL.TICKINT:
-                self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
+        if self.instance.VAL <= 0:
+            self.instance.CTRL |= SYSTICK_CTRL.COUNTFLAG
+            self.instance.VAL = self.instance.LOAD
+            
         else:
-            self.systick.VAL -= self.ratio
+            self.instance.VAL -= self.ratio
+
+            if self.instance.VAL <= 0:                
+                if self.instance.CTRL & SYSTICK_CTRL.TICKINT:
+                    self.ql.hw.nvic.set_pending(IRQ.SYSTICK)
 
     @QlPeripheral.monitor()
     def read(self, offset: int, size: int) -> int:
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.systick) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
 
         if offset == self.struct.CTRL.offset:
-            self.systick.CTRL &= ~SYSTICK_CTRL.COUNTFLAG        
+            self.instance.CTRL &= ~SYSTICK_CTRL.COUNTFLAG        
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
@@ -58,7 +60,7 @@ class CortexMSysTick(QlTimerPeripheral):
 
         # restart the timer
         if offset == self.struct.LOAD.offset:            
-            self.systick.VAL = value
+            self.instance.VAL = value
 
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.systick) + offset, data, size)        
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)        

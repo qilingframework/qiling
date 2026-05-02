@@ -20,11 +20,11 @@ class USART_SR(IntEnum):
     RESET = TXE | TC
 
 class USART_DR(IntEnum):
-	DR = 0x1ff << 0
+    DR = 0x1ff << 0
 
 class USART_BRR(IntEnum):
-	DIV_Fraction = 0xf << 0
-	DIV_Mantissa = 0xfff << 4
+    DIV_Fraction = 0xf << 0
+    DIV_Mantissa = 0xfff << 4
 
 class USART_CR1(IntEnum):    
     OVER8  = 1 << 15
@@ -44,30 +44,30 @@ class USART_CR1(IntEnum):
     SBK    = 1 << 0
 
 class USART_CR2(IntEnum):
-	ADD   = 0xf << 0
-	LBDL  = 1 << 5
-	LBDIE = 1 << 6
-	LBCL  = 1 << 8
-	CPHA  = 1 << 9
-	CPOL  = 1 << 10
-	CLKEN = 1 << 11
-	STOP  = 0x3 << 12
-	LINEN = 1 << 14
+    ADD   = 0xf << 0
+    LBDL  = 1 << 5
+    LBDIE = 1 << 6
+    LBCL  = 1 << 8
+    CPHA  = 1 << 9
+    CPOL  = 1 << 10
+    CLKEN = 1 << 11
+    STOP  = 0x3 << 12
+    LINEN = 1 << 14
 
 class USART_CR3(IntEnum):
-	EIE    = 1 << 0
-	IREN   = 1 << 1
-	IRLP   = 1 << 2
-	HDSEL  = 1 << 3
-	NACK   = 1 << 4
-	SCEN   = 1 << 5
-	DMAR   = 1 << 6
-	DMAT   = 1 << 7
-	RTSE   = 1 << 8
-	CTSE   = 1 << 9
-	CTSIE  = 1 << 10
-	ONEBIT = 1 << 11
+    EIE    = 1 << 0
+    IREN   = 1 << 1
+    IRLP   = 1 << 2
+    HDSEL  = 1 << 3
+    NACK   = 1 << 4
+    SCEN   = 1 << 5
+    DMAR   = 1 << 6
+    DMAT   = 1 << 7
+    RTSE   = 1 << 8
+    CTSE   = 1 << 9
+    CTSIE  = 1 << 10
+    ONEBIT = 1 << 11
 
 class USART_GTPR(IntEnum):
-	PSC = 0xff << 0
-	GT  = 0xff << 8
+    PSC = 0xff << 0
+    GT  = 0xff << 8

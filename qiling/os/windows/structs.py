@@ -116,7 +116,7 @@ def make_peb(archbits: int):
     return PEB
 
 
-# https://docs.microsoft.com/en-us/windows/win32/api/subauth/ns-subauth-unicode_string
+# https://learn.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-_unicode_string
 @lru_cache(maxsize=2)
 def make_unicode_string(archbits: int):
     """Generate a UNICODE_STRING structure class.
@@ -133,6 +133,10 @@ def make_unicode_string(archbits: int):
         )
 
     return UNICODE_STRING
+
+
+# https://learn.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-string
+make_ansi_string = make_unicode_string
 
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_driver_object
@@ -167,7 +171,7 @@ def make_driver_object(archbits: int):
     return DRIVER_OBJECT
 
 
-class KSYSTEM_TIME(struct.BaseStruct):
+class KSYSTEM_TIME(struct.BaseStructEL):
     _fields_ = (
         ('LowPart',   ctypes.c_uint32),
         ('High1Time', ctypes.c_int32),
@@ -175,7 +179,7 @@ class KSYSTEM_TIME(struct.BaseStruct):
     )
 
 
-class _LARGE_INTEGER(struct.BaseStruct):
+class _LARGE_INTEGER(struct.BaseStructEL):
     _fields_ = (
         ('LowPart',  ctypes.c_uint32),
         ('HighPart', ctypes.c_int32)
@@ -188,11 +192,12 @@ class LARGE_INTEGER(ctypes.Union):
         ('QuadPart', ctypes.c_int64)
     )
 
+
 # see:
 # https://www.geoffchappell.com/studies/windows/km/ntoskrnl/structs/kuser_shared_data/index.htm
 # https://doxygen.reactos.org/d7/deb/xdk_2ketypes_8h_source.html#l01155
 
-class KUSER_SHARED_DATA(struct.BaseStruct):
+class KUSER_SHARED_DATA(struct.BaseStructEL):
     _fields_ = (
         ('TickCountLowDeprecated',      ctypes.c_uint32),
         ('TickCountMultiplier',         ctypes.c_uint32),
@@ -982,7 +987,7 @@ def make_ldr_data_table_entry(archbits: int):
             ('LoadReason', ctypes.c_uint32),
             ('ImplicitPathOptions', native_type),
             ('ReferenceCount', native_type),
-        	# 1607+
+            # 1607+
             ('DependentLoadFlags', native_type),
             # 1703+
             ('SigningLevel', ctypes.c_uint8)
@@ -991,21 +996,23 @@ def make_ldr_data_table_entry(archbits: int):
     return LdrDataTableEntry
 
 
-class FILETIME(struct.BaseStruct):
+class FILETIME(struct.BaseStructEL):
     _fields_ = (
         ('dwLowDateTime',  ctypes.c_uint32),
         ('dwHighDateTime', ctypes.c_int32)
     )
 
+
 # https://docs.microsoft.com/en-us/windows/console/coord-str
-class COORD(struct.BaseStruct):
+class COORD(struct.BaseStructEL):
     _fields_ = (
         ('X', ctypes.c_uint16),
         ('Y', ctypes.c_uint16)
     )
 
+
 # https://docs.microsoft.com/en-us/windows/console/small-rect-str
-class SMALL_RECT(struct.BaseStruct):
+class SMALL_RECT(struct.BaseStructEL):
     _fields_ = (
         ('Left',   ctypes.c_uint16),
         ('Top',    ctypes.c_uint16),
@@ -1013,8 +1020,9 @@ class SMALL_RECT(struct.BaseStruct):
         ('Bottom', ctypes.c_uint16)
     )
 
+
 # https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
-class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStruct):
+class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStructEL):
     _fields_ = (
         ('dwSize',              COORD),
         ('dwCursorPosition',    COORD),
@@ -1022,6 +1030,7 @@ class CONSOLE_SCREEN_BUFFER_INFO(struct.BaseStruct):
         ('srWindow',            SMALL_RECT),
         ('dwMaximumWindowSize', COORD)
     )
+
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
 def make_process_basic_info(archbits: int):
@@ -1039,6 +1048,7 @@ def make_process_basic_info(archbits: int):
         )
 
     return PROCESS_BASIC_INFORMATION
+
 
 # https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa
 def make_os_version_info(archbits: int, *, wide: bool):
@@ -1182,7 +1192,7 @@ def make_sid(auth_count: int):
     # byte is actually used.
     #
     # see: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-sid_identifier_authority
-    class SID_IDENTIFIER_AUTHORITY(ctypes.BigEndianStructure):
+    class SID_IDENTIFIER_AUTHORITY(struct.BaseStructEB):
         _pack_ = 1
         _fields_ = (
             ('Value', ctypes.c_uint32),
@@ -1192,7 +1202,7 @@ def make_sid(auth_count: int):
     assert ctypes.sizeof(SID_IDENTIFIER_AUTHORITY) == 6
 
     # https://geoffchappell.com/studies/windows/km/ntoskrnl/api/rtl/sertl/sid.htm
-    class SID(struct.BaseStruct):
+    class SID(struct.BaseStructEL):
         _fields_ = (
             ('Revision', ctypes.c_uint8),
             ('SubAuthorityCount', ctypes.c_uint8),
@@ -1205,12 +1215,6 @@ def make_sid(auth_count: int):
 
             ('SubAuthority', ctypes.c_uint32 * auth_count)
         )
-
-        # the need of a big-endian structure forces us to define a non-BaseStruct structure field
-        # which breaks the 'volatile_ref' mechanism. we here prevent the user from doing that
-        @classmethod
-        def volatile_ref(cls, *args):
-            raise NotImplementedError(f'{cls.__name__} is not capable of volatile references')
 
         # let SID structures be comparable
         def __eq__(self, other):
@@ -1243,7 +1247,7 @@ class Mutex:
 #     _fields_ = (
 #         ('OriginalFirstThunk', ctypes.c_uint32),
 #         ('TimeDateStamp', ctypes.c_uint32),
-#         ('ForwarderChain', ctypes.c_uint32), 
+#         ('ForwarderChain', ctypes.c_uint32),
 #         ('Name', ctypes.c_uint32),
 #         ('FirstThunk', ctypes.c_uint32)
 #     )
@@ -1263,7 +1267,7 @@ class Mutex:
 #     )
 
 
-class Point(struct.BaseStruct):
+class Point(struct.BaseStructEL):
     _fields_ = (
         ('x', ctypes.c_int32),
         ('y', ctypes.c_int32)
@@ -1336,13 +1340,14 @@ def make_sockaddr_in():
 
     return sockaddr_in
 
+
 # https://docs.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
 def make_sockaddr_in6():
 
     # https://docs.microsoft.com/en-us/windows/win32/api/in6addr/ns-in6addr-in6_addr
     class in6_addr(ctypes.BigEndianStructure):
         _fields_ = (
-            ('Byte', ctypes.c_uint8 * 16)
+            ('Byte', ctypes.c_uint8 * 16),
         )
 
     class sockaddr_in6(ctypes.BigEndianStructure):
@@ -1400,7 +1405,7 @@ def make_system_info(archbits: int):
     return SYSTEM_INFO
 
 
-class SYSTEMTIME(struct.BaseStruct):
+class SYSTEMTIME(struct.BaseStructEL):
     _fields_ = (
         ('wYear',         ctypes.c_uint16),
         ('wMonth',        ctypes.c_uint16),
@@ -1540,3 +1545,19 @@ def make_win32_find_data(archbits: int, *, wide: bool):
         )
 
     return WIN32_FIND_DATA
+
+# https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-exception_pointers
+def make_exception_pointers(archbits: int):
+    """Generate an EXCEPTION_POINTERS structure class.
+    """
+
+    native_type = struct.get_native_type(archbits)
+    Struct = struct.get_aligned_struct(archbits)
+
+    class EXCEPTION_POINTERS(Struct):
+        _fields_ = (
+            ('ExceptionRecord',     native_type),
+            ('ContextRecord',       native_type)
+        )
+
+    return EXCEPTION_POINTERS

@@ -20,7 +20,6 @@ from qiling.os.windows.structs import Token, make_startup_info
 })
 def hook_ExitProcess(ql: Qiling, address: int, params):
     ql.emu_stop()
-    ql.os.PE_RUN = False
 
 def _GetStartupInfo(ql: Qiling, address: int, params, *, wide: bool):
     lpStartupInfo = params['lpStartupInfo']
@@ -238,7 +237,6 @@ def hook_TerminateProcess(ql: Qiling, address: int, params):
 
     if process == ql.os.profile.getint("KERNEL", "pid"):  # or process == ql.os.image_address:
         ql.emu_stop()
-        ql.os.PE_RUN = False
 
     return 1
 

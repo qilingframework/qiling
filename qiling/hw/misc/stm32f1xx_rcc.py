@@ -36,47 +36,47 @@ class STM32F1xxRcc(QlPeripheral):
     def __init__(self, ql, label, intn=None):
         super().__init__(ql, label)
 
-        self.rcc = self.struct(
+        self.instance = self.struct(
             CR     = 0x00000083,
             AHBENR = 0x00000014,
             CSR    = 0x0C000000,
         )
 
         self.rdyon = {
-			'CR': [
-				(RCC_CR.HSIRDY   , RCC_CR.HSION   ),
-				(RCC_CR.HSERDY   , RCC_CR.HSEON   ),
-				(RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
-				(RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
-			],
-			'CFGR': [
-				(RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
-				(RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
-			],
-			'CSR': [
-				(RCC_CSR.LSIRDY, RCC_CSR.LSION)
-			]
-		}
+            'CR': [
+                (RCC_CR.HSIRDY   , RCC_CR.HSION   ),
+                (RCC_CR.HSERDY   , RCC_CR.HSEON   ),
+                (RCC_CR.PLLRDY   , RCC_CR.PLLON   ),
+                (RCC_CR.PLLI2SRDY, RCC_CR.PLLI2SON),
+            ],
+            'CFGR': [
+                (RCC_CFGR.SWS_0, RCC_CFGR.SW_0),
+                (RCC_CFGR.SWS_1, RCC_CFGR.SW_1),
+            ],
+            'CSR': [
+                (RCC_CSR.LSIRDY, RCC_CSR.LSION)
+            ]
+        }
 
         self.intn = intn
 
     @QlPeripheral.monitor()
-    def read(self, offset: int, size: int) -> int:		
+    def read(self, offset: int, size: int) -> int:        
         buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(buf, ctypes.addressof(self.rcc) + offset, size)
+        ctypes.memmove(buf, ctypes.addressof(self.instance) + offset, size)
         return int.from_bytes(buf.raw, byteorder='little')
 
     @QlPeripheral.monitor()
     def write(self, offset: int, size: int, value: int):
         data = (value).to_bytes(size, 'little')
-        ctypes.memmove(ctypes.addressof(self.rcc) + offset, data, size)
+        ctypes.memmove(ctypes.addressof(self.instance) + offset, data, size)
 
     def step(self):
         for reg, rdyon in self.rdyon.items():
-            value = getattr(self.rcc, reg)
+            value = getattr(self.instance, reg)
             for rdy, on in rdyon:
                 if value & on:
                     value |= rdy
                 else:
                     value &= ~rdy
-            setattr(self.rcc, reg, value)
+            setattr(self.instance, reg, value)

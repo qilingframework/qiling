@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from functools import partial
+
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_INS_SYSCALL
 
@@ -15,11 +17,11 @@ from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
 from qiling.os.const import *
 from qiling.os.linux.procfs import QlProcFS
-from qiling.os.mapper import QlFsMappedCallable
 from qiling.os.posix.posix import QlOsPosix
 
 from . import futex
 from . import thread
+
 
 class QlOsLinux(QlOsPosix):
     type = QL_OS.LINUX
@@ -46,9 +48,7 @@ class QlOsLinux(QlOsPosix):
         self.futexm = None
         self.fh = None
         self.function_after_load_list = []
-        self.elf_mem_start = 0x0
         self.load()
-
 
     def load(self):
         self.futexm = futex.QlLinuxFutexManagement()
@@ -98,7 +98,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             # Keep test for _cc
             #self.ql.hook_insn(hook_posix_api, UC_X86_INS_SYSCALL)
-            self.thread_class = thread.QlLinuxX8664Thread     
+            self.thread_class = thread.QlLinuxX8664Thread
 
         elif self.ql.arch.type == QL_ARCH.RISCV:
             self.ql.arch.enable_float()
@@ -117,30 +117,33 @@ class QlOsLinux(QlOsPosix):
 
         # on fork or execve, do not inherit opened files tagged as 'close on exec'
         for i in range(len(self.fd)):
-            if getattr(self.fd[i], 'close_on_exec', 0):
+            if getattr(self.fd[i], 'close_on_exec', False):
                 self.fd[i] = None
 
-
     def setup_procfs(self):
-        self.fs_mapper.add_fs_mapping(r'/proc/self/auxv',    QlFsMappedCallable(QlProcFS.self_auxv, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/cmdline', QlFsMappedCallable(QlProcFS.self_cmdline, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/environ', QlFsMappedCallable(QlProcFS.self_environ, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/exe',     QlFsMappedCallable(QlProcFS.self_exe, self))
-        self.fs_mapper.add_fs_mapping(r'/proc/self/maps',    QlFsMappedCallable(QlProcFS.self_map, self.ql.mem))
+        files = (
+            (r'/proc/self/auxv',    lambda: partial(QlProcFS.self_auxv, self)),
+            (r'/proc/self/cmdline', lambda: partial(QlProcFS.self_cmdline, self)),
+            (r'/proc/self/environ', lambda: partial(QlProcFS.self_environ, self)),
+            (r'/proc/self/exe',     lambda: partial(QlProcFS.self_exe, self)),
+            (r'/proc/self/maps',    lambda: partial(QlProcFS.self_map, self.ql.mem))
+        )
+
+        for filename, wrapper in files:
+            # add mapping only if the user has not already mapped it
+            if not self.fs_mapper.has_mapping(filename):
+                self.fs_mapper.add_mapping(filename, wrapper())
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
-
 
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
             self.function_after_load_list.append(function)
 
-
     def run_function_after_load(self):
         for f in self.function_after_load_list:
             f()
-
 
     def run(self):
         # do not set-up procfs for drivers and shellcode
@@ -154,20 +157,24 @@ class QlOsLinux(QlOsPosix):
             if self.ql.code:
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.code)), self.ql.timeout, self.ql.count)
             else:
-                if self.ql.multithread == True:
+                if self.ql.multithread:
                     # start multithreading
                     thread_management = thread.QlLinuxThreadManagement(self.ql)
                     self.ql.os.thread_management = thread_management
                     thread_management.run()
 
                 else:
-                    if  self.ql.entry_point is not None:
+                    if self.ql.entry_point is not None:
                         self.ql.loader.elf_entry = self.ql.entry_point
 
+                    # do we have an interp?
                     elif self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         entry_address = self.ql.loader.elf_entry
-                        if self.ql.arch.type == QL_ARCH.ARM and entry_address & 1 == 1:
-                            entry_address -= 1
+
+                        if self.ql.arch.type == QL_ARCH.ARM:
+                            entry_address &= ~1
+
+                        # start running interp, but stop when elf entry point is reached
                         self.ql.emu_start(self.ql.loader.entry_point, entry_address, self.ql.timeout)
                         self.ql.do_lib_patch()
                         self.run_function_after_load()
