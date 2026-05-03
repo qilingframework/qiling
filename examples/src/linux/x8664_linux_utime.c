@@ -37,7 +37,7 @@ int main(int argc, char **argv){
 	utime_time[0] = actime;
 
 	res = syscall(SYS_utime,"./utime-test", utime_time);
-	if (!res){
+	if (res != 0){
 		perror("utime failed");
 	}
 

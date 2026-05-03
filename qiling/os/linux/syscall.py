@@ -139,9 +139,13 @@ def do_utime(ql: Qiling, filename: ctypes.POINTER, times: ctypes.POINTER, s:bool
     try:
         # get path inside of qiling rootfs
         if has_dfd:
-            real_file = ql.os.path.transform_to_relative_path(ql.mem.string(filename))
+            real_file = ql.os.path.transform_to_real_path(ql.os.path.cwd + ql.mem.string(filename)[1:])
+            # need to use filename[1:] to remove the leading '.'
         else:
             real_file = ql.os.path.transform_to_real_path(ql.mem.string(filename))
+        is_safe = ql.os.path.is_safe_host_path(real_file)
+        if not is_safe:
+            return EACCES
     except Exception as ex:  # return errors appropriately, don't try to handle
         # everything ourselves
         return -ex.errno
@@ -293,4 +297,4 @@ def ql_syscall_futimesat(
     ql: Qiling, dfd: int, pathname: ctypes.POINTER, timeval: ctypes.POINTER
 ):
 
-    return do_utime(ql, filename, timeval, True, True)
+    return do_utime(ql, pathname, timeval, True, True)
