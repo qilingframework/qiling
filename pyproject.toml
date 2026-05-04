@@ -44,6 +44,7 @@ unicornafl = { version = "^2.0.0", markers = "platform_system != 'Windows'", opt
 fuzzercorn = { version = "^0.0.1", markers = "platform_system == 'Linux'", optional = true }
 
 r2libr = { version = "^5.7.4", optional = true }
+lief = "^0.17.6"
 
 [tool.poetry.extras]
 fuzz = ["unicornafl", "fuzzercorn"]
