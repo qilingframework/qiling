@@ -235,17 +235,17 @@ def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
 
 
 def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
-    import lief
+    from lief import PE
 
     try:
-        pe = lief.PE.parse(path)
+        pe = PE.parse(path)
     except Exception:
         return None, None, None
 
     if pe is None:
         return None, None, None
 
-    M = lief.PE.Header.MACHINE_TYPES
+    M = PE.Header.MACHINE_TYPES
     machine_map = {
         M.I386  : QL_ARCH.X86,
         M.AMD64 : QL_ARCH.X8664,
@@ -259,7 +259,7 @@ def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Op
     archendian = None
 
     if arch:
-        S = lief.PE.OptionalHeader.SUBSYSTEM
+        S = PE.OptionalHeader.SUBSYSTEM
         subsystem_uefi = (
             S.EFI_APPLICATION,
             S.EFI_BOOT_SERVICE_DRIVER,

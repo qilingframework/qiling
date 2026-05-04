@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 
-import lief
+from lief import ELF
 
 from qiling.const import *
 from qiling.core import Qiling
@@ -62,7 +62,7 @@ class QlLoaderMCU(QlLoader):
         self.filetype = self.guess_filetype()
 
         if self.filetype == 'elf':
-            self.elf = lief.ELF.parse(self.ql.path)
+            self.elf = ELF.parse(self.ql.path)
             if self.elf is None:
                 raise ValueError(f'failed to parse ELF: {self.ql.path}')
 
@@ -87,7 +87,7 @@ class QlLoaderMCU(QlLoader):
     def reset(self):
         if self.filetype == 'elf':
             for segment in self.elf.segments:
-                if segment.type == lief.ELF.Segment.TYPE.LOAD:
+                if segment.type == ELF.Segment.TYPE.LOAD:
                     self.ql.mem.write(segment.physical_address, bytes(segment.content))
 
             # TODO: load symbol table

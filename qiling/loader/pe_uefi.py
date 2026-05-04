@@ -4,7 +4,7 @@
 #
 
 import os
-import lief
+from lief import PE
 
 from typing import Any, Mapping, Optional, Sequence
 from unicorn.unicorn_const import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
@@ -99,7 +99,7 @@ class QlLoaderPE_UEFI(QlLoader):
         with open(path, 'rb') as f:
             pe_raw = f.read()
 
-        pe = lief.PE.parse(path)
+        pe = PE.parse(path)
 
         if pe is None:
             raise QlMemoryMappedError(f'Failed to parse UEFI module: {path}')
@@ -126,7 +126,7 @@ class QlLoaderPE_UEFI(QlLoader):
             ql.mem.map(image_base, hdr_size, UC_PROT_READ, image_name)
             ql.mem.write(image_base, bytes(pe_data[:pe.optional_header.sizeof_headers]))
 
-            SC = lief.PE.Section.CHARACTERISTICS
+            SC = PE.Section.CHARACTERISTICS
             for section in pe.sections:
                 chars = int(section.characteristics)
                 if chars & int(SC.MEM_DISCARDABLE):

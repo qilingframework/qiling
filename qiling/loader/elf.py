@@ -10,7 +10,7 @@ import struct
 from enum import IntEnum
 from typing import Any, AnyStr, Optional, Sequence, Mapping, Tuple
 
-import lief
+from lief import ELF
 from unicorn.unicorn_const import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling import Qiling
@@ -62,16 +62,16 @@ SYSCALL_SIZE = 0x1000
 
 
 # workaround for https://github.com/lief-project/LIEF/issues/795
-def _iter_raw_relocations(binary: lief.ELF.Binary, raw: bytes):
-    is_be = binary.header.identity_data == lief.ELF.Header.ELF_DATA.MSB
-    is_64 = binary.header.identity_class == lief.ELF.Header.CLASS.ELF64
+def _iter_raw_relocations(binary: ELF.Binary, raw: bytes):
+    is_be = binary.header.identity_data == ELF.Header.ELF_DATA.MSB
+    is_64 = binary.header.identity_class == ELF.Header.CLASS.ELF64
     endian = '>' if is_be else '<'
 
     for sec in binary.sections:
-        if sec.type not in (lief.ELF.Section.TYPE.REL, lief.ELF.Section.TYPE.RELA):
+        if sec.type not in (ELF.Section.TYPE.REL, ELF.Section.TYPE.RELA):
             continue
 
-        is_rela = (sec.type == lief.ELF.Section.TYPE.RELA)
+        is_rela = (sec.type == ELF.Section.TYPE.RELA)
 
         # sh_info = section being relocated; sh_link = symbol table section
         info_idx = sec.information
@@ -96,6 +96,28 @@ def _iter_raw_relocations(binary: lief.ELF.Binary, raw: bytes):
                 r_addend = struct.unpack_from(f'{endian}i', entry, 8)[0] if is_rela else 0
 
             yield target_sec, r_sym, r_offset, r_type, r_addend
+
+
+def _iter_lief_relocations(binary: ELF.Binary):
+    """Primary relocation iterator using LIEF's parsed relocations.
+
+    Yields (target_sec, r_sym, r_offset, r_type, r_addend) with r_type as
+    the ELF.Relocation.TYPE enum value for direct comparison.
+    """
+    cls = binary.header.identity_class
+    is_64 = cls == ELF.Header.CLASS.ELF64
+
+    for rel in binary.relocations:
+        target_sec = rel.section
+        if target_sec is None:
+            continue
+
+        r_info = rel.r_info(cls)
+        r_sym = r_info >> 32 if is_64 else r_info >> 8
+        r_offset = rel.address
+        r_addend = rel.addend
+
+        yield target_sec, r_sym, r_offset, rel.type, r_addend
 
 
 class QlLoaderELF(QlLoader):
@@ -128,7 +150,7 @@ class QlLoaderELF(QlLoader):
         with open(self.path, 'rb') as infile:
             raw = infile.read()
 
-        binary = lief.ELF.parse(list(raw))
+        binary = ELF.parse(list(raw))
 
         if binary is None:
             raise QlErrorELFFormat('failed to parse ELF file')
@@ -136,18 +158,18 @@ class QlLoaderELF(QlLoader):
         elftype = binary.header.file_type
 
         # is it a driver?
-        if elftype == lief.ELF.Header.FILE_TYPE.REL:
+        if elftype == ELF.Header.FILE_TYPE.REL:
             self.load_driver(binary, raw, top_of_stack, loadbase=0x8000000)
             self.ql.hook_code(hook_kernel_api)
 
         # is it an executable?
-        elif elftype == lief.ELF.Header.FILE_TYPE.EXEC:
+        elif elftype == ELF.Header.FILE_TYPE.EXEC:
             load_address = 0
 
             self.load_with_ld(binary, top_of_stack, load_address, self.argv, self.env)
 
         # is it a shared object?
-        elif elftype == lief.ELF.Header.FILE_TYPE.DYN:
+        elif elftype == ELF.Header.FILE_TYPE.DYN:
             load_address = self.profile.getint('load_address')
 
             self.load_with_ld(binary, top_of_stack, load_address, self.argv, self.env)
@@ -155,7 +177,7 @@ class QlLoaderELF(QlLoader):
         else:
             raise QlErrorELFFormat(f'unexpected elf type value (e_type = {elftype})')
 
-        self.is_driver = (elftype == lief.ELF.Header.FILE_TYPE.REL)
+        self.is_driver = (elftype == ELF.Header.FILE_TYPE.REL)
 
         self.ql.arch.regs.arch_sp = self.stack_address
 
@@ -183,12 +205,12 @@ class QlLoaderELF(QlLoader):
 
         return prot
 
-    def load_with_ld(self, binary: lief.ELF.Binary, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
+    def load_with_ld(self, binary: ELF.Binary, stack_addr: int, load_address: int, argv: Sequence[str] = [], env: Mapping[str, str] = {}):
 
-        def load_elf_segments(binary: lief.ELF.Binary, load_address: int, info: str):
+        def load_elf_segments(binary: ELF.Binary, load_address: int, info: str):
             # get list of loadable segments; these segments will be loaded to memory
             load_segments = sorted(
-                [s for s in binary.segments if s.type == lief.ELF.Segment.TYPE.LOAD],
+                [s for s in binary.segments if s.type == ELF.Segment.TYPE.LOAD],
                 key=lambda s: s.virtual_address
             )
 
@@ -284,11 +306,11 @@ class QlLoaderELF(QlLoader):
             if not self.ql.os.path.is_safe_host_path(interp_hpath):
                 raise PermissionError(f'unsafe path: {interp_hpath}')
 
-            interp_binary = lief.ELF.parse(interp_hpath)
+            interp_binary = ELF.parse(interp_hpath)
             if interp_binary is None:
                 raise QlErrorELFFormat(f'failed to parse interpreter: {interp_hpath}')
 
-            interp_load_segs = [s for s in interp_binary.segments if s.type == lief.ELF.Segment.TYPE.LOAD]
+            interp_load_segs = [s for s in interp_binary.segments if s.type == ELF.Segment.TYPE.LOAD]
             min_vaddr = min(s.virtual_address for s in interp_load_segs)
 
             # determine interpreter base address
@@ -462,7 +484,7 @@ class QlLoaderELF(QlLoader):
 
                     self.ql.mem.write(vsyscall_addr + i * entry_size, entry.ljust(entry_size, b'\xcc'))
 
-    def lkm_get_init(self, binary: lief.ELF.Binary) -> int:
+    def lkm_get_init(self, binary: ELF.Binary) -> int:
         """Get file offset of the init_module function.
         """
 
@@ -473,7 +495,7 @@ class QlLoaderELF(QlLoader):
 
         raise QlErrorELFFormat('invalid module: symbol init_module not found')
 
-    def lkm_dynlinker(self, binary: lief.ELF.Binary, raw: bytes, mem_start: int) -> Mapping[str, int]:
+    def lkm_dynlinker(self, binary: ELF.Binary, raw: bytes, mem_start: int) -> Mapping[str, int]:
         # Index symbols by name for fast lookup
         sym_by_name = {sym.name: sym for sym in binary.symbols if sym.name}
 
@@ -493,18 +515,31 @@ class QlLoaderELF(QlLoader):
         all_elf_symbols = list(binary.symbols)
         sections_list = list(binary.sections)
 
-        SHF_ALLOC = int(lief.ELF.Section.FLAGS.ALLOC)
-        alloc_section_names = {sec.name for sec in sections_list if int(sec.flags) & SHF_ALLOC}
+        SHF_ALLOC = int(ELF.Section.FLAGS.ALLOC)
+        alloc_section_names = {sec.name for sec in sections_list if sec.flags & SHF_ALLOC}
 
-        # Read e_machine from the raw ELF header to dispatch relocation types correctly
-        is_be = binary.header.identity_data == lief.ELF.Header.ELF_DATA.MSB
-        e_machine = struct.unpack_from(f'{">" if is_be else "<"}H', raw, 0x12)[0]
-        EM_386 = 3; EM_MIPS = 8; EM_X86_64 = 62
+        # binary.header.machine_type is correct even for big-endian targets —
+        # LIEF handles ELF header byte-swapping correctly for all architectures.
+        e_machine = binary.header.machine_type
+
+        T = ELF.Relocation.TYPE
+        A = ELF.ARCH
 
         prev_mips_hi16_loc = 0  # used by R_MIPS_HI16/LO16 pair
 
-        # Use raw-bytes parser to avoid LIEF's endianness bug on big-endian MIPS REL files
-        for target_sec, r_sym, r_offset, r_type, r_addend in _iter_raw_relocations(binary, raw):
+        is_be = binary.header.identity_data == ELF.Header.ELF_DATA.MSB
+        if is_be and e_machine == A.MIPS:
+            # fall back to raw parser: LIEF has an endianness bug for big-endian MIPS REL (issue #795)
+            # lift raw ints back to ELF.Relocation.TYPE so dispatch is uniform
+            mips_arch_bits = int(T.MIPS_32) & 0xFF000000
+            def reloc_iter():
+                for target_sec, r_sym, r_offset, r_type_raw, r_addend in _iter_raw_relocations(binary, raw):
+                    yield target_sec, r_sym, r_offset, T(mips_arch_bits | r_type_raw), r_addend
+            reloc_source = reloc_iter()
+        else:
+            reloc_source = _iter_lief_relocations(binary)
+
+        for target_sec, r_sym, r_offset, r_type, r_addend in reloc_source:
             # skip relocations for non-alloc sections (e.g. .gnu.linkonce.this_module)
             if target_sec.name not in alloc_section_names:
                 continue
@@ -570,38 +605,36 @@ class QlLoaderELF(QlLoader):
 
             loc = target_sec.offset + r_offset + mem_start
 
-            if e_machine == EM_X86_64:
-                # R_X86_64_* type integers
-                if r_type in (11, 10):   # R_X86_64_32S=11, R_X86_64_32=10
+            if e_machine == A.X86_64:
+                if r_type in (T.X86_64_32S, T.X86_64_32):
                     if r_addend:
                         val = sym_offset + r_addend + mem_start
                     else:
                         val = rev_reloc_symbols[symbol_name]
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
-                elif r_type == 1:        # R_X86_64_64
+                elif r_type == T.X86_64_64:
                     val = sym_offset + r_addend + 0x2000000  # init_module position: FIXME
                     ql.mem.write_ptr(loc, val, 8)
 
-                elif r_type == 24:       # R_X86_64_PC64
+                elif r_type == T.X86_64_PC64:
                     val = r_addend - loc + rev_reloc_symbols[symbol_name]
                     ql.mem.write_ptr(loc, val, 8)
 
-                elif r_type in (2, 4):   # R_X86_64_PC32=2, R_X86_64_PLT32=4
+                elif r_type in (T.X86_64_PC32, T.X86_64_PLT32):
                     val = r_addend - loc + rev_reloc_symbols[symbol_name]
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
                 else:
                     raise NotImplementedError(f'Relocation type {r_type} not implemented for x86_64')
 
-            elif e_machine == EM_386:
-                # R_386_* type integers
-                if r_type in (2, 11):    # R_386_PC32=2, R_386_PLT32=11
+            elif e_machine == A.I386:
+                if r_type in (T.X86_PC32, T.X86_PLT32):
                     val = ql.mem.read_ptr(loc, 4)
                     val += rev_reloc_symbols[symbol_name] - loc
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
-                elif r_type == 1:        # R_386_32
+                elif r_type == T.X86_32:
                     val = ql.mem.read_ptr(loc, 4)
                     val += rev_reloc_symbols[symbol_name]
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
@@ -609,17 +642,16 @@ class QlLoaderELF(QlLoader):
                 else:
                     raise NotImplementedError(f'Relocation type {r_type} not implemented for i386')
 
-            elif e_machine == EM_MIPS:
-                # R_MIPS_* type integers
-                if r_type == 2:          # R_MIPS_32
+            elif e_machine == A.MIPS:
+                if r_type == T.MIPS_32:
                     val = ql.mem.read_ptr(loc, 4)
                     val += rev_reloc_symbols[symbol_name]
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
-                elif r_type == 5:        # R_MIPS_HI16
+                elif r_type == T.MIPS_HI16:
                     prev_mips_hi16_loc = loc
 
-                elif r_type == 6:        # R_MIPS_LO16
+                elif r_type == T.MIPS_LO16:
                     val = ql.mem.read_ptr(prev_mips_hi16_loc + 2, 2) << 16 | ql.mem.read_ptr(loc + 2, 2)
                     val = rev_reloc_symbols[symbol_name] + val
                     # *(word)(mips_lo16_loc + 2) is treated as signed
@@ -632,14 +664,13 @@ class QlLoaderELF(QlLoader):
                 else:
                     raise NotImplementedError(f'Relocation type {r_type} not implemented for MIPS')
 
-            elif e_machine == 40:   # EM_ARM
-                # R_ARM_* type integers
-                if r_type in (28, 29):   # R_ARM_CALL=28, R_ARM_JUMP24=29
+            elif e_machine == A.ARM:
+                if r_type in (T.ARM_CALL, T.ARM_JUMP24):
                     val = (rev_reloc_symbols[symbol_name] - loc - 8) >> 2
                     val = (val & 0xFFFFFF) | (ql.mem.read_ptr(loc, 4) & 0xFF000000)
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
-                elif r_type == 2:        # R_ARM_ABS32
+                elif r_type == T.ARM_ABS32:
                     val = rev_reloc_symbols[symbol_name] + ql.mem.read_ptr(loc, 4)
                     ql.mem.write_ptr(loc, (val & 0xFFFFFFFF), 4)
 
@@ -648,7 +679,7 @@ class QlLoaderELF(QlLoader):
 
         return rev_reloc_symbols
 
-    def load_driver(self, binary: lief.ELF.Binary, raw: bytes, stack_addr: int, loadbase: int = 0) -> None:
+    def load_driver(self, binary: ELF.Binary, raw: bytes, stack_addr: int, loadbase: int = 0) -> None:
         elfdata_mapping = self.get_elfdata_mapping(binary, raw)
 
         mem_start = self.ql.mem.align(loadbase)
@@ -709,7 +740,7 @@ class QlLoaderELF(QlLoader):
         self.import_symbols[self.ql.os.hook_addr + 1 * self.ql.arch.pointersize] = hook_sys_write
         self.import_symbols[self.ql.os.hook_addr + 2 * self.ql.arch.pointersize] = hook_sys_open
 
-    def get_elfdata_mapping(self, binary: lief.ELF.Binary, raw: bytes) -> bytes:
+    def get_elfdata_mapping(self, binary: ELF.Binary, raw: bytes) -> bytes:
         # TODO: need to patch hooked symbols with their hook targets
         # (e.g. replace calls to 'printk' with the hooked address that
         # was allocate for it)
@@ -728,11 +759,11 @@ class QlLoaderELF(QlLoader):
         # here we presume this a relocatable object and don't do any relocation (that is, it
         # is relocated to 0)
 
-        SHF_ALLOC = int(lief.ELF.Section.FLAGS.ALLOC)
+        SHF_ALLOC = int(ELF.Section.FLAGS.ALLOC)
 
         # pick up loadable sections
         for sec in binary.sections:
-            if int(sec.flags) & SHF_ALLOC:
+            if sec.flags & SHF_ALLOC:
                 # pad aggregated elf data to the offset of the current section
                 elfdata_mapping.extend(b'\x00' * (sec.offset - len(elfdata_mapping)))
 

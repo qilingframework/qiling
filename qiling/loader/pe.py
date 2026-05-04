@@ -5,7 +5,8 @@
 
 from __future__ import annotations
 
-import os, lief, pickle, secrets, ntpath
+import os, pickle, secrets, ntpath
+from lief import PE
 from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
 
 from unicorn import UcError
@@ -33,7 +34,7 @@ class ForwardedExport(NamedTuple):
     target_symbol: str
 
 
-def _pe_build_mapped_image(binary: lief.PE.Binary, raw_bytes: bytes) -> bytearray:
+def _pe_build_mapped_image(binary: PE.Binary, raw_bytes: bytes) -> bytearray:
     """Build a flat virtual-address-mapped PE image (equivalent to pefile.get_memory_mapped_image)."""
     oh = binary.optional_header
     data = bytearray(oh.sizeof_image)
@@ -47,12 +48,12 @@ def _pe_build_mapped_image(binary: lief.PE.Binary, raw_bytes: bytes) -> bytearra
     return data
 
 
-def _pe_apply_relocations(data: bytearray, binary: lief.PE.Binary, new_base: int) -> None:
+def _pe_apply_relocations(data: bytearray, binary: PE.Binary, new_base: int) -> None:
     """Apply base-relocation delta in-place (equivalent to pefile.relocate_image)."""
     delta = new_base - binary.optional_header.imagebase
     if delta == 0:
         return
-    BT = lief.PE.RelocationEntry.BASE_TYPES
+    BT = PE.RelocationEntry.BASE_TYPES
     for block in binary.relocations:
         for entry in block.entries:
             rva = block.virtual_address + entry.position
@@ -150,7 +151,7 @@ class Process:
 
         return self.ql.os.path.virtual_to_host_path(vpath), basename.casefold()
     
-    def init_function_tables(self, pe: lief.PE.Binary, image_base: int):
+    def init_function_tables(self, pe: PE.Binary, image_base: int):
         """Parse function table data for the given PE file.
         Only relevant for non-x86 images.
 
@@ -161,7 +162,7 @@ class Process:
         if self.ql.arch.type is QL_ARCH.X86:
             return
 
-        exc_dir = pe.data_directory(lief.PE.DataDirectory.TYPES.EXCEPTION_TABLE)
+        exc_dir = pe.data_directory(PE.DataDirectory.TYPES.EXCEPTION_TABLE)
 
         if exc_dir is None or exc_dir.rva == 0:
             self.ql.log.debug('Image has no exception directory; skipping exception data')
@@ -311,7 +312,7 @@ class Process:
             with open(dll_path, 'rb') as f:
                 dll_raw = f.read()
 
-            dll = lief.PE.parse(dll_path)
+            dll = PE.parse(dll_path)
 
             if dll is None:
                 self.ql.log.error(f'Failed to parse PE: {dll_path}')
@@ -438,7 +439,7 @@ class Process:
 
         return dll_base
 
-    def call_dll_entrypoint(self, dll: lief.PE.Binary, dll_base: int, dll_len: int, dll_name: str):
+    def call_dll_entrypoint(self, dll: PE.Binary, dll_base: int, dll_len: int, dll_name: str):
         entry_address = dll.optional_header.addressof_entrypoint
 
         if dll.section_from_rva(entry_address) is None:
@@ -632,7 +633,7 @@ class Process:
         self.ldr_list.append(entry_addr)
 
     @staticmethod
-    def directory_exists(pe: lief.PE.Binary, entry: str) -> bool:
+    def directory_exists(pe: PE.Binary, entry: str) -> bool:
         if entry == 'IMAGE_DIRECTORY_ENTRY_IMPORT':
             return pe.has_imports
         elif entry == 'IMAGE_DIRECTORY_ENTRY_EXPORT':
@@ -641,7 +642,7 @@ class Process:
             return pe.load_configuration is not None
         return False
 
-    def init_imports(self, pe: lief.PE.Binary, is_driver: bool, image_base: int = 0):
+    def init_imports(self, pe: PE.Binary, is_driver: bool, image_base: int = 0):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_IMPORT'):
             return
 
@@ -731,7 +732,7 @@ class Process:
 
                     self.ql.mem.write_ptr(image_base + imp.iat_address, addr)
 
-    def init_exports(self, pe: lief.PE.Binary):
+    def init_exports(self, pe: PE.Binary):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_EXPORT'):
             return
 
@@ -823,7 +824,7 @@ class Process:
 
         self.ql.os.KUSER_SHARED_DATA = kusd_obj
 
-    def init_security_cookie(self, pe: lief.PE.Binary, image_base: int):
+    def init_security_cookie(self, pe: PE.Binary, image_base: int):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG'):
             return
 
@@ -868,12 +869,12 @@ class QlLoaderPE(QlLoader, Process):
         else:
             with open(self.path, 'rb') as f:
                 pe_raw = f.read()
-            pe = lief.PE.parse(self.path)
+            pe = PE.parse(self.path)
             if pe is None:
                 raise QlErrorArch(f'Failed to parse PE: {self.path}')
-            C = lief.PE.Header.CHARACTERISTICS
+            C = PE.Header.CHARACTERISTICS
             self.is_driver = bool(pe.header.characteristics & int(C.SYSTEM)) or \
-                             pe.optional_header.subsystem == lief.PE.OptionalHeader.SUBSYSTEM.NATIVE
+                             pe.optional_header.subsystem == PE.OptionalHeader.SUBSYSTEM.NATIVE
 
         ossection = f'OS{self.ql.arch.bits}'
 
@@ -910,7 +911,7 @@ class QlLoaderPE(QlLoader, Process):
 
         self.load(pe, pe_raw)
 
-    def load(self, pe: Optional[lief.PE.Binary], pe_raw: Optional[bytes] = None):
+    def load(self, pe: Optional[PE.Binary], pe_raw: Optional[bytes] = None):
         # set stack pointer
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
@@ -996,7 +997,7 @@ class QlLoaderPE(QlLoader, Process):
 
             self.ql.log.debug(f'Done loading {self.path}')
 
-            C = lief.PE.Header.CHARACTERISTICS
+            C = PE.Header.CHARACTERISTICS
             if self.is_driver:
                 args = (
                     (POINTER, self.driver_object_address),

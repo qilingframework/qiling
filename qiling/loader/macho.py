@@ -5,7 +5,7 @@
 
 import os, plistlib, struct
 
-import lief
+from lief import MachO
 
 from .loader import QlLoader
 
@@ -22,14 +22,14 @@ from qiling.os.macos.utils import env_dict_to_array, page_align_end
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
 
-def _lief_macho_parse(path: str, arch_type) -> 'lief.MachO.Binary':
+def _lief_macho_parse(path: str, arch_type) -> 'MachO.Binary':
     """Parse a Mach-O file with LIEF, selecting the correct arch slice from a FAT binary."""
     cpu_map = {
-        QL_ARCH.X8664: lief.MachO.Header.CPU_TYPE.X86_64,
-        QL_ARCH.ARM64: lief.MachO.Header.CPU_TYPE.ARM64,
+        QL_ARCH.X8664: MachO.Header.CPU_TYPE.X86_64,
+        QL_ARCH.ARM64: MachO.Header.CPU_TYPE.ARM64,
     }
     target_cpu = cpu_map.get(arch_type)
-    parsed = lief.MachO.parse(path)   # always FatBinary, or None on failure
+    parsed = MachO.parse(path)   # always FatBinary, or None on failure
     if parsed is None:
         raise QlErrorMACHOFormat(f'Failed to parse Mach-O: {path}')
     return next(
@@ -165,7 +165,7 @@ class QlLoaderMACHO(QlLoader):
              if seg.virtual_address == 0 and seg.file_size == 0),
             0
         )
-        self.is_driver      = (self.macho_file.header.file_type == lief.MachO.Header.FILE_TYPE.KEXT_BUNDLE)
+        self.is_driver      = (self.macho_file.header.file_type == MachO.Header.FILE_TYPE.KEXT_BUNDLE)
         self.slide          = int(self.profile.get("LOADER", "slide"), 16)
         self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
         self.string_align   = 8
