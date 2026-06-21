@@ -1115,7 +1115,7 @@ def get_stat_struct(ql: Qiling):
             return LinuxX8664Stat()
         elif ql.arch.type == QL_ARCH.X86:
             return LinuxX86Stat()
-        elif ql.arch.type == QL_ARCH.MIPS:
+        elif ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             if ql.arch.bits == 64:
                 if ql.arch.endian == QL_ENDIAN.EL:
                     return LinuxMips64Stat()

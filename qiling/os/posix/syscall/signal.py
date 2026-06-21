@@ -29,6 +29,7 @@ def __make_sigset(arch: QlArch):
         QL_ARCH.ARM:      native_type,
         QL_ARCH.ARM64:    native_type,
         QL_ARCH.MIPS:     ctypes.c_uint32 * (128 // (4 * 8)),
+        QL_ARCH.MIPS64:   ctypes.c_uint32 * (128 // (4 * 8)),
         QL_ARCH.CORTEX_M: native_type
     }
 
@@ -108,6 +109,7 @@ def __make_sigaction(arch: QlArch) -> Type[struct.BaseStruct]:
         QL_ARCH.ARM:      arm_sigaction,
         QL_ARCH.ARM64:    arm_sigaction,
         QL_ARCH.MIPS:     mips_sigaction,
+        QL_ARCH.MIPS64:   mips_sigaction,
         QL_ARCH.CORTEX_M: arm_sigaction
     }
 
@@ -119,7 +121,7 @@ def __make_sigaction(arch: QlArch) -> Type[struct.BaseStruct]:
 
 def ql_syscall_rt_sigaction(ql: Qiling, signum: int, act: int, oldact: int):
     SIGKILL = 9
-    SIGSTOP = 23 if ql.arch.type is QL_ARCH.MIPS else 19
+    SIGSTOP = 23 if ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64) else 19
 
     if signum not in range(NSIG) or signum in (SIGKILL, SIGSTOP):
         return -1   # EINVAL
@@ -182,7 +184,7 @@ def __sigprocmask_mips(ql: Qiling, how: int, newset: int, oldset: int):
 
 
 def ql_syscall_rt_sigprocmask(ql: Qiling, how: int, newset: int, oldset: int):
-    impl = __sigprocmask_mips if ql.arch.type is QL_ARCH.MIPS else __sigprocmask
+    impl = __sigprocmask_mips if ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64) else __sigprocmask
 
     return impl(ql, how, newset, oldset)
 

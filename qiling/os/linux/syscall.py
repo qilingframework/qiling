@@ -56,7 +56,7 @@ def ql_syscall_set_thread_area(ql: Qiling, u_info_addr: int):
             ql.log.warning(f"Wrong index {index} from address {hex(u_info_addr)}")
             return -1
 
-    elif ql.arch.type == QL_ARCH.MIPS:
+    elif ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
         CONFIG3_ULR = (1 << 13)
         ql.arch.regs.cp0_config3 = CONFIG3_ULR
         ql.arch.regs.cp0_userlocal = u_info_addr
