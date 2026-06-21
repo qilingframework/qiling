@@ -148,7 +148,8 @@ def __emu_env_from_elf(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], O
     machines64 = {
         EM_X86_64  : QL_ARCH.X8664,
         EM_AARCH64 : QL_ARCH.ARM64,
-        EM_RISCV   : QL_ARCH.RISCV64
+        EM_RISCV   : QL_ARCH.RISCV64,
+        EM_MIPS    : QL_ARCH.MIPS64
     }
 
     classes = {
@@ -381,8 +382,8 @@ def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN,
         kwargs['endian'] = endian
         kwargs['thumb'] = thumb
 
-    # set endianness for mips arch
-    elif archtype is QL_ARCH.MIPS:
+    # set endianness for mips archs
+    elif archtype in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
         kwargs['endian'] = endian
 
     module = {
@@ -392,6 +393,7 @@ def select_arch(archtype: QL_ARCH, cputype: Optional[QL_CPU], endian: QL_ENDIAN,
         QL_ARCH.ARM      : r'arm',
         QL_ARCH.ARM64    : r'arm64',
         QL_ARCH.MIPS     : r'mips',
+        QL_ARCH.MIPS64   : r'mips64',
         QL_ARCH.CORTEX_M : r'cortex_m',
         QL_ARCH.RISCV    : r'riscv',
         QL_ARCH.RISCV64  : r'riscv64',

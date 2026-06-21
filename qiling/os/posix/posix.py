@@ -70,6 +70,7 @@ class QlOsPosix(QlOs):
             QL_ARCH.ARM64:   arm.QlAArch64,
             QL_ARCH.ARM:     arm.QlAArch32,
             QL_ARCH.MIPS:    mips.QlMipsO32,
+            QL_ARCH.MIPS64:  mips.QlMips64N64,
             QL_ARCH.X86:     intel.QlIntel32,
             QL_ARCH.X8664:   intel.QlIntel64,
             QL_ARCH.RISCV:   riscv.QlRiscV32,

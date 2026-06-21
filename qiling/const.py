@@ -23,6 +23,7 @@ class QL_ARCH(IntEnum):
     RISCV = 110
     RISCV64 = 111
     PPC = 112
+    MIPS64 = 113
 
 
 class QL_OS(IntEnum):

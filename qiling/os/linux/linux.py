@@ -39,6 +39,7 @@ class QlOsLinux(QlOsPosix):
             QL_ARCH.ARM     : arm.aarch32,
             QL_ARCH.ARM64   : arm.aarch64,
             QL_ARCH.MIPS    : mips.mipso32,
+            QL_ARCH.MIPS64  : mips.mips64n64,
             QL_ARCH.RISCV   : riscv.riscv,
             QL_ARCH.RISCV64 : riscv.riscv,
             QL_ARCH.PPC     : ppc.ppc,
@@ -67,8 +68,8 @@ class QlOsLinux(QlOsPosix):
                 'get_tls': 0xffff0fe0
             })
 
-        # MIPS32
-        elif self.ql.arch.type == QL_ARCH.MIPS:
+        # MIPS32 / MIPS64 (same exception numbers)
+        elif self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             self.ql.hook_intno(self.hook_syscall, MIPS_EXCP.SYSCALL)
             self.ql.hook_intno(self.hook_cpu_exception, MIPS_EXCP.RI)
             self.thread_class = thread.QlLinuxMIPS32Thread
