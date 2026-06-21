@@ -33,6 +33,7 @@ class QlOsBlob(QlOs):
             QL_ARCH.ARM     : arm.aarch32,
             QL_ARCH.ARM64   : arm.aarch64,
             QL_ARCH.MIPS    : mips.mipso32,
+            QL_ARCH.MIPS64  : mips.mips64n64,
             QL_ARCH.RISCV   : riscv.riscv,
             QL_ARCH.RISCV64 : riscv.riscv,
             QL_ARCH.PPC     : ppc.ppc,
