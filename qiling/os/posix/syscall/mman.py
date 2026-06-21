@@ -80,7 +80,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         """
 
         osflags = {
-            QL_OS.LINUX:   mips_mmap_flags if archtype == QL_ARCH.MIPS else linux_mmap_flags,
+            QL_OS.LINUX:   mips_mmap_flags if archtype in (QL_ARCH.MIPS, QL_ARCH.MIPS64) else linux_mmap_flags,
             QL_OS.FREEBSD: freebsd_mmap_flags,
             QL_OS.MACOS:   macos_mmap_flags,
             QL_OS.QNX:     qnx_mmap_flags       # FIXME: only for arm?
