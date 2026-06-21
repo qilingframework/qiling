@@ -460,6 +460,29 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    # statically-linked MIPS64 hello binaries. they link at the standard MIPS64
+    # base 0x120000000 (>4GB), which only loads and runs thanks to QlArchMIPS64's
+    # virtual-TLB identity mapping, and they execute a movz instruction, which only
+    # decodes on a MIPS64R2-class core (unicorn's default MIPS64 core is an old
+    # MIPS III that lacks it) - so this also guards the default MIPS64 CPU model.
+    def test_elf_linux_mips64eb_static(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux/bin/mips64_hello_static"], "../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'Hello, MIPS64 from Qiling!\n')
+
+        del ql
+
+    def test_elf_linux_mips64el_static(self):
+        ql = Qiling(["../examples/rootfs/mips64el_linux/bin/mips64el_hello_static"], "../examples/rootfs/mips64el_linux", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'Hello, MIPS64 from Qiling!\n')
+
+        del ql
+
     @staticmethod
     def random_generator(length: int):
         chars = string.ascii_uppercase + string.digits

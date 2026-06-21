@@ -555,8 +555,8 @@ class FunctionHook:
             ins = b'\x01\x10\x81\xe1'
             self.add_function_hook = self.add_function_hook_relocation
 
-        # MIPS32
-        elif self.ql.arch.type == QL_ARCH.MIPS:
+        # MIPS32 / MIPS64 (shared R_MIPS_* relocation type numbers)
+        elif self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             # ref: https://sites.uclouvain.be/SystInfo/usr/include/elf.h.html
             self.GLOB_DAT = 51
             self.JMP_SLOT = 127
@@ -624,7 +624,7 @@ class FunctionHook:
             self.rel_list += self.plt_rel
             self.show_relocation(self.plt_rel)
         
-        if self.ql.arch.type == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
+        if self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64) and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
             self.show_dynsym_name(self.mips_gotsym, self.mips_symtabno)
 
         self.ql.mem.map(hook_mem, 0x2000, perms=7, info="[hook_mem]")
