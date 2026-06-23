@@ -71,8 +71,8 @@ class HookFunc:
         if self.ql.arch.type == QL_ARCH.ARM:
             return self.ql.arch.regs.lr
 
-        # MIPS32
-        elif self.ql.arch.type == QL_ARCH.MIPS:
+        # MIPS32 / MIPS64 (return address is in $ra for both o32 and n64)
+        elif self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             return self.ql.arch.regs.ra
 
         # ARM64
@@ -98,8 +98,8 @@ class HookFunc:
         if self.ql.arch.type == QL_ARCH.ARM:
             pass
 
-        # MIPS32
-        elif self.ql.arch.type == QL_ARCH.MIPS:
+        # MIPS32 / MIPS64
+        elif self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             pass
 
         # PPC
@@ -125,8 +125,8 @@ class HookFunc:
         if self.ql.arch.type == QL_ARCH.ARM:
             self.ql.arch.regs.lr = addr
 
-        # MIPS32
-        elif self.ql.arch.type == QL_ARCH.MIPS:
+        # MIPS32 / MIPS64
+        elif self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             self.ql.arch.regs.ra = addr
 
         # PPC
