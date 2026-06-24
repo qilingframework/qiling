@@ -483,6 +483,19 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    # Regression for statx() byte order on big-endian guests: statx must report
+    # the S_IFDIR bit for a directory. The statx struct used to be emitted
+    # little-endian regardless of guest endianness, so stx_mode was byte-swapped
+    # on MIPS64 EB and a directory looked like a plain file (src: statx.c).
+    def test_elf_linux_mips64eb_statx(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux/bin/mips64_statx", "/"], "../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'DIR\n')
+
+        del ql
+
     @staticmethod
     def random_generator(length: int):
         chars = string.ascii_uppercase + string.digits
