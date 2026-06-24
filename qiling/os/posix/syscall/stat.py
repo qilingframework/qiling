@@ -1413,17 +1413,45 @@ class Statx64(ctypes.Structure):
 
     _pack_ = 4
 
+# Big-endian counterparts of the statx structs. The kernel statx layout is the
+# same on every architecture, so the big-endian variants reuse the little-endian
+# field lists verbatim and only change the ctypes base class (and the nested
+# timestamp type, which must itself be big-endian). Without these, statx() byte-
+# swaps every field on a big-endian guest (e.g. MIPS/MIPS64 EB), so stx_mode
+# loses its S_IFDIR bit and tools like `ls` treat directories as plain files.
+class StatxTimestamp32EB(ctypes.BigEndianStructure):
+    _fields_ = StatxTimestamp32._fields_
+
+class StatxTimestamp64EB(ctypes.BigEndianStructure):
+    _fields_ = StatxTimestamp64._fields_
+
+def _statx_fields_eb(fields):
+    swap = {StatxTimestamp32: StatxTimestamp32EB, StatxTimestamp64: StatxTimestamp64EB}
+    return [(name, swap.get(ftype, ftype)) for (name, ftype) in fields]
+
+class Statx32EB(ctypes.BigEndianStructure):
+    _fields_ = _statx_fields_eb(Statx32._fields_)
+    _pack_ = 8
+
+class Statx64EB(ctypes.BigEndianStructure):
+    _fields_ = _statx_fields_eb(Statx64._fields_)
+    _pack_ = 4
+
 # int statx(int dirfd, const char *restrict pathname, int flags,
 #                  unsigned int mask, struct statx *restrict statxbuf);
 def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, buf_ptr: int):
+    is_eb = ql.arch.endian == QL_ENDIAN.EB
+
     def statx_convert_timestamp(tv_sec, tv_nsec):
         tv_sec  = struct.unpack('i', struct.pack('f', tv_sec))[0]
         tv_nsec = struct.unpack('i', struct.pack('f', tv_nsec))[0]
 
         if ql.arch.bits == 32:
-            return StatxTimestamp32(tv_sec=tv_sec, tv_nsec=tv_nsec)
+            Timestamp = StatxTimestamp32EB if is_eb else StatxTimestamp32
         else:
-            return StatxTimestamp64(tv_sec=tv_sec, tv_nsec=tv_nsec)
+            Timestamp = StatxTimestamp64EB if is_eb else StatxTimestamp64
+
+        return Timestamp(tv_sec=tv_sec, tv_nsec=tv_nsec)
 
 
     def major(dev):
@@ -1438,9 +1466,9 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
         st = Stat(real_path, fd)
         
         if ql.arch.bits == 32:
-            Statx = Statx32
+            Statx = Statx32EB if is_eb else Statx32
         else:
-            Statx = Statx64
+            Statx = Statx64EB if is_eb else Statx64
 
         stx = Statx(
             stx_mask = 0x07ff, # STATX_BASIC_STATS
