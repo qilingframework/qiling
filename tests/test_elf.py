@@ -525,6 +525,54 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    def test_elf_linux_mips64eb_getdents(self):
+        # legacy getdents (used by older glibc, e.g. the Octeon SDK) packed each
+        # linux_dirent record with a word-sized d_ino but did not align the
+        # record, so on n64 (8-byte d_ino) the next record's d_ino landed
+        # unaligned and a strict-alignment guest faulted while walking the
+        # buffer. records must be padded to the d_ino alignment, with d_type
+        # kept in the record's last byte (offset d_reclen-1).
+        from qiling.os.posix.syscall.fcntl import ql_syscall_open
+        from qiling.os.posix.syscall.unistd import ql_syscall_getdents
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS64, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x8000)
+        ql.mem.write(base, b"/\x00")
+        buf = base + 0x1000
+
+        fd = ql_syscall_open(ql, base, 0, 0)
+        n = ql_syscall_getdents(ql, fd, buf, 0x2000)
+        self.assertGreater(n, 0)
+
+        data = bytes(ql.mem.read(buf, n))
+        seen = []
+        off = 0
+        while off < n:
+            # each record must start 8-byte aligned (n64 d_ino alignment)
+            self.assertEqual(off % 8, 0, f'record at {off} is not 8-byte aligned')
+
+            d_reclen = int.from_bytes(data[off + 16:off + 18], 'big')  # d_reclen @ 2*8
+            self.assertGreater(d_reclen, 0)
+
+            name = data[off + 18:data.index(b'\x00', off + 18)].decode()
+            seen.append(name)
+
+            # legacy getdents stores d_type in the record's last byte; '.' and
+            # '..' must report DT_DIR (4)
+            if name in ('.', '..'):
+                self.assertEqual(data[off + d_reclen - 1], 4, f'{name}: d_type not DT_DIR')
+
+            off += d_reclen
+
+        self.assertEqual(off, n)            # records tile the buffer exactly
+        self.assertIn('.', seen)
+        self.assertIn('..', seen)
+
+        del ql
+
     @staticmethod
     def random_generator(length: int):
         chars = string.ascii_uppercase + string.digits
