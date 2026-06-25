@@ -19,7 +19,7 @@ sys.path.append("..")
 from typing import Any, Sequence
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE, QL_ENDIAN
 from qiling.exception import *
 from qiling.extensions import pipe
 from qiling.os.const import STRING
@@ -493,6 +493,35 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertEqual(ql.os.stdout.read(), b'DIR\n')
+
+        del ql
+
+    def test_elf_linux_mips64eb_stat64(self):
+        # the stat-family handlers route through pack_stat64_struct, whose
+        # get_stat64_struct lacked a MIPS64 branch and fell back to the
+        # little-endian x86 stat64 struct, byte-swapping/misplacing every field
+        # on a big-endian 64-bit guest. exercise the handler directly and check
+        # that the directory mode reads back correctly under the MIPS64 BE struct.
+        import stat as _stat
+        from qiling.os.posix.syscall.stat import ql_syscall_stat64, ql_syscall_lstat, LinuxMips64EBStat
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS64, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x4000)
+        buf = base + 0x100
+        mode_off = LinuxMips64EBStat.st_mode.offset
+
+        # both stat64 and the plain lstat handler (which busybox `ls -la` uses)
+        # share get_stat64_struct
+        for handler in (ql_syscall_stat64, ql_syscall_lstat):
+            ql.mem.write(base, b"/\x00")
+            ql.mem.write(buf, b"\x00" * 0x100)
+            self.assertEqual(handler(ql, base, buf), 0)
+
+            mode = int.from_bytes(ql.mem.read(buf + mode_off, 4), 'big')
+            self.assertTrue(_stat.S_ISDIR(mode), f'{handler.__name__}: mode 0o{mode:o} is not a directory')
 
         del ql
 
