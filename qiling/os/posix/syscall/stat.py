@@ -1082,13 +1082,23 @@ class QNXARMStat64(ctypes.Structure):
     _pack_ = 8
 
 def get_stat64_struct(ql: Qiling):
-    if ql.arch.bits == 64:
+    # MIPS64 (n64) has no separate stat64: it is reached only through the
+    # stat-family handlers that share pack_stat64_struct, and its layout is the
+    # 64-bit stat struct. handle it explicitly instead of warning + falling back
+    # to the (little-endian, 32-bit) x86 struct, which corrupts every field.
+    if ql.arch.bits == 64 and ql.arch.type != QL_ARCH.MIPS64:
         ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.os.type} and {ql.arch.type}!")
     if ql.os.type == QL_OS.LINUX:
         if ql.arch.type == QL_ARCH.X86:
             return LinuxX86Stat64()
-        elif ql.arch.type == QL_ARCH.MIPS:
-            return LinuxMips32Stat64()
+        elif ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
+            if ql.arch.bits == 64:
+                if ql.arch.endian == QL_ENDIAN.EL:
+                    return LinuxMips64Stat()
+                else:
+                    return LinuxMips64EBStat()
+            else:
+                return LinuxMips32Stat64()
         elif ql.arch.type == QL_ARCH.ARM:
             return LinuxARMStat64()
         elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
