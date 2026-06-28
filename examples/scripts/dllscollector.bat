@@ -80,6 +80,7 @@ CALL :collect_dll32 setupapi.dll
 CALL :collect_dll32 shell32.dll
 CALL :collect_dll32 shlwapi.dll
 CALL :collect_dll32 sspicli.dll
+CALL :collect_dll32 symcryptk.dll
 CALL :collect_dll32 ucrtbase.dll
 CALL :collect_dll32 ucrtbased.dll
 CALL :collect_dll32 urlmon.dll
@@ -125,6 +126,7 @@ CALL :collect_dll64 rpcrt4.dll
 CALL :collect_dll64 sechost.dll
 CALL :collect_dll64 shell32.dll
 CALL :collect_dll64 shlwapi.dll
+CALL :collect_dll64 symcryptk.dll
 CALL :collect_dll64 user32.dll
 CALL :collect_dll64 vcruntime140.dll
 CALL :collect_dll64 vcruntime140d.dll

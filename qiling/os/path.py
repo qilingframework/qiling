@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
+
 from typing import Optional, Union
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
@@ -328,7 +330,11 @@ class QlOsPath:
 
     @staticmethod
     def __host_casefold_path(hostpath: str) -> Optional[str]:
-        # assuming posix host
+        # NT hosts already match paths case-insensitively, so if the caller landed here
+        # (after a failed os.path.exists) the file really does not exist.
+        if os.name == 'nt':
+            return None
+
         p = PurePosixPath(hostpath)
         norm = Path(p.anchor)
 

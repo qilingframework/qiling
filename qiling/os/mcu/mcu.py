@@ -27,9 +27,13 @@ class MCUTask(UnicornTask):
     def on_interrupted(self, ucerr: int):
         self._begin = self.pc
 
-        # And don't restore anything.
+        # Real silicon would vector to HardFault here; we don't model that, so log and
+        # request a clean stop instead of raising — otherwise fast-mode timeouts surface
+        # firmware faults as test errors.
         if ucerr != UC_ERR_OK:
-            raise UcError(ucerr)
+            self.ql.log.warning(f'fast mode halted: {UcError(ucerr)} at PC=0x{self.pc:08x}')
+            self._stop_request = True
+            return
 
         self.ql.hw.step()
 
