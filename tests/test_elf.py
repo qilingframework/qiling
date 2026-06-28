@@ -846,6 +846,8 @@ class ELFTest(unittest.TestCase):
         mtime = atime = int(dt.timestamp())
         # set fake time stamp for all files
         for t in targets:
+            with open(t, "wb") as f:
+                f.write(b"qiling_test")
             ns = False
             if(t == f"{rootfs}/utimensat-test"):
                 ns = True
