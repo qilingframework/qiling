@@ -855,8 +855,6 @@ class ELFTest(unittest.TestCase):
                 os.utime(t, ns=(atime*1000000000, mtime*1000000000))
             else:
                 os.utime(t, times=(atime, mtime))
-            checked_mtime = os.path.getmtime(t)
-            checked_atime = os.path.getatime(t)
         ql = Qiling(argv, rootfs, verbose=QL_VERBOSE.DEBUG)
         ql.run()
         # check that the changes have propogated
