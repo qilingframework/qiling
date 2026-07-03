@@ -57,10 +57,10 @@ class MachoParser:
             self.ql.log.debug("Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
-        #elif self.magic in MAGIC_X86:
-        #    # x86
-        #    ql.log.debug("Got a x86 Header") 
-        #    self.header = BinaryHeader(self.binary_file)
+        elif self.magic in MAGIC_32:
+           # x86
+           self.ql.log.debug("Got a x86 Header")
+           self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
             # fat 

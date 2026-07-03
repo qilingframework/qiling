@@ -24,7 +24,12 @@ def map_commpage(ql):
         addr_size = 0x100000
     elif ql.arch.type == QL_ARCH.ARM64:
         addr_base = ARM64_COMM_PAGE_START_ADDRESS
-        addr_size = 0x1000        
+        addr_size = 0x1000
+    elif ql.arch.type == QL_ARCH.X86:
+        addr_base = X86_COMM_PAGE_START_ADDRESS
+        addr_size = 0x1000
+    else:
+        raise NotImplementedError
     ql.mem.map(addr_base, addr_size, info="[commpage]")
     time_lock_slide = 0x68
     ql.mem.write(addr_base+time_lock_slide, ql.pack32(0x1))

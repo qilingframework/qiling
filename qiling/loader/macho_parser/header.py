@@ -54,7 +54,10 @@ class FatHeader(Header):
             if item.cpu_type == CPU_TYPE_X8664:
                 return item
             elif item.cpu_type == CPU_TYPE_ARM64:
-                return item 
+                return item
+            elif item.cpu_type == CPU_TYPE_X86:
+                return item
+
         return None
 
 class FatInfo:

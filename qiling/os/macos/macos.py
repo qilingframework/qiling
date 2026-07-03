@@ -6,10 +6,10 @@
 from ctypes import sizeof
 
 from unicorn import UcError
-from unicorn.x86_const import UC_X86_INS_SYSCALL
+from unicorn.x86_const import UC_X86_INS_SYSCALL, UC_X86_INS_SYSENTER
 
 from qiling import Qiling
-from qiling.arch.x86_utils import GDTManager, SegmentManager64
+from qiling.arch.x86_utils import GDTManager, SegmentManager64, SegmentManager86
 from qiling.cc import intel
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.fcall import QlFunctionCall
@@ -164,7 +164,16 @@ class QlOsMacos(QlOsPosix):
 
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
-    
+        elif self.ql.arch.type == QL_ARCH.X86:
+            gdtm = GDTManager(self.ql)
+
+            # setup gdt and segments selectors
+            segm = SegmentManager86(self.ql.arch, gdtm)
+            segm.setup_cs_ds_ss_es(0, 4 << 30)
+
+            self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSENTER)
+
+
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
 

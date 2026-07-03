@@ -29,8 +29,10 @@ from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 def load_commpage(ql):
     if ql.arch.type == QL_ARCH.X8664:
         COMM_PAGE_START_ADDRESS = X8664_COMM_PAGE_START_ADDRESS
-    else:    
+    elif ql.arch.type == QL_ARCH.ARM64:
         COMM_PAGE_START_ADDRESS = ARM64_COMM_PAGE_START_ADDRESS
+    else:
+        raise NotImplementedError
 
     ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_SIGNATURE, b'\x00')
     ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CPU_CAPABILITIES64, b'\x00\x00\x00\x00')
@@ -89,12 +91,23 @@ class QlLoaderMACHO(QlLoader):
             self.kext_name = None        
     
     def run(self):
-        self.profile        = self.ql.profile
-        stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
-        stack_size         = int(self.profile.get("OS64", "stack_size"), 16)
-        vmmap_trap_address = int(self.profile.get("OS64", "vmmap_trap_address"), 16)
-        self.heap_address = int(self.profile.get("OS64", "heap_address"), 16)
-        self.heap_size = int(self.profile.get("OS64", "heap_size"), 16)        
+        self.profile = self.ql.profile
+
+        if self.ql.arch.type == QL_ARCH.X86:
+            stack_address = int(self.profile.get("OS32", "stack_address"), 16)
+            stack_size = int(self.profile.get("OS32", "stack_size"), 16)
+            vmmap_trap_address = None # int(self.profile.get("OS32", "vmmap_trap_address"), 16)
+            heap_address = int(self.profile.get("OS32", "heap_address"), 16)
+            heap_size = int(self.profile.get("OS32", "heap_size"), 16)
+        else:
+            stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
+            stack_size         = int(self.profile.get("OS64", "stack_size"), 16)
+            vmmap_trap_address = int(self.profile.get("OS64", "vmmap_trap_address"), 16)
+            heap_address = int(self.profile.get("OS64", "heap_address"), 16)
+            heap_size = int(self.profile.get("OS64", "heap_size"), 16)
+
+        self.heap_address = heap_address
+        self.heap_size = heap_size
         self.stack_address = stack_address
         self.stack_size = stack_size
 
@@ -131,10 +144,16 @@ class QlLoaderMACHO(QlLoader):
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.is_driver      = (self.macho_file.header.file_type == 0xb)
         self.loading_file   = self.macho_file
-        self.slide          = int(self.profile.get("LOADER", "slide"), 16)
-        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
-        self.string_align   = 8
-        self.ptr_align      = 8
+        if self.ql.arch.type == QL_ARCH.X86:
+            slide = int(self.profile.get("LOADER32", "slide"), 16)
+            dyld_slide = int(self.profile.get("LOADER32", "dyld_slide"), 16)
+        else:
+            slide = int(self.profile.get("LOADER", "slide"), 16)
+            dyld_slide = int(self.profile.get("LOADER", "dyld_slide"), 16)
+        self.slide          = slide
+        self.dyld_slide     = dyld_slide
+        self.string_align   = 4
+        self.ptr_align      = 4
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
         self.argvs          = [self.ql.path]
@@ -353,7 +372,10 @@ class QlLoaderMACHO(QlLoader):
             self.slide = loadbase 
 
     def loadMacho(self, depth=0, isdyld=False):
-        mmap_address   = int(self.profile.get("OS64", "mmap_address"), 16)
+        if self.ql.arch.type == QL_ARCH.X86:
+            mmap_address = int(self.profile.get("OS32", "mmap_address"), 16)
+        else:
+            mmap_address = int(self.profile.get("OS64", "mmap_address"), 16)
 
         # MAX load depth 
         if depth > 5:
@@ -386,7 +408,7 @@ class QlLoaderMACHO(QlLoader):
 
                 if pass_count == 2:
                     if cmd.cmd_id == LC_SEGMENT:
-                        pass
+                        self.loadSegment64(cmd, isdyld)
 
                     if cmd.cmd_id == LC_SEGMENT_64:
                         self.loadSegment64(cmd, isdyld)
@@ -578,9 +600,9 @@ class QlLoaderMACHO(QlLoader):
         align = self.ptr_align
         
         if data == 0:
-            content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            content = b'\x00\x00\x00\x00'
         else:
-            content = struct.pack('<Q', data)
+            content = struct.pack('<I', data)
 
         if len(content) != align:
             self.ql.log.info('stack align error')

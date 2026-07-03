@@ -9,12 +9,14 @@ from qiling.os.posix.posix import SYSCALL_PREF
 def get_syscall_mapper(archtype: QL_ARCH):
     syscall_table = {
         QL_ARCH.X8664 : x8664_syscall_table,
-        QL_ARCH.ARM64 : arm64_syscall_table
+        QL_ARCH.ARM64 : arm64_syscall_table,
+        QL_ARCH.X86   : x86_syscall_table,
     }[archtype]
 
     syscall_fixup = {
         QL_ARCH.X8664 : lambda n: (n - 0x2000000) if 0x2000000 <= n <= 0x3000000 else n,
-        QL_ARCH.ARM64 : lambda n: (n - 0xffffffffffffff00) if n >= 0xffffffffffffff00 else n
+        QL_ARCH.ARM64 : lambda n: (n - 0xffffffffffffff00) if n >= 0xffffffffffffff00 else n,
+        QL_ARCH.X86   : lambda n: n,
     }[archtype]
 
     def __mapper(syscall_num: int) -> str:
@@ -22,6 +24,9 @@ def get_syscall_mapper(archtype: QL_ARCH):
 
     return __mapper
 
+x86_syscall_table = {
+    0xffffffe4: 'task_self_trap',
+}
 
 arm64_syscall_table = {
     1: 'exit',

@@ -491,6 +491,7 @@ HOST_PREFERRED_USER_ARCH            = 12
 # commpage 
 X8664_COMM_PAGE_START_ADDRESS       = 0x7FFFFFE00000
 ARM64_COMM_PAGE_START_ADDRESS       = 0x0000000FFFFFC000
+X86_COMM_PAGE_START_ADDRESS         = 0xffff0000
 
 COMM_PAGE_SIGNATURE                 = 0x000   # first 16 bytes are a signature
 COMM_PAGE_CPU_CAPABILITIES64        = 0x010   # uint64_t _cpu_capabilities
