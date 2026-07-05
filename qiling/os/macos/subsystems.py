@@ -181,6 +181,25 @@ class MachTaskServer():
 
         return out_msg
 
+    def mach_port_deallocate(self, in_header, in_content):
+        # Request carries the NDR record followed by the mach_port_name_t to
+        # release. Reply is a simple message with only a kern_return_t.
+        name = unpack("<L", in_content[8:12])[0] if len(in_content) >= 12 else 0
+        self.ql.log.debug("[mach] mach_port_deallocate(name: 0x%x)" % name)
+
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3306
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
+
     def mach_ports_lookup(self, in_header, in_content):
         # Returns the set of ports registered for the task as an out-of-line
         # ports array (init_port_set). Reply is a complex message carrying a

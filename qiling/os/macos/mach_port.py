@@ -136,6 +136,10 @@ class MachPortManager():
             # 4 (mach_port_allocate)
             out_msg = self.ql.os.macho_task_server.mach_port_allocate(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3206:
+            # 6 (mach_port_deallocate)
+            out_msg = self.ql.os.macho_task_server.mach_port_deallocate(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
         else:
             self.ql.log.info("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
             raise Exception("Mach Msgid Not Found")
