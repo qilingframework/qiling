@@ -432,3 +432,9 @@ def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.log.debug("[mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
     ql.arch.msr.write(IA32_GS_BASE_MSR, u_info_addr)
     return KERN_SUCCESS
+
+# Other
+
+def ql_syscall_my_bzero(ql, ptr, n, *args, **kw):
+    ql.log.debug("bzero(ptr: 0x%x, n: %u)" % (ptr, n))
+    ql.mem.write(ptr, bytes(n))

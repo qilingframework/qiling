@@ -171,6 +171,26 @@ class QlLoaderMACHO(QlLoader):
         self.init_sp = self.ql.arch.regs.arch_sp
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
+        if self.ql.arch.type == QL_ARCH.X86:
+            # address of "real" bzero
+            # ref. https://fdiv.net/2009/01/14/memset-vs-bzero-ultimate-showdown
+            addr = 0xffff0600
+            # b8 ff ff 00 00        MOV        EAX,0xffff
+            self.ql.mem.write_ptr(addr, 0xb8, 1)
+            addr += 1
+            self.ql.mem.write_ptr(addr, 0x0000ffff, 4)
+            addr += 4
+            sysenter_trap_addr = 0x8fe2b7ac
+            offset = (sysenter_trap_addr - addr - 5) & 0xffffffff;
+            # e8 a2 b1 e3 8f        CALL       __sysenter_trap
+            self.ql.mem.write_ptr(addr, 0xe8, 1)
+            addr += 1
+            self.ql.mem.write_ptr(addr, offset, 4)
+            addr += 4
+            # c3 RET
+            self.ql.mem.write_ptr(addr, 0xc3, 1)
+            addr += 1
+
     def loadDriver(self, stack_addr, loadbase = -1, argv = [], env = {}):
         self.import_symbols = {}
         PAGE_SIZE = 0x1000

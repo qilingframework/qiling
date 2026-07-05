@@ -26,6 +26,8 @@ def get_syscall_mapper(archtype: QL_ARCH):
 
 x86_syscall_table = {
     0xffffffe4: 'task_self_trap',
+    # my stuff...
+    0x0000ffff: 'my_bzero',
 }
 
 arm64_syscall_table = {
