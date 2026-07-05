@@ -109,6 +109,8 @@ class MachPortManager():
         self.semaphore_port = MachPort(0x903)
         self.special_port = MachPort(0x707)
         self.my_port = my_port
+        # unregistered slots are MACH_PORT_NULL (0).
+        self.registered_ports = [self.special_port, MachPort(0), MachPort(0)]
 
     def deal_with_msg(self, msg, addr):
 
@@ -119,11 +121,20 @@ class MachPortManager():
         elif msg.header.msgh_id == 206:
             out_msg = self.ql.os.macho_host_server.host_get_clock_service(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
-        elif msg.header.msgh_id == 3418:
-            out_msg = self.ql.os.macho_task_server.semaphore_create(msg.header, msg.content)
+        # 3400 (Task operations)
+        elif msg.header.msgh_id == 3404:
+            out_msg = self.ql.os.macho_task_server.mach_ports_lookup(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3409:
             out_msg = self.ql.os.macho_task_server.get_special_port(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3418:
+            out_msg = self.ql.os.macho_task_server.semaphore_create(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        # 3200 (Mach port handling functions)
+        elif msg.header.msgh_id == 3204:
+            # 4 (mach_port_allocate)
+            out_msg = self.ql.os.macho_task_server.mach_port_allocate(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         else:
             self.ql.log.info("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))

@@ -159,4 +159,68 @@ class MachTaskServer():
         out_msg.trailer += pack("<L", 0x0)                                                  # pad end
 
         return out_msg
-        pass
+
+    def mach_port_allocate(self, in_header, in_content):
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = 0x0 # 0x80001200
+        out_msg.header.msgh_size = 0x00000028
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3304
+
+        out_msg.content = pack("<L", 0x1)
+
+        out_msg.trailer = b''
+        out_msg.trailer += pack("<L", self.ql.os.macho_port_manager.special_port.name)  # special port name
+        out_msg.trailer += pack("<L", 0x0)  # pad1
+        out_msg.trailer += pack("<H", 0x0)  # pad2
+        out_msg.trailer += pack("<B", 0x11)  # disposition
+        out_msg.trailer += pack("<B", 0x0)  # type
+        out_msg.trailer += pack("<L", 0x0)  # pad end
+
+        return out_msg
+
+    def mach_ports_lookup(self, in_header, in_content):
+        # Returns the set of ports registered for the task as an out-of-line
+        # ports array (init_port_set). Reply is a complex message carrying a
+        # single mach_msg_ool_ports_descriptor.
+        out_msg = MachMsg(self.ql)
+
+        registered = self.ql.os.macho_port_manager.registered_ports
+        count = len(registered)
+
+        # copy the registered port names into a fresh buffer that the OOL
+        # descriptor will point the receiver at
+        ports_addr = self.ql.os.heap.alloc(count * 4)
+        for i, port in enumerate(registered):
+            self.ql.mem.write(ports_addr + i * 4, pack("<L", port.name))
+
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | 0x1200
+        out_msg.header.msgh_remote_port = 0
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3504
+
+        # mach_msg_body_t: number of descriptors
+        out_msg.content += pack("<L", 0x1)
+
+        # mach_msg_ool_ports_descriptor_t. The address field width follows the
+        # target pointer size (4 bytes on 32-bit, 8 bytes on 64-bit).
+        if self.ql.arch.pointersize == 8:
+            out_msg.content += pack("<Q", ports_addr)  # address
+        else:
+            out_msg.content += pack("<L", ports_addr)  # address
+        out_msg.content += pack("<L", count)  # count
+        out_msg.content += pack("<B", 0x0)  # deallocate
+        out_msg.content += pack("<B", 0x0)  # copy
+        out_msg.content += pack("<B", MACH_MSG_TYPE_MOVE_SEND)  # disposition
+        out_msg.content += pack("<B", MACH_MSG_OOL_PORTS_DESCRIPTOR)  # type
+
+        # NDR record + init_port_setCnt
+        out_msg.content += pack("<Q", 0x100000000)
+        out_msg.content += pack("<L", count)
+
+        out_msg.header.msgh_size = out_msg.header.header_size + len(out_msg.content)
+
+        return out_msg
