@@ -487,8 +487,18 @@ HOST_DEBUG_INFO_INTERNAL            = 10
 HOST_CAN_HAS_DEBUGGER               = 11
 HOST_PREFERRED_USER_ARCH            = 12
 
+
 # mach msg header bits
 MACH_MSGH_BITS_COMPLEX = 0x80000000
+
+# msgh_bits packs the remote and local port-right dispositions into the low two
+# bytes of mach_msg_header_t.msgh_bits (osfmk/mach/message.h). MACH_MSGH_BITS()
+# composes them the same way the kernel macro does.
+MACH_MSGH_BITS_REMOTE_MASK = 0x000000ff
+MACH_MSGH_BITS_LOCAL_MASK = 0x0000ff00
+
+def MACH_MSGH_BITS(remote, local):
+    return (remote & MACH_MSGH_BITS_REMOTE_MASK) | ((local << 8) & MACH_MSGH_BITS_LOCAL_MASK)
 
 # mach msg descriptor types (mach_msg_descriptor_type_t)
 MACH_MSG_PORT_DESCRIPTOR = 0

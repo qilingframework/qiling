@@ -39,7 +39,7 @@ class MachHostServer():
         # gen reply
 
         if flavor == HOST_BASIC_INFO:
-            out_msg.header.msgh_bits = 4608
+            out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
             out_msg.header.msgh_size = 88
             out_msg.header.msgh_remote_port = 0
             out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -65,7 +65,7 @@ class MachHostServer():
                 out_msg.content += pack("<Q", 0x400000000)  # max_mem
             
         elif flavor == HOST_PRIORITY_INFO:
-            out_msg.header.msgh_bits = 4608
+            out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
             out_msg.header.msgh_size = 72
             out_msg.header.msgh_remote_port = 0
             out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -92,7 +92,7 @@ class MachHostServer():
     def host_get_clock_service(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
 
-        out_msg.header.msgh_bits = 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -120,7 +120,7 @@ class MachTaskServer():
     def semaphore_create(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
 
-        out_msg.header.msgh_bits = 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -141,7 +141,7 @@ class MachTaskServer():
 
     def get_special_port(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
-        out_msg.header.msgh_bits = 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -162,7 +162,7 @@ class MachTaskServer():
 
     def mach_port_allocate(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
-        out_msg.header.msgh_bits = 0x0 # 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -196,7 +196,7 @@ class MachTaskServer():
         for i, port in enumerate(registered):
             self.ql.mem.write(ports_addr + i * 4, pack("<L", port.name))
 
-        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | 0x1200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_remote_port = 0
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
         out_msg.header.msgh_voucher_port = 0
