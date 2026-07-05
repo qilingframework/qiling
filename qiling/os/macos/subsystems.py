@@ -218,6 +218,33 @@ class MachTaskServer():
 
         return out_msg
 
+    def vm_protect(self, in_header, in_content):
+        # vm_protect (vm_map subsystem, routine 3, msgh_id 3803). Request body
+        # layout (after the 24-byte header):
+        #   [0x00] NDR record
+        #   [0x08] address / [0x0c] size / [0x10] set_maximum / [0x14] new_protection
+        address = unpack("<L", in_content[0x08:0x0c])[0]
+        size = unpack("<L", in_content[0x0c:0x10])[0]
+        set_maximum = unpack("<L", in_content[0x10:0x14])[0]
+        new_protection = unpack("<L", in_content[0x14:0x18])[0]
+        self.ql.log.debug("[mach] vm_protect(address: 0x%x, size: 0x%x, set_maximum: 0x%x, new_protection: 0x%x)" % (
+            address, size, set_maximum, new_protection))
+
+        # Reply is a simple (non-complex) MIG message carrying only the NDR
+        # record and RetCode (__Reply__vm_protect_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3903
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
+
     def vm_map(self, in_header, in_content):
         # vm_map (vm_map subsystem, routine 12, msgh_id 3812). The request is a
         # complex message: a memory-entry port descriptor followed by the NDR
