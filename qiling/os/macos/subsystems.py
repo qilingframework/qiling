@@ -15,6 +15,7 @@ from struct import pack, unpack
 from qiling.const import *
 from .mach_port import *
 from .const import *
+from .utils import page_align_end
 
 class MachHostServer():
 
@@ -214,6 +215,49 @@ class MachTaskServer():
 
         out_msg.content += pack("<Q", 0x100000000)  # NDR
         out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
+
+    def vm_map(self, in_header, in_content):
+        # vm_map (vm_map subsystem, routine 12, msgh_id 3812). The request is a
+        # complex message: a memory-entry port descriptor followed by the NDR
+        # record and the vm_map arguments. Request body layout (after the
+        # 24-byte header):
+        #   [0x00] mach_msg_body_t: msgh_descriptor_count
+        #   [0x04] mach_msg_port_descriptor_t (name + pad + disposition/type)
+        #   [0x10] NDR record
+        #   [0x18] address / [0x1c] size / [0x20] mask / [0x24] flags / ...
+        # We carve a fresh region out of the task's vm map, honoring the
+        # requested size and alignment mask, and report its base address back.
+        address = unpack("<L", in_content[0x18:0x1c])[0]
+        size = unpack("<L", in_content[0x1c:0x20])[0]
+        mask = unpack("<L", in_content[0x20:0x24])[0]
+        flags = unpack("<L", in_content[0x24:0x28])[0]
+        self.ql.log.debug("[mach] vm_map(address: 0x%x, size: 0x%x, mask: 0x%x, flags: 0x%x)" % (
+            address, size, mask, flags))
+
+        if self.ql.os.macho_vmmap_end & mask > 0:
+            self.ql.os.macho_vmmap_end = self.ql.os.macho_vmmap_end - (self.ql.os.macho_vmmap_end & mask)
+            self.ql.os.macho_vmmap_end += mask + 1
+
+        vmmap_address = page_align_end(self.ql.os.macho_vmmap_end, PAGE_SIZE)
+        vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
+        self.ql.os.macho_vmmap_end = vmmap_end
+        self.ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
+
+        # Reply is a simple (non-complex) MIG message carrying the NDR record,
+        # the RetCode and the mapped address (__Reply__vm_map_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000028
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3912
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+        out_msg.content += pack("<L", vmmap_address)  # mapped address
 
         return out_msg
 
