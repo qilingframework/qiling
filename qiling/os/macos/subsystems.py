@@ -161,23 +161,24 @@ class MachTaskServer():
         return out_msg
 
     def mach_port_allocate(self, in_header, in_content):
+        # mach_port_allocate(task, right, &name): allocate a new port right in
+        # the task's IPC space and return its name. Since the out parameter is a
+        # plain mach_port_name_t (not a transferred port right), the reply is a
+        # simple (non-complex) MIG message: NDR record + RetCode + name.
+        port = self.ql.os.macho_port_manager.alloc_port()
+
         out_msg = MachMsg(self.ql)
-        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
-        out_msg.header.msgh_size = 0x00000028
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
         out_msg.header.msgh_voucher_port = 0
         out_msg.header.msgh_id = 3304
 
-        out_msg.content = pack("<L", 0x1)
+        out_msg.content += pack("<Q", 0x100000000)  # NDR record
+        out_msg.content += pack("<L", KERN_SUCCESS)  # RetCode / KERN_SUCCESS
+        out_msg.content += pack("<L", port.name)  # allocated port name
 
-        out_msg.trailer = b''
-        out_msg.trailer += pack("<L", self.ql.os.macho_port_manager.special_port.name)  # special port name
-        out_msg.trailer += pack("<L", 0x0)  # pad1
-        out_msg.trailer += pack("<H", 0x0)  # pad2
-        out_msg.trailer += pack("<B", 0x11)  # disposition
-        out_msg.trailer += pack("<B", 0x0)  # type
-        out_msg.trailer += pack("<L", 0x0)  # pad end
+        out_msg.header.msgh_size = out_msg.header.header_size + len(out_msg.content)
 
         return out_msg
 

@@ -111,6 +111,16 @@ class MachPortManager():
         self.my_port = my_port
         # unregistered slots are MACH_PORT_NULL (0).
         self.registered_ports = [self.special_port, MachPort(0), MachPort(0)]
+        # names for dynamically allocated ports (e.g. mach_port_allocate),
+        # kept above the statically assigned port names to avoid collisions.
+        self.next_port_name = 0x1000
+        self.allocated_ports = []
+
+    def alloc_port(self):
+        port = MachPort(self.next_port_name)
+        self.next_port_name += 1
+        self.allocated_ports.append(port)
+        return port
 
     def deal_with_msg(self, msg, addr):
 
