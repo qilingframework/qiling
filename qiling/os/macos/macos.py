@@ -18,7 +18,7 @@ from qiling.os.macos.events.macos import QlMacOSEvManager
 from qiling.os.macos.events.macos_policy import QlMacOSPolicy
 from qiling.os.macos.events.macos_structs import mac_policy_list_t
 from qiling.os.macos.structs import kmod_info_t, POINTER64
-from qiling.os.posix.syscall.abi import arm
+from qiling.os.posix.syscall.abi import arm, intel as intel_abi
 
 
 class QlOsMacos(QlOsPosix):
@@ -31,6 +31,8 @@ class QlOsMacos(QlOsPosix):
         # here anyway for completion
         if ql.arch.type is QL_ARCH.ARM64:
             self.syscall_abi = arm.QlAArch64MacOS(ql.arch)
+        elif ql.arch.type is QL_ARCH.X86:
+            self.syscall_abi = intel_abi.QlIntel32MacOS(ql.arch)
 
         self.fcall = QlFunctionCall(ql, intel.macosx64(ql.arch))
 
@@ -171,11 +173,34 @@ class QlOsMacos(QlOsPosix):
             segm = SegmentManager86(self.ql.arch, gdtm)
             segm.setup_cs_ds_ss_es(0, 4 << 30)
 
-            self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSENTER)
+            self.ql.hook_insn(self.hook_sysenter, UC_X86_INS_SYSENTER)
 
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
+
+
+    def hook_sysenter(self, ql, intno=None):
+        # emulate a MacOS i386 fast system call.
+        #
+        # the '__sysenter_trap' trampoline pops the caller return address into
+        # edx and stores the user stack pointer in ecx before issuing sysenter:
+        #
+        #     pop  edx
+        #     mov  ecx, esp
+        #     sysenter
+        #
+        # since sysenter does not push a return address, the kernel resumes user
+        # execution at edx (via sysexit) with esp restored from ecx. we capture
+        # both before running the syscall as its handler may clobber the regs.
+        edx = self.ql.arch.regs.edx
+        ecx = self.ql.arch.regs.ecx
+
+        self.load_syscall()
+
+        # emulate sysexit: return to the trampoline caller with the user stack
+        self.ql.arch.regs.arch_sp = ecx
+        self.ql.arch.regs.arch_pc = edx - 2
 
 
     def hook_sigtrap(self, ql, intno):
