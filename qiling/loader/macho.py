@@ -96,7 +96,7 @@ class QlLoaderMACHO(QlLoader):
         if self.ql.arch.type == QL_ARCH.X86:
             stack_address = int(self.profile.get("OS32", "stack_address"), 16)
             stack_size = int(self.profile.get("OS32", "stack_size"), 16)
-            vmmap_trap_address = None # int(self.profile.get("OS32", "vmmap_trap_address"), 16)
+            vmmap_trap_address = int(self.profile.get("OS32", "vmmap_trap_address"), 16)
             heap_address = int(self.profile.get("OS32", "heap_address"), 16)
             heap_size = int(self.profile.get("OS32", "heap_size"), 16)
         else:
