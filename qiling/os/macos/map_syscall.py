@@ -27,7 +27,12 @@ def get_syscall_mapper(archtype: QL_ARCH):
 x86_syscall_table = {
     # machdep
     0x3: 'thread_fast_set_cthread_self',
+    # syscalls
+    0xc018d: 'write_nocancel',
+    0xffffffe1: 'mach_msg_trap',
+    0xffffffe3: 'host_self_trap',
     0xffffffe4: 'task_self_trap',
+    0xffffffe6: 'mach_reply_port',
     # my stuff...
     0x0000ffff: 'my_bzero',
 }
