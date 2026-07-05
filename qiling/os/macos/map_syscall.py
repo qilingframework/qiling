@@ -25,6 +25,8 @@ def get_syscall_mapper(archtype: QL_ARCH):
     return __mapper
 
 x86_syscall_table = {
+    # machdep
+    0x3: 'thread_fast_set_cthread_self',
     0xffffffe4: 'task_self_trap',
     # my stuff...
     0x0000ffff: 'my_bzero',

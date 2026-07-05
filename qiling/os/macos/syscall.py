@@ -433,6 +433,11 @@ def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.arch.msr.write(IA32_GS_BASE_MSR, u_info_addr)
     return KERN_SUCCESS
 
+def ql_syscall_thread_fast_set_cthread_self(ql, u_info_addr, *args, **kw):
+    ql.log.debug("[mdep] thread fast set cthread self(tsd_base:0x%x)" % (u_info_addr))
+    ql.arch.msr.write(IA32_GS_BASE_MSR, u_info_addr) # ??
+    return KERN_SUCCESS
+
 # Other
 
 def ql_syscall_my_bzero(ql, ptr, n, *args, **kw):
