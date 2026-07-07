@@ -359,7 +359,10 @@ def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw)
             raise
     #if buf:
     #    ql.log.info(buf.decode(errors='ignore'))
-    return 0
+    # return the number of bytes written: callers (e.g. dyld's _simple_dprintf) loop
+    # writing the remainder until the syscall reports the full count. returning 0 makes
+    # the writer believe nothing was written.
+    return regreturn
 
 
 # 0x18e
