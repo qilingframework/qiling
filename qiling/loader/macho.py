@@ -172,24 +172,57 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
         if self.ql.arch.type == QL_ARCH.X86:
+            # TODO: move to commpage?
+
+            def commpage_install_syscall_jump(addr, func_num):
+                # b8 XX XX XX XX MOV EAX,func_num
+                self.ql.mem.write_ptr(addr, 0xb8, 1)
+                addr += 1
+                self.ql.mem.write_ptr(addr, func_num, 4)
+                addr += 4
+                # cd 80 INT 0x82
+                self.ql.mem.write_ptr(addr, 0x82cd, 2)
+                addr += 2
+                # c3 RET
+                self.ql.mem.write_ptr(addr, 0xc3, 1)
+                addr += 1
+
             # address of "real" bzero
             # ref. https://fdiv.net/2009/01/14/memset-vs-bzero-ultimate-showdown
-            addr = 0xffff0600
-            # b8 ff ff 00 00        MOV        EAX,0xffff
+            commpage_install_syscall_jump(0xffff0600, 0x0000ffff)
+
+            # address of "real" memcpy
+            commpage_install_syscall_jump(0xffff07a0, 0x0000fffe)
+
+            # address of "real" mach_absolute_time
+            commpage_install_syscall_jump(0xffff1700, 0x0000fffd)
+
+            # ___commpage_gettimeofday
+            addr = 0xffff02e0
+            # b8 00
             self.ql.mem.write_ptr(addr, 0xb8, 1)
             addr += 1
-            self.ql.mem.write_ptr(addr, 0x0000ffff, 4)
-            addr += 4
-            sysenter_trap_addr = 0x8fe2b7ac
-            offset = (sysenter_trap_addr - addr - 5) & 0xffffffff;
-            # e8 a2 b1 e3 8f        CALL       __sysenter_trap
-            self.ql.mem.write_ptr(addr, 0xe8, 1)
-            addr += 1
-            self.ql.mem.write_ptr(addr, offset, 4)
+            # TODO: just returning 0 for now
+            self.ql.mem.write_ptr(addr, 0x00000000, 4)
             addr += 4
             # c3 RET
             self.ql.mem.write_ptr(addr, 0xc3, 1)
             addr += 1
+
+            # OSAtomicCompareAndSwap64 invokes it via `call [0xffff00c0]`, so the slot
+            # must hold the address of the routine rather than the routine itself.
+            #
+            # the routine follows the commpage register ABI:
+            #   edx:eax = old value, ecx:ebx = new value, esi = pointer to the value,
+            #   ZF is set when the swap succeeds.
+            # that is exactly a `lock cmpxchg8b [esi]`, so emit it natively and let the
+            # CPU set ZF (and reload edx:eax on failure) as the caller expects.
+            slot = 0xffff00c0
+            routine = slot + self.ql.arch.pointersize
+            # f0 0f c7 0e    LOCK CMPXCHG8B [ESI]
+            # c3             RET
+            self.ql.mem.write(routine, b"\xf0\x0f\xc7\x0e\xc3")
+            self.ql.mem.write_ptr(slot, routine, self.ql.arch.pointersize)
 
     def loadDriver(self, stack_addr, loadbase = -1, argv = [], env = {}):
         self.import_symbols = {}

@@ -4,6 +4,7 @@
 #
 
 import struct
+import time
 
 from qiling.exception import *
 from qiling.const import *
@@ -464,6 +465,18 @@ def ql_syscall_thread_fast_set_cthread_self(ql, u_info_addr, *args, **kw):
     return KERN_SUCCESS
 
 # Other
+
+def ql_syscall_my_mach_absolute_time(ql, *args, **kw):
+    ql.log.debug("my_mach_absolute_time()")
+    val = time.process_time_ns()
+    ql.arch.regs.eax = val & 0xffffffff  # low dword
+    ql.arch.regs.edx = (val >> 32) & 0xffffffff  # high dword
+    set_eflags_cf(ql, 0x0)  # CF=0 -> success
+
+def ql_syscall_my_memcpy(ql, dest, src, size, *args, **kw):
+    ql.log.debug("my_memcpy(dest: 0x%x, src: 0x%x, size: %u)" % (dest, src, size))
+    ql.mem.write(dest, bytes(ql.mem.read(src, size)))
+    return dest
 
 def ql_syscall_my_bzero(ql, ptr, n, *args, **kw):
     ql.log.debug("my_bzero(ptr: 0x%x, n: %u)" % (ptr, n))
