@@ -178,11 +178,42 @@ class MacOSStat(ctypes.Structure):
         ("st_qspare", ctypes.c_int64 * 2)
     ]
 
-    # No 32bit macos.
     _pack_ = 8
+
+
+# 32bit macos (i386): sizeof(long) = sizeof(time_t) = 4, so every timespec field is
+# 4 bytes wide. The i386 ABI packs 8-byte members (uint64/int64) on a 4-byte boundary.
+class MacOSX86Stat(ctypes.Structure):
+    _fields_ = [
+        ("st_dev", ctypes.c_int32),
+        ("st_mode", ctypes.c_uint16),
+        ("st_nlink", ctypes.c_uint16),
+        ("st_ino", ctypes.c_uint64),
+        ("st_uid", ctypes.c_uint32),
+        ("st_gid", ctypes.c_uint32),
+        ("st_rdev", ctypes.c_int32),
+        ("st_atime", ctypes.c_uint32),
+        ("st_atime_ns", ctypes.c_uint32),
+        ("st_mtime", ctypes.c_uint32),
+        ("st_mtime_ns", ctypes.c_uint32),
+        ("st_ctime", ctypes.c_uint32),
+        ("st_ctime_ns", ctypes.c_uint32),
+        ("st_birthtime", ctypes.c_uint32),
+        ("st_birthtime_ns", ctypes.c_uint32),
+        ("st_size", ctypes.c_int64),
+        ("st_blocks", ctypes.c_int64),
+        ("st_blksize", ctypes.c_int32),
+        ("st_flags", ctypes.c_uint32),
+        ("st_gen", ctypes.c_uint32),
+        ("st_lspare", ctypes.c_int32),
+        ("st_qspare", ctypes.c_int64 * 2)
+    ]
+
+    _pack_ = 4
 
 # They are the same in source code.
 MacOSStat64 = MacOSStat
+MacOSX86Stat64 = MacOSX86Stat
 
 # https://elixir.bootlin.com/linux/latest/source/arch/mips/include/uapi/asm/stat.h#L19
 #
@@ -1096,7 +1127,10 @@ def get_stat64_struct(ql: Qiling):
         elif ql.arch.type == QL_ARCH.PPC:
             return LinuxPPCStat64()
     elif ql.os.type == QL_OS.MACOS:
-        return MacOSStat64()
+        if ql.arch.type == QL_ARCH.X86:
+            return MacOSX86Stat64()
+        else:
+            return MacOSStat64()
     elif ql.os.type == QL_OS.QNX:
         return QNXARMStat64()
     ql.log.warning(f"Unrecognized arch && os with {ql.arch.type} and {ql.os.type} for stat64! Fallback to Linux x86.")
@@ -1109,7 +1143,10 @@ def get_stat_struct(ql: Qiling):
         else:
             return FreeBSDX86Stat()
     elif ql.os.type == QL_OS.MACOS:
-        return MacOSStat()
+        if ql.arch.type == QL_ARCH.X86:
+            return MacOSX86Stat()
+        else:
+            return MacOSStat()
     elif ql.os.type == QL_OS.LINUX:
         if ql.arch.type == QL_ARCH.X8664:
             return LinuxX8664Stat()
