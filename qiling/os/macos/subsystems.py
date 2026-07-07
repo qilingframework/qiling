@@ -202,6 +202,40 @@ class MachTaskServer():
 
         return out_msg
 
+    def vm_allocate(self, in_header, in_content):
+        # vm_allocate (vm_map subsystem, routine 1, msgh_id 3801). Request body
+        # layout (after the 24-byte header):
+        #   [0x00] NDR record
+        #   [0x08] address / [0x0c] size / [0x10] flags
+        # We carve a fresh page-aligned region out of the task's vm map and
+        # report its base address back.
+        address = unpack("<L", in_content[0x08:0x0c])[0]
+        size = unpack("<L", in_content[0x0c:0x10])[0]
+        flags = unpack("<L", in_content[0x10:0x14])[0]
+        self.ql.log.debug("[mach] vm_allocate(address: 0x%x, size: 0x%x, flags: 0x%x)" % (
+            address, size, flags))
+
+        vmmap_address = page_align_end(self.ql.os.macho_vmmap_end, PAGE_SIZE)
+        vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
+        self.ql.os.macho_vmmap_end = vmmap_end
+        self.ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
+
+        # Reply is a simple (non-complex) MIG message carrying the NDR record,
+        # the RetCode and the allocated address (__Reply__vm_allocate_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000028
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3901
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+        out_msg.content += pack("<L", vmmap_address)  # allocated address
+
+        return out_msg
+
     def vm_deallocate(self, in_header, in_content):
         # vm_deallocate (vm_map subsystem, routine 2). Reply is a simple
         # (non-complex) MIG message carrying only the NDR record and RetCode.

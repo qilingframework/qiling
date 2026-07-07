@@ -151,6 +151,10 @@ class MachPortManager():
             out_msg = self.ql.os.macho_task_server.mach_port_deallocate(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         # 3800 (Virtual memory operations)
+        elif msg.header.msgh_id == 3801:
+            # 1 (vm_allocate)
+            out_msg = self.ql.os.macho_task_server.vm_allocate(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3802:
             # 2 (vm_deallocate)
             out_msg = self.ql.os.macho_task_server.vm_deallocate(msg.header, msg.content)
