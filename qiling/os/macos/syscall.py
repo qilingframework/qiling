@@ -16,6 +16,8 @@ from .thread import *
 from .mach_port import *
 from .kernel_func import *
 from .utils import *
+from ..posix.syscall import ql_syscall_read, ql_syscall_close
+
 
 # TODO: We need to finish these syscall
 # there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
@@ -333,6 +335,16 @@ def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_h
 def ql_syscall_thread_selfid(ql, *args, **kw):
     thread_id = ql.os.macho_thread.id
     return thread_id
+
+
+# 0x18c
+def ql_syscall_read_nocancel(ql, fd, buf, length, *args, **kw):
+    return ql_syscall_read(ql, fd, buf, length)
+
+
+# 0x18f
+def ql_syscall_close_nocancel(ql, fd, *args, **kw):
+    return ql_syscall_close(ql, fd)
 
 
 # 0x18d
