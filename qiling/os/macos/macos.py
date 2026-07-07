@@ -174,7 +174,8 @@ class QlOsMacos(QlOsPosix):
             segm.setup_cs_ds_ss_es(0, 4 << 30)
 
             self.ql.hook_insn(self.hook_sysenter, UC_X86_INS_SYSENTER)
-            self.ql.hook_intno(self.hook_syscall, 0x82)
+            self.ql.hook_intno(self.hook_syscall, 0x80)
+            self.ql.hook_intno(self.hook_syscall, 0x82) # machdep
 
 
     def hook_syscall(self, ql, intno = None):
