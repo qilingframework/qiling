@@ -205,13 +205,23 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
         fd, buf, nbyte, offset
     ))
 
-    if fd in range(MAX_FD_SIZE + 1):
-        ql.os.fd[fd].seek(offset)
-        data = ql.os.fd[fd].read(nbyte)
-        ql.mem.write(buf, data)
+    if fd not in range(MAX_FD_SIZE + 1) or ql.os.fd[fd] is None:
+        set_eflags_cf(ql, 0x1)
+        return EBADF
+
+    f = ql.os.fd[fd]
+
+    # pread must not change the file descriptor's current offset, so save
+    # the current position, read from the requested offset, then restore it.
+    pos = f.tell()
+    f.seek(offset)
+    data = f.read(nbyte)
+    f.seek(pos)
+
+    ql.mem.write(buf, data)
 
     set_eflags_cf(ql, 0x0)
-    return nbyte
+    return len(data)
 
 # 0xa9
 def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
