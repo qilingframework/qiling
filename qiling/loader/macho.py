@@ -20,7 +20,7 @@ from qiling.os.macos.const import *
 from qiling.os.macos.task import MachoTask
 from qiling.os.macos.kernel_func import FileSystem, map_commpage
 from qiling.os.macos.mach_port import MachPort, MachPortManager
-from qiling.os.macos.subsystems import MachHostServer, MachTaskServer
+from qiling.os.macos.subsystems import MachHostServer, MachTaskServer, MachThreadServer
 from qiling.os.macos.utils import env_dict_to_array, page_align_end
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
@@ -126,7 +126,8 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_port_manager = MachPortManager(self.ql, self.ql.os.macho_mach_port)
         self.ql.os.macho_host_server = MachHostServer(self.ql)
         self.ql.os.macho_task_server = MachTaskServer(self.ql)
-        
+        self.ql.os.macho_thread_server = MachThreadServer(self.ql)
+
         self.envs = env_dict_to_array(self.env)
         self.apples = [self.ql.os.path.transform_to_relative_path(self.ql.path)]
         self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_address, self.heap_address + self.heap_size)

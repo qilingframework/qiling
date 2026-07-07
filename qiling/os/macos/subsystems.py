@@ -365,3 +365,34 @@ class MachTaskServer():
         out_msg.header.msgh_size = out_msg.header.header_size + len(out_msg.content)
 
         return out_msg
+
+
+class MachThreadServer():
+
+    def __init__(self, ql):
+        self.ql = ql
+
+    def thread_policy(self, in_header, in_content):
+        # thread_policy (thread_act subsystem, routine 16, msgh_id 3616).
+        # Request body layout (after the 24-byte header):
+        #   [0x00] NDR record
+        #   [0x08] policy / [0x0c] baseCnt / [0x10] base[baseCnt] / [..] set_limit
+        policy = unpack("<L", in_content[0x08:0x0c])[0]
+        base_count = unpack("<L", in_content[0x0c:0x10])[0]
+        self.ql.log.debug("[mach] thread_policy(policy: 0x%x, baseCnt: 0x%x)" % (
+            policy, base_count))
+
+        # Reply is a simple (non-complex) MIG message carrying only the NDR
+        # record and RetCode (__Reply__thread_policy_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3716
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
