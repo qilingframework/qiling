@@ -93,6 +93,24 @@ class QlGdbFeatures:
         # inline all xi:include elements
         ElementInclude.include(tree.getroot(), loader=my_loader(base_url))
 
+        # gdb sizes a target's register set according to its osabi and fails an internal
+        # 'tdesc_use_registers' assertion when the target description advertises more
+        # registers than that osabi models. the shared target xml files are Linux-centric
+        # and include register banks that other osabis do not support, so drop the ones
+        # that are irrelevant for the current os before handing the description to gdb.
+        unsupported: Tuple[str, ...] = ()
+
+        # Linux-specific registers (e.g. orig_eax / orig_rax) are invalid elsewhere.
+        if ostype != QL_OS.LINUX:
+            unsupported += ('.linux',)
+
+        if unsupported:
+            root = tree.getroot()
+
+            for feature in root.findall('feature'):
+                if feature.get('name', '').endswith(unsupported):
+                    root.remove(feature)
+
         # patch xml osabi element with the appropriate abi tag
         osabi = tree.find('osabi')
 
