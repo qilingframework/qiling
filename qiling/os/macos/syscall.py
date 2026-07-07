@@ -85,7 +85,7 @@ def ql_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *arg
     ql.mem.write(mmap_address, b'\x00'*(mmap_end - mmap_address))
     ql.os.macho_task.min_offset = mmap_end
     ql.log.debug("vm alloc form 0x%x to 0x%0x" % (mmap_address, mmap_end))
-    ql.mem.write(addr, struct.pack("<Q", mmap_address))
+    ql.mem.write_ptr(addr, mmap_address)
     return 0
 
 # 0xc
@@ -109,7 +109,7 @@ def ql_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags
 
     ql.os.macho_vmmap_end = vmmap_end
     ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
-    ql.mem.write(address, struct.pack("<Q", vmmap_address))
+    ql.mem.write_ptr(address, vmmap_address)
     return KERN_SUCCESS
 
 # 0x12
