@@ -104,6 +104,11 @@ class QlGdbFeatures:
         if ostype != QL_OS.LINUX:
             unsupported += ('.linux',)
 
+        # Darwin's x86 gdb only models the core and SSE register banks; advertising the
+        # extended banks (segments, AVX, AVX-512, MPX, PKEYS) makes gdb assert on attach.
+        if ostype == QL_OS.MACOS and archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+            unsupported += ('.segments', '.avx', '.avx512', '.mpx', '.pkeys')
+
         if unsupported:
             root = tree.getroot()
 
