@@ -466,5 +466,5 @@ def ql_syscall_thread_fast_set_cthread_self(ql, u_info_addr, *args, **kw):
 # Other
 
 def ql_syscall_my_bzero(ql, ptr, n, *args, **kw):
-    ql.log.debug("bzero(ptr: 0x%x, n: %u)" % (ptr, n))
+    ql.log.debug("my_bzero(ptr: 0x%x, n: %u)" % (ptr, n))
     ql.mem.write(ptr, bytes(n))
