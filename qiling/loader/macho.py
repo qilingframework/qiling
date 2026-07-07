@@ -456,6 +456,7 @@ class QlLoaderMACHO(QlLoader):
                 self.ql.log.info("Dyld entry point: {}".format(hex(self.entry_point)))
             else:
                 self.entry_point = self.proc_entry + self.slide
+            self.ql.os.entry_point = self.entry_point
             self.ql.log.info("Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
             self.load_address = self.macho_entry
