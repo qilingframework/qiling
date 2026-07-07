@@ -55,6 +55,7 @@ x86_syscall_table = {
     0xffffffe4: 'task_self_trap',
     0xffffffe6: 'mach_reply_port',
     # my stuff...
+    0x0000fffb: 'my_OSAtomicCompareAndSwap32',
     0x0000fffc: 'my_OSAtomicCompareAndSwap64',
     0x0000fffd: 'my_mach_absolute_time',
     0x0000fffe: 'my_memcpy',

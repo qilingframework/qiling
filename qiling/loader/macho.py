@@ -224,6 +224,21 @@ class QlLoaderMACHO(QlLoader):
             self.ql.mem.write(routine, b"\xf0\x0f\xc7\x0e\xc3")
             self.ql.mem.write_ptr(slot, routine, self.ql.arch.pointersize)
 
+            # OSAtomicCompareAndSwap32 is the 32-bit counterpart, invoked via
+            # `call [0xffff0080]`, so the slot again holds the routine address.
+            #
+            # its C wrapper (_OSAtomicCompareAndSwap32) loads the arguments into
+            # registers before the call, using a different ABI than the 64-bit one:
+            #   eax = old value, edx = new value, ecx = pointer to the value,
+            #   ZF is set when the swap succeeds (and eax is reloaded on failure).
+            # that is exactly a `lock cmpxchg [ecx], edx`, so emit it natively too.
+            slot = 0xffff0080
+            routine = slot + self.ql.arch.pointersize
+            # f0 0f b1 11    LOCK CMPXCHG [ECX], EDX
+            # c3             RET
+            self.ql.mem.write(routine, b"\xf0\x0f\xb1\x11\xc3")
+            self.ql.mem.write_ptr(slot, routine, self.ql.arch.pointersize)
+
     def loadDriver(self, stack_addr, loadbase = -1, argv = [], env = {}):
         self.import_symbols = {}
         PAGE_SIZE = 0x1000
