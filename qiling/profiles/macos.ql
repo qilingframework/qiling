@@ -1,6 +1,6 @@
 [LOADER32]
 slide           = 0x0000000
-dyld_slide      = 0x0000000
+dyld_slide      = 0x5000000
 
 
 [LOADER]
