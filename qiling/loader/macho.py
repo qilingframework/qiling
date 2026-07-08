@@ -153,8 +153,8 @@ class QlLoaderMACHO(QlLoader):
             dyld_slide = int(self.profile.get("LOADER", "dyld_slide"), 16)
         self.slide          = slide
         self.dyld_slide     = dyld_slide
-        self.string_align   = 4
-        self.ptr_align      = 4
+        self.string_align   = 4 if self.ql.arch.type == QL_ARCH.X86 else 8
+        self.ptr_align      = 4 if self.ql.arch.type == QL_ARCH.X86 else 8
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
         self.argvs          = [self.ql.path]
