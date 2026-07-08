@@ -20,7 +20,7 @@ from qiling.os.macos.const import *
 from qiling.os.macos.task import MachoTask
 from qiling.os.macos.kernel_func import FileSystem, map_commpage
 from qiling.os.macos.mach_port import MachPort, MachPortManager
-from qiling.os.macos.subsystems import MachHostServer, MachTaskServer
+from qiling.os.macos.subsystems import MachHostServer, MachTaskServer, MachThreadServer
 from qiling.os.macos.utils import env_dict_to_array, page_align_end
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
@@ -29,8 +29,10 @@ from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 def load_commpage(ql):
     if ql.arch.type == QL_ARCH.X8664:
         COMM_PAGE_START_ADDRESS = X8664_COMM_PAGE_START_ADDRESS
-    else:    
+    elif ql.arch.type == QL_ARCH.ARM64:
         COMM_PAGE_START_ADDRESS = ARM64_COMM_PAGE_START_ADDRESS
+    else:
+        raise NotImplementedError
 
     ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_SIGNATURE, b'\x00')
     ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CPU_CAPABILITIES64, b'\x00\x00\x00\x00')
@@ -89,12 +91,23 @@ class QlLoaderMACHO(QlLoader):
             self.kext_name = None        
     
     def run(self):
-        self.profile        = self.ql.profile
-        stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
-        stack_size         = int(self.profile.get("OS64", "stack_size"), 16)
-        vmmap_trap_address = int(self.profile.get("OS64", "vmmap_trap_address"), 16)
-        self.heap_address = int(self.profile.get("OS64", "heap_address"), 16)
-        self.heap_size = int(self.profile.get("OS64", "heap_size"), 16)        
+        self.profile = self.ql.profile
+
+        if self.ql.arch.type == QL_ARCH.X86:
+            stack_address = int(self.profile.get("OS32", "stack_address"), 16)
+            stack_size = int(self.profile.get("OS32", "stack_size"), 16)
+            vmmap_trap_address = int(self.profile.get("OS32", "vmmap_trap_address"), 16)
+            heap_address = int(self.profile.get("OS32", "heap_address"), 16)
+            heap_size = int(self.profile.get("OS32", "heap_size"), 16)
+        else:
+            stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
+            stack_size         = int(self.profile.get("OS64", "stack_size"), 16)
+            vmmap_trap_address = int(self.profile.get("OS64", "vmmap_trap_address"), 16)
+            heap_address = int(self.profile.get("OS64", "heap_address"), 16)
+            heap_size = int(self.profile.get("OS64", "heap_size"), 16)
+
+        self.heap_address = heap_address
+        self.heap_size = heap_size
         self.stack_address = stack_address
         self.stack_size = stack_size
 
@@ -113,9 +126,10 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_port_manager = MachPortManager(self.ql, self.ql.os.macho_mach_port)
         self.ql.os.macho_host_server = MachHostServer(self.ql)
         self.ql.os.macho_task_server = MachTaskServer(self.ql)
-        
+        self.ql.os.macho_thread_server = MachThreadServer(self.ql)
+
         self.envs = env_dict_to_array(self.env)
-        self.apples = self.ql.os.path.transform_to_relative_path(self.ql.path)
+        self.apples = [self.ql.os.path.transform_to_relative_path(self.ql.path)]
         self.ql.os.heap = QlMemoryHeap(self.ql, self.heap_address, self.heap_address + self.heap_size)
 
         # FIXME: Not working due to overlarge mapping, need to fix it
@@ -131,10 +145,16 @@ class QlLoaderMACHO(QlLoader):
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.is_driver      = (self.macho_file.header.file_type == 0xb)
         self.loading_file   = self.macho_file
-        self.slide          = int(self.profile.get("LOADER", "slide"), 16)
-        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
-        self.string_align   = 8
-        self.ptr_align      = 8
+        if self.ql.arch.type == QL_ARCH.X86:
+            slide = int(self.profile.get("LOADER32", "slide"), 16)
+            dyld_slide = int(self.profile.get("LOADER32", "dyld_slide"), 16)
+        else:
+            slide = int(self.profile.get("LOADER", "slide"), 16)
+            dyld_slide = int(self.profile.get("LOADER", "dyld_slide"), 16)
+        self.slide          = slide
+        self.dyld_slide     = dyld_slide
+        self.string_align   = 4 if self.ql.arch.type == QL_ARCH.X86 else 8
+        self.ptr_align      = 4 if self.ql.arch.type == QL_ARCH.X86 else 8
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
         self.argvs          = [self.ql.path]
@@ -151,6 +171,74 @@ class QlLoaderMACHO(QlLoader):
         self.ql.arch.regs.arch_sp = self.stack_address # self.stack_sp
         self.init_sp = self.ql.arch.regs.arch_sp
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
+
+        if self.ql.arch.type == QL_ARCH.X86:
+            # TODO: move to commpage?
+
+            def commpage_install_syscall_jump(addr, func_num):
+                # b8 XX XX XX XX MOV EAX,func_num
+                self.ql.mem.write_ptr(addr, 0xb8, 1)
+                addr += 1
+                self.ql.mem.write_ptr(addr, func_num, 4)
+                addr += 4
+                # cd 80 INT 0x82
+                self.ql.mem.write_ptr(addr, 0x82cd, 2)
+                addr += 2
+                # c3 RET
+                self.ql.mem.write_ptr(addr, 0xc3, 1)
+                addr += 1
+
+            # address of "real" bzero
+            # ref. https://fdiv.net/2009/01/14/memset-vs-bzero-ultimate-showdown
+            commpage_install_syscall_jump(0xffff0600, 0x0000ffff)
+
+            # address of "real" memcpy
+            commpage_install_syscall_jump(0xffff07a0, 0x0000fffe)
+
+            # address of "real" mach_absolute_time
+            commpage_install_syscall_jump(0xffff1700, 0x0000fffd)
+
+            # ___commpage_gettimeofday
+            addr = 0xffff02e0
+            # b8 00
+            self.ql.mem.write_ptr(addr, 0xb8, 1)
+            addr += 1
+            # TODO: just returning 0 for now
+            self.ql.mem.write_ptr(addr, 0x00000000, 4)
+            addr += 4
+            # c3 RET
+            self.ql.mem.write_ptr(addr, 0xc3, 1)
+            addr += 1
+
+            # OSAtomicCompareAndSwap64 invokes it via `call [0xffff00c0]`, so the slot
+            # must hold the address of the routine rather than the routine itself.
+            #
+            # the routine follows the commpage register ABI:
+            #   edx:eax = old value, ecx:ebx = new value, esi = pointer to the value,
+            #   ZF is set when the swap succeeds.
+            # that is exactly a `lock cmpxchg8b [esi]`, so emit it natively and let the
+            # CPU set ZF (and reload edx:eax on failure) as the caller expects.
+            slot = 0xffff00c0
+            routine = slot + self.ql.arch.pointersize
+            # f0 0f c7 0e    LOCK CMPXCHG8B [ESI]
+            # c3             RET
+            self.ql.mem.write(routine, b"\xf0\x0f\xc7\x0e\xc3")
+            self.ql.mem.write_ptr(slot, routine, self.ql.arch.pointersize)
+
+            # OSAtomicCompareAndSwap32 is the 32-bit counterpart, invoked via
+            # `call [0xffff0080]`, so the slot again holds the routine address.
+            #
+            # its C wrapper (_OSAtomicCompareAndSwap32) loads the arguments into
+            # registers before the call, using a different ABI than the 64-bit one:
+            #   eax = old value, edx = new value, ecx = pointer to the value,
+            #   ZF is set when the swap succeeds (and eax is reloaded on failure).
+            # that is exactly a `lock cmpxchg [ecx], edx`, so emit it natively too.
+            slot = 0xffff0080
+            routine = slot + self.ql.arch.pointersize
+            # f0 0f b1 11    LOCK CMPXCHG [ECX], EDX
+            # c3             RET
+            self.ql.mem.write(routine, b"\xf0\x0f\xb1\x11\xc3")
+            self.ql.mem.write_ptr(slot, routine, self.ql.arch.pointersize)
 
     def loadDriver(self, stack_addr, loadbase = -1, argv = [], env = {}):
         self.import_symbols = {}
@@ -353,7 +441,10 @@ class QlLoaderMACHO(QlLoader):
             self.slide = loadbase 
 
     def loadMacho(self, depth=0, isdyld=False):
-        mmap_address   = int(self.profile.get("OS64", "mmap_address"), 16)
+        if self.ql.arch.type == QL_ARCH.X86:
+            mmap_address = int(self.profile.get("OS32", "mmap_address"), 16)
+        else:
+            mmap_address = int(self.profile.get("OS64", "mmap_address"), 16)
 
         # MAX load depth 
         if depth > 5:
@@ -386,7 +477,7 @@ class QlLoaderMACHO(QlLoader):
 
                 if pass_count == 2:
                     if cmd.cmd_id == LC_SEGMENT:
-                        pass
+                        self.loadSegment64(cmd, isdyld)
 
                     if cmd.cmd_id == LC_SEGMENT_64:
                         self.loadSegment64(cmd, isdyld)
@@ -414,6 +505,7 @@ class QlLoaderMACHO(QlLoader):
                 self.ql.log.info("Dyld entry point: {}".format(hex(self.entry_point)))
             else:
                 self.entry_point = self.proc_entry + self.slide
+            self.ql.os.entry_point = self.entry_point
             self.ql.log.info("Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
             self.load_address = self.macho_entry
@@ -578,9 +670,9 @@ class QlLoaderMACHO(QlLoader):
         align = self.ptr_align
         
         if data == 0:
-            content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            content = b'\x00\x00\x00\x00'if self.ql.arch.type == QL_ARCH.X86 else b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
-            content = struct.pack('<Q', data)
+            content = struct.pack('<I', data) if self.ql.arch.type == QL_ARCH.X86 else struct.pack('<Q', data)
 
         if len(content) != align:
             self.ql.log.info('stack align error')

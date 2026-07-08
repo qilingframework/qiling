@@ -1,6 +1,20 @@
+[LOADER32]
+slide           = 0x0000000
+dyld_slide      = 0x5000000
+
+
 [LOADER]
 slide           = 0x0000000000000000
 dyld_slide      = 0x0000000500000000
+
+
+[OS32]
+stack_address = 0xb8000000
+stack_size = 0x8000000
+vmmap_trap_address = 0x40000000
+mmap_address = 0x50000000
+heap_address = 0x5000000
+heap_size = 0x50000
 
 
 [OS64]

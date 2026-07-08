@@ -4,6 +4,7 @@
 #
 
 import struct
+import time
 
 from qiling.exception import *
 from qiling.const import *
@@ -16,6 +17,8 @@ from .thread import *
 from .mach_port import *
 from .kernel_func import *
 from .utils import *
+from ..posix.syscall import ql_syscall_read, ql_syscall_close
+
 
 # TODO: We need to finish these syscall
 # there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
@@ -83,7 +86,7 @@ def ql_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *arg
     ql.mem.write(mmap_address, b'\x00'*(mmap_end - mmap_address))
     ql.os.macho_task.min_offset = mmap_end
     ql.log.debug("vm alloc form 0x%x to 0x%0x" % (mmap_address, mmap_end))
-    ql.mem.write(addr, struct.pack("<Q", mmap_address))
+    ql.mem.write_ptr(addr, mmap_address)
     return 0
 
 # 0xc
@@ -107,7 +110,7 @@ def ql_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags
 
     ql.os.macho_vmmap_end = vmmap_end
     ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
-    ql.mem.write(address, struct.pack("<Q", vmmap_address))
+    ql.mem.write_ptr(address, vmmap_address)
     return KERN_SUCCESS
 
 # 0x12
@@ -205,13 +208,23 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
         fd, buf, nbyte, offset
     ))
 
-    if fd in range(MAX_FD_SIZE + 1):
-        ql.os.fd[fd].seek(offset)
-        data = ql.os.fd[fd].read(nbyte)
-        ql.mem.write(buf, data)
+    if fd not in range(MAX_FD_SIZE + 1) or ql.os.fd[fd] is None:
+        set_eflags_cf(ql, 0x1)
+        return EBADF
+
+    f = ql.os.fd[fd]
+
+    # pread must not change the file descriptor's current offset, so save
+    # the current position, read from the requested offset, then restore it.
+    pos = f.tell()
+    f.seek(offset)
+    data = f.read(nbyte)
+    f.seek(pos)
+
+    ql.mem.write(buf, data)
 
     set_eflags_cf(ql, 0x0)
-    return nbyte
+    return len(data)
 
 # 0xa9
 def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
@@ -325,6 +338,16 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
     return thread_id
 
 
+# 0x18c
+def ql_syscall_read_nocancel(ql, fd, buf, length, *args, **kw):
+    return ql_syscall_read(ql, fd, buf, length)
+
+
+# 0x18f
+def ql_syscall_close_nocancel(ql, fd, *args, **kw):
+    return ql_syscall_close(ql, fd)
+
+
 # 0x18d
 def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw):
     regreturn = 0
@@ -349,7 +372,10 @@ def ql_syscall_write_nocancel(ql, write_fd, write_buf, write_count, *args, **kw)
             raise
     #if buf:
     #    ql.log.info(buf.decode(errors='ignore'))
-    return 0
+    # return the number of bytes written: callers (e.g. dyld's _simple_dprintf) loop
+    # writing the remainder until the syscall reports the full count. returning 0 makes
+    # the writer believe nothing was written.
+    return regreturn
 
 
 # 0x18e
@@ -432,3 +458,26 @@ def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.log.debug("[mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
     ql.arch.msr.write(IA32_GS_BASE_MSR, u_info_addr)
     return KERN_SUCCESS
+
+def ql_syscall_thread_fast_set_cthread_self(ql, u_info_addr, *args, **kw):
+    ql.log.debug("[mdep] thread fast set cthread self(tsd_base:0x%x)" % (u_info_addr))
+    ql.arch.msr.write(IA32_GS_BASE_MSR, u_info_addr) # ??
+    return KERN_SUCCESS
+
+# Other
+
+def ql_syscall_my_mach_absolute_time(ql, *args, **kw):
+    ql.log.debug("my_mach_absolute_time()")
+    val = time.process_time_ns()
+    ql.arch.regs.eax = val & 0xffffffff  # low dword
+    ql.arch.regs.edx = (val >> 32) & 0xffffffff  # high dword
+    set_eflags_cf(ql, 0x0)  # CF=0 -> success
+
+def ql_syscall_my_memcpy(ql, dest, src, size, *args, **kw):
+    ql.log.debug("my_memcpy(dest: 0x%x, src: 0x%x, size: %u)" % (dest, src, size))
+    ql.mem.write(dest, bytes(ql.mem.read(src, size)))
+    return dest
+
+def ql_syscall_my_bzero(ql, ptr, n, *args, **kw):
+    ql.log.debug("my_bzero(ptr: 0x%x, n: %u)" % (ptr, n))
+    ql.mem.write(ptr, bytes(n))

@@ -15,6 +15,7 @@ from struct import pack, unpack
 from qiling.const import *
 from .mach_port import *
 from .const import *
+from .utils import page_align_end
 
 class MachHostServer():
 
@@ -39,7 +40,7 @@ class MachHostServer():
         # gen reply
 
         if flavor == HOST_BASIC_INFO:
-            out_msg.header.msgh_bits = 4608
+            out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
             out_msg.header.msgh_size = 88
             out_msg.header.msgh_remote_port = 0
             out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -65,7 +66,7 @@ class MachHostServer():
                 out_msg.content += pack("<Q", 0x400000000)  # max_mem
             
         elif flavor == HOST_PRIORITY_INFO:
-            out_msg.header.msgh_bits = 4608
+            out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
             out_msg.header.msgh_size = 72
             out_msg.header.msgh_remote_port = 0
             out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -92,7 +93,7 @@ class MachHostServer():
     def host_get_clock_service(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
 
-        out_msg.header.msgh_bits = 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -120,7 +121,7 @@ class MachTaskServer():
     def semaphore_create(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
 
-        out_msg.header.msgh_bits = 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -141,7 +142,7 @@ class MachTaskServer():
 
     def get_special_port(self, in_header, in_content):
         out_msg = MachMsg(self.ql)
-        out_msg.header.msgh_bits = 0x80001200
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
         out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
@@ -159,4 +160,239 @@ class MachTaskServer():
         out_msg.trailer += pack("<L", 0x0)                                                  # pad end
 
         return out_msg
-        pass
+
+    def mach_port_allocate(self, in_header, in_content):
+        # mach_port_allocate(task, right, &name): allocate a new port right in
+        # the task's IPC space and return its name. Since the out parameter is a
+        # plain mach_port_name_t (not a transferred port right), the reply is a
+        # simple (non-complex) MIG message: NDR record + RetCode + name.
+        port = self.ql.os.macho_port_manager.alloc_port()
+
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3304
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR record
+        out_msg.content += pack("<L", KERN_SUCCESS)  # RetCode / KERN_SUCCESS
+        out_msg.content += pack("<L", port.name)  # allocated port name
+
+        out_msg.header.msgh_size = out_msg.header.header_size + len(out_msg.content)
+
+        return out_msg
+
+    def mach_port_deallocate(self, in_header, in_content):
+        # Request carries the NDR record followed by the mach_port_name_t to
+        # release. Reply is a simple message with only a kern_return_t.
+        name = unpack("<L", in_content[8:12])[0] if len(in_content) >= 12 else 0
+        self.ql.log.debug("[mach] mach_port_deallocate(name: 0x%x)" % name)
+
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3306
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
+
+    def vm_allocate(self, in_header, in_content):
+        # vm_allocate (vm_map subsystem, routine 1, msgh_id 3801). Request body
+        # layout (after the 24-byte header):
+        #   [0x00] NDR record
+        #   [0x08] address / [0x0c] size / [0x10] flags
+        # We carve a fresh page-aligned region out of the task's vm map and
+        # report its base address back.
+        address = unpack("<L", in_content[0x08:0x0c])[0]
+        size = unpack("<L", in_content[0x0c:0x10])[0]
+        flags = unpack("<L", in_content[0x10:0x14])[0]
+        self.ql.log.debug("[mach] vm_allocate(address: 0x%x, size: 0x%x, flags: 0x%x)" % (
+            address, size, flags))
+
+        vmmap_address = page_align_end(self.ql.os.macho_vmmap_end, PAGE_SIZE)
+        vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
+        self.ql.os.macho_vmmap_end = vmmap_end
+        self.ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
+
+        # Reply is a simple (non-complex) MIG message carrying the NDR record,
+        # the RetCode and the allocated address (__Reply__vm_allocate_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000028
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3901
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+        out_msg.content += pack("<L", vmmap_address)  # allocated address
+
+        return out_msg
+
+    def vm_deallocate(self, in_header, in_content):
+        # vm_deallocate (vm_map subsystem, routine 2). Reply is a simple
+        # (non-complex) MIG message carrying only the NDR record and RetCode.
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3902
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
+
+    def vm_protect(self, in_header, in_content):
+        # vm_protect (vm_map subsystem, routine 3, msgh_id 3803). Request body
+        # layout (after the 24-byte header):
+        #   [0x00] NDR record
+        #   [0x08] address / [0x0c] size / [0x10] set_maximum / [0x14] new_protection
+        address = unpack("<L", in_content[0x08:0x0c])[0]
+        size = unpack("<L", in_content[0x0c:0x10])[0]
+        set_maximum = unpack("<L", in_content[0x10:0x14])[0]
+        new_protection = unpack("<L", in_content[0x14:0x18])[0]
+        self.ql.log.debug("[mach] vm_protect(address: 0x%x, size: 0x%x, set_maximum: 0x%x, new_protection: 0x%x)" % (
+            address, size, set_maximum, new_protection))
+
+        # Reply is a simple (non-complex) MIG message carrying only the NDR
+        # record and RetCode (__Reply__vm_protect_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3903
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg
+
+    def vm_map(self, in_header, in_content):
+        # vm_map (vm_map subsystem, routine 12, msgh_id 3812). The request is a
+        # complex message: a memory-entry port descriptor followed by the NDR
+        # record and the vm_map arguments. Request body layout (after the
+        # 24-byte header):
+        #   [0x00] mach_msg_body_t: msgh_descriptor_count
+        #   [0x04] mach_msg_port_descriptor_t (name + pad + disposition/type)
+        #   [0x10] NDR record
+        #   [0x18] address / [0x1c] size / [0x20] mask / [0x24] flags / ...
+        # We carve a fresh region out of the task's vm map, honoring the
+        # requested size and alignment mask, and report its base address back.
+        address = unpack("<L", in_content[0x18:0x1c])[0]
+        size = unpack("<L", in_content[0x1c:0x20])[0]
+        mask = unpack("<L", in_content[0x20:0x24])[0]
+        flags = unpack("<L", in_content[0x24:0x28])[0]
+        self.ql.log.debug("[mach] vm_map(address: 0x%x, size: 0x%x, mask: 0x%x, flags: 0x%x)" % (
+            address, size, mask, flags))
+
+        if self.ql.os.macho_vmmap_end & mask > 0:
+            self.ql.os.macho_vmmap_end = self.ql.os.macho_vmmap_end - (self.ql.os.macho_vmmap_end & mask)
+            self.ql.os.macho_vmmap_end += mask + 1
+
+        vmmap_address = page_align_end(self.ql.os.macho_vmmap_end, PAGE_SIZE)
+        vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
+        self.ql.os.macho_vmmap_end = vmmap_end
+        self.ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
+
+        # Reply is a simple (non-complex) MIG message carrying the NDR record,
+        # the RetCode and the mapped address (__Reply__vm_map_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000028
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3912
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+        out_msg.content += pack("<L", vmmap_address)  # mapped address
+
+        return out_msg
+
+    def mach_ports_lookup(self, in_header, in_content):
+        # Returns the set of ports registered for the task as an out-of-line
+        # ports array (init_port_set). Reply is a complex message carrying a
+        # single mach_msg_ool_ports_descriptor.
+        out_msg = MachMsg(self.ql)
+
+        registered = self.ql.os.macho_port_manager.registered_ports
+        count = len(registered)
+
+        # copy the registered port names into a fresh buffer that the OOL
+        # descriptor will point the receiver at
+        ports_addr = self.ql.os.heap.alloc(count * 4)
+        for i, port in enumerate(registered):
+            self.ql.mem.write(ports_addr + i * 4, pack("<L", port.name))
+
+        out_msg.header.msgh_bits = MACH_MSGH_BITS_COMPLEX | MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_remote_port = 0
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3504
+
+        # mach_msg_body_t: number of descriptors
+        out_msg.content += pack("<L", 0x1)
+
+        # mach_msg_ool_ports_descriptor_t. The address field width follows the
+        # target pointer size (4 bytes on 32-bit, 8 bytes on 64-bit).
+        if self.ql.arch.pointersize == 8:
+            out_msg.content += pack("<Q", ports_addr)  # address
+        else:
+            out_msg.content += pack("<L", ports_addr)  # address
+        out_msg.content += pack("<L", count)  # count
+        out_msg.content += pack("<B", 0x0)  # deallocate
+        out_msg.content += pack("<B", 0x0)  # copy
+        out_msg.content += pack("<B", MACH_MSG_TYPE_MOVE_SEND)  # disposition
+        out_msg.content += pack("<B", MACH_MSG_OOL_PORTS_DESCRIPTOR)  # type
+
+        # NDR record + init_port_setCnt
+        out_msg.content += pack("<Q", 0x100000000)
+        out_msg.content += pack("<L", count)
+
+        out_msg.header.msgh_size = out_msg.header.header_size + len(out_msg.content)
+
+        return out_msg
+
+
+class MachThreadServer():
+
+    def __init__(self, ql):
+        self.ql = ql
+
+    def thread_policy(self, in_header, in_content):
+        # thread_policy (thread_act subsystem, routine 16, msgh_id 3616).
+        # Request body layout (after the 24-byte header):
+        #   [0x00] NDR record
+        #   [0x08] policy / [0x0c] baseCnt / [0x10] base[baseCnt] / [..] set_limit
+        policy = unpack("<L", in_content[0x08:0x0c])[0]
+        base_count = unpack("<L", in_content[0x0c:0x10])[0]
+        self.ql.log.debug("[mach] thread_policy(policy: 0x%x, baseCnt: 0x%x)" % (
+            policy, base_count))
+
+        # Reply is a simple (non-complex) MIG message carrying only the NDR
+        # record and RetCode (__Reply__thread_policy_t).
+        out_msg = MachMsg(self.ql)
+        out_msg.header.msgh_bits = MACH_MSGH_BITS(0, MACH_MSG_TYPE_MOVE_SEND_ONCE)
+        out_msg.header.msgh_size = 0x00000024
+        out_msg.header.msgh_remote_port = 0x00000000
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
+        out_msg.header.msgh_voucher_port = 0
+        out_msg.header.msgh_id = 3716
+
+        out_msg.content += pack("<Q", 0x100000000)  # NDR
+        out_msg.content += pack("<L", KERN_SUCCESS)  # ret code / KERN SUCCESS
+
+        return out_msg

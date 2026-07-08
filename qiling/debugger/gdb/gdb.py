@@ -680,9 +680,15 @@ class QlGdb(QlDebugger):
 
             self.gdb.resume_emu(steps=1)
 
-            # if emulation has been stopped, signal program termination
-            if self.ql.emu_state is QL_STATE.STOPPED:
-                return f'S{SIGTERM:02x}'
+            # NOTE: emu_state cannot be used to detect program termination here, since
+            # emu_start unconditionally leaves it STOPPED once it returns. instead,
+            # determine termination by checking whether the step ran the program all
+            # the way to its exit point.
+            effective_pc = getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc)
+
+            if effective_pc == self.gdb.exit_point:
+                # the program has run to completion
+                return f'W{self.ql.os.exit_code:02x}'
 
             # otherwise, this is just single stepping
             return f'S{SIGTRAP:02x}'

@@ -488,9 +488,41 @@ HOST_CAN_HAS_DEBUGGER               = 11
 HOST_PREFERRED_USER_ARCH            = 12
 
 
-# commpage 
+# mach msg header bits
+MACH_MSGH_BITS_COMPLEX = 0x80000000
+
+# msgh_bits packs the remote and local port-right dispositions into the low two
+# bytes of mach_msg_header_t.msgh_bits (osfmk/mach/message.h). MACH_MSGH_BITS()
+# composes them the same way the kernel macro does.
+MACH_MSGH_BITS_REMOTE_MASK = 0x000000ff
+MACH_MSGH_BITS_LOCAL_MASK = 0x0000ff00
+
+def MACH_MSGH_BITS(remote, local):
+    return (remote & MACH_MSGH_BITS_REMOTE_MASK) | ((local << 8) & MACH_MSGH_BITS_LOCAL_MASK)
+
+# mach msg descriptor types (mach_msg_descriptor_type_t)
+MACH_MSG_PORT_DESCRIPTOR = 0
+MACH_MSG_OOL_DESCRIPTOR = 1
+MACH_MSG_OOL_PORTS_DESCRIPTOR = 2
+MACH_MSG_OOL_VOLATILE_DESCRIPTOR = 3
+
+# mach msg type names (mach_msg_type_name_t), used as port dispositions
+MACH_MSG_TYPE_MOVE_RECEIVE = 16
+MACH_MSG_TYPE_MOVE_SEND = 17
+MACH_MSG_TYPE_MOVE_SEND_ONCE = 18
+MACH_MSG_TYPE_COPY_SEND = 19
+MACH_MSG_TYPE_MAKE_SEND = 20
+MACH_MSG_TYPE_MAKE_SEND_ONCE = 21
+MACH_MSG_TYPE_COPY_RECEIVE = 22
+
+# max number of ports registered per task (returned by mach_ports_lookup)
+TASK_PORT_REGISTER_MAX = 3
+
+
+# commpage
 X8664_COMM_PAGE_START_ADDRESS       = 0x7FFFFFE00000
 ARM64_COMM_PAGE_START_ADDRESS       = 0x0000000FFFFFC000
+X86_COMM_PAGE_START_ADDRESS         = 0xffff0000
 
 COMM_PAGE_SIGNATURE                 = 0x000   # first 16 bytes are a signature
 COMM_PAGE_CPU_CAPABILITIES64        = 0x010   # uint64_t _cpu_capabilities

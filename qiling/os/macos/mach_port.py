@@ -109,6 +109,18 @@ class MachPortManager():
         self.semaphore_port = MachPort(0x903)
         self.special_port = MachPort(0x707)
         self.my_port = my_port
+        # unregistered slots are MACH_PORT_NULL (0).
+        self.registered_ports = [self.special_port, MachPort(0), MachPort(0)]
+        # names for dynamically allocated ports (e.g. mach_port_allocate),
+        # kept above the statically assigned port names to avoid collisions.
+        self.next_port_name = 0x1000
+        self.allocated_ports = []
+
+    def alloc_port(self):
+        port = MachPort(self.next_port_name)
+        self.next_port_name += 1
+        self.allocated_ports.append(port)
+        return port
 
     def deal_with_msg(self, msg, addr):
 
@@ -119,11 +131,46 @@ class MachPortManager():
         elif msg.header.msgh_id == 206:
             out_msg = self.ql.os.macho_host_server.host_get_clock_service(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
-        elif msg.header.msgh_id == 3418:
-            out_msg = self.ql.os.macho_task_server.semaphore_create(msg.header, msg.content)
+        # 3400 (Task operations)
+        elif msg.header.msgh_id == 3404:
+            out_msg = self.ql.os.macho_task_server.mach_ports_lookup(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3409:
             out_msg = self.ql.os.macho_task_server.get_special_port(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3418:
+            out_msg = self.ql.os.macho_task_server.semaphore_create(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        # 3200 (Mach port handling functions)
+        elif msg.header.msgh_id == 3204:
+            # 4 (mach_port_allocate)
+            out_msg = self.ql.os.macho_task_server.mach_port_allocate(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3206:
+            # 6 (mach_port_deallocate)
+            out_msg = self.ql.os.macho_task_server.mach_port_deallocate(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        # 3600 (Thread operations)
+        elif msg.header.msgh_id == 3616:
+            # 16 (thread_policy)
+            out_msg = self.ql.os.macho_thread_server.thread_policy(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        # 3800 (Virtual memory operations)
+        elif msg.header.msgh_id == 3801:
+            # 1 (vm_allocate)
+            out_msg = self.ql.os.macho_task_server.vm_allocate(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3802:
+            # 2 (vm_deallocate)
+            out_msg = self.ql.os.macho_task_server.vm_deallocate(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3803:
+            # 3 (vm_protect)
+            out_msg = self.ql.os.macho_task_server.vm_protect(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3812:
+            # 12 (vm_map)
+            out_msg = self.ql.os.macho_task_server.vm_map(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         else:
             self.ql.log.info("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))

@@ -4,9 +4,12 @@
 #
 
 from struct import unpack
+from typing import Optional
 
 from .utils import *
 from .const import *
+from ...const import QL_ARCH
+
 
 class Header:
 
@@ -48,13 +51,21 @@ class FatHeader(Header):
             FI = FatInfo(FR.read(4 * 5))
             self.binarys.append(FI)
 
-    def getBinary(self, arch):
+    def archToCPUType(self, arch) -> Optional[int]:
+        if arch == QL_ARCH.X86:
+            return CPU_TYPE_X86
+        if arch == QL_ARCH.X8664:
+            return CPU_TYPE_X8664
+        elif arch == QL_ARCH.ARM64:
+            return CPU_TYPE_ARM64
+        else:
+            return None
 
+    def getBinary(self, arch):
+        cpu_type = self.archToCPUType(arch)
         for item in self.binarys:
-            if item.cpu_type == CPU_TYPE_X8664:
+            if item.cpu_type == cpu_type:
                 return item
-            elif item.cpu_type == CPU_TYPE_ARM64:
-                return item 
         return None
 
 class FatInfo:

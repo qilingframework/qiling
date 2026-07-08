@@ -9,12 +9,14 @@ from qiling.os.posix.posix import SYSCALL_PREF
 def get_syscall_mapper(archtype: QL_ARCH):
     syscall_table = {
         QL_ARCH.X8664 : x8664_syscall_table,
-        QL_ARCH.ARM64 : arm64_syscall_table
+        QL_ARCH.ARM64 : arm64_syscall_table,
+        QL_ARCH.X86   : x86_syscall_table,
     }[archtype]
 
     syscall_fixup = {
         QL_ARCH.X8664 : lambda n: (n - 0x2000000) if 0x2000000 <= n <= 0x3000000 else n,
-        QL_ARCH.ARM64 : lambda n: (n - 0xffffffffffffff00) if n >= 0xffffffffffffff00 else n
+        QL_ARCH.ARM64 : lambda n: (n - 0xffffffffffffff00) if n >= 0xffffffffffffff00 else n,
+        QL_ARCH.X86   : lambda n: n,
     }[archtype]
 
     def __mapper(syscall_num: int) -> str:
@@ -22,6 +24,46 @@ def get_syscall_mapper(archtype: QL_ARCH):
 
     return __mapper
 
+x86_syscall_table = {
+    # machdep
+    0x3: 'thread_fast_set_cthread_self',
+    # syscalls
+    20: 'getpid',
+    25: 'geteuid',
+    53: 'sigaltstack',
+    197: 'mmap',
+    202: 'sysctl',
+    327: 'issetugid',
+    0xc0003: 'read',
+    0xc0005: 'open',
+    0xc0036: 'ioctl',
+    0xc004b: 'madvise',
+    0xc005c: 'fcntl',
+    0xc016e: 'bsdthread_register',
+    0xc018c: 'read_nocancel',
+    0xc018d: 'write_nocancel',
+    0xc018e: 'open_nocancel',
+    0x40001: 'exit',
+    0x40006: 'close',
+    0x4018f: 'close_nocancel',
+    0xc0030: 'sigprocmask',
+    0xc0196: 'fcntl_nocancel',
+    0x80049: 'munmap',
+    0x800bc: 'stat',
+    0x80152: 'stat64',
+    0x80153: 'fstat64',
+    0x80154: 'lstat64',
+    0x140099: 'pread',
+    0xffffffe1: 'mach_msg_trap',
+    0xffffffe3: 'host_self_trap',
+    0xffffffe4: 'task_self_trap',
+    0xffffffe5: 'thread_self_trap',
+    0xffffffe6: 'mach_reply_port',
+    # my stuff...
+    0x0000fffd: 'my_mach_absolute_time',
+    0x0000fffe: 'my_memcpy',
+    0x0000ffff: 'my_bzero',
+}
 
 arm64_syscall_table = {
     1: 'exit',
@@ -146,7 +188,7 @@ arm64_syscall_table = {
     194: 'getrlimit',
     195: 'setrlimit',
     196: 'getdirentries',
-    197: 'mmap2',
+    197: 'mmap',
     199: 'lseek',
     200: 'truncate',
     201: 'ftruncate',
@@ -533,7 +575,7 @@ x8664_syscall_table = {
     194: 'getrlimit',
     195: 'setrlimit',
     196: 'getdirentries',
-    197: 'mmap2',
+    197: 'mmap',
     199: 'lseek',
     200: 'truncate',
     201: 'ftruncate',

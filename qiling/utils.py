@@ -220,8 +220,9 @@ def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
     if ident[:4] in (macho_macos_sig32, macho_macos_sig64, macho_macos_fat):
         ostype = QL_OS.MACOS
 
-        # if ident[7] == 0: # 32 bit
-        #    arch = QL_ARCH.X86
+        if ident[7] == 0: # 32 bit
+            endian = QL_ENDIAN.EL
+            arch = QL_ARCH.X86
 
         if ident[4] == 0x07 and ident[7] == 0x01:  # X86 64 bit
             endian = QL_ENDIAN.EL
