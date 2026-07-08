@@ -670,9 +670,9 @@ class QlLoaderMACHO(QlLoader):
         align = self.ptr_align
         
         if data == 0:
-            content = b'\x00\x00\x00\x00'
+            content = b'\x00\x00\x00\x00'if self.ql.arch.type == QL_ARCH.X86 else b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
-            content = struct.pack('<I', data)
+            content = struct.pack('<I', data) if self.ql.arch.type == QL_ARCH.X86 else struct.pack('<Q', data)
 
         if len(content) != align:
             self.ql.log.info('stack align error')
