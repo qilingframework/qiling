@@ -483,6 +483,23 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    # Dynamically-linked MIPS64 BE. Unlike the *_static binaries above, this one
+    # is a non-PIE ET_EXEC that must be brought up by the dynamic loader and have
+    # libc.so.6 mapped and relocated before main() runs. It lives in its own
+    # rootfs (mips64_linux_buildroot) carrying the matching Buildroot ld.so.1 +
+    # glibc it was built against: both dynamic binaries hard-code the interpreter
+    # path /lib64/ld.so.1, so the Buildroot and default-mips64_linux glibc
+    # environments cannot share a single tree.
+    def test_elf_linux_mips64eb_buildroot_dynamic(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux_buildroot/bin/mips64_hello_buildroot"],
+                    "../examples/rootfs/mips64_linux_buildroot", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'hello from mips64 n64\n')
+
+        del ql
+
     # Regression for statx() byte order on big-endian guests: statx must report
     # the S_IFDIR bit for a directory. The statx struct used to be emitted
     # little-endian regardless of guest endianness, so stx_mode was byte-swapped
