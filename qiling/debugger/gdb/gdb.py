@@ -167,7 +167,13 @@ class QlGdb(QlDebugger):
 
                 hexstr = __hexstr(value, nibbles)
             else:
-                hexstr = __unkown_reg_value(nibbles)
+                # registers the target description declares but the backend cannot
+                # supply (e.g. MIPS cp0 badvaddr/cause or the fpu regs, which unicorn
+                # does not expose) are reported as zero rather than '<unavailable>':
+                # plain gdb tolerates unavailable regs, but stricter clients such as
+                # Ghidra's ghidragdb abort when a register in the 'general' group is
+                # unavailable.
+                hexstr = '0' * nibbles
 
             return hexstr
 
