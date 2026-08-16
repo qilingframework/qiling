@@ -7,13 +7,12 @@ import os
 from lief import PE
 
 from typing import Any, Mapping, Optional, Sequence
-from unicorn.unicorn_const import UC_PROT_NONE, UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
-from qiling.loader.pe import _pe_build_mapped_image, _pe_apply_relocations
+from qiling.loader.pe import _pe_apply_relocations, _pe_build_mapped_image, _pe_map_image
 from qiling.os.const import PARAM_INTN, POINTER
 
 from qiling.os.uefi import st, smst, utils
@@ -117,49 +116,7 @@ class QlLoaderPE_UEFI(QlLoader):
         if image_base != pe.optional_header.imagebase:
             _pe_apply_relocations(pe_data, pe, image_base)
 
-        sec_alignment = pe.optional_header.section_alignment
-
-        def __map_sections():
-            """Load sections to memory with per-section permissions."""
-            # load the PE header from the relocated flat image
-            hdr_size = ql.mem.align_up(pe.optional_header.sizeof_headers, sec_alignment)
-            ql.mem.map(image_base, hdr_size, UC_PROT_READ, image_name)
-            ql.mem.write(image_base, bytes(pe_data[:pe.optional_header.sizeof_headers]))
-
-            SC = PE.Section.CHARACTERISTICS
-            for section in pe.sections:
-                chars = int(section.characteristics)
-                if chars & int(SC.MEM_DISCARDABLE):
-                    continue
-                sec_name = section.name.rstrip('\x00')
-                va = section.virtual_address
-                # read from the relocated flat image, not raw section.content
-                sec_data = bytes(pe_data[va:va + (section.virtual_size or len(bytes(section.content)))])
-                sec_base = image_base + va
-                sec_size = ql.mem.align_up(len(sec_data), sec_alignment)
-
-                sec_perm = UC_PROT_NONE
-                if chars & int(SC.MEM_READ):
-                    sec_perm |= UC_PROT_READ
-                if chars & int(SC.MEM_WRITE):
-                    sec_perm |= UC_PROT_WRITE
-                if chars & int(SC.MEM_EXECUTE):
-                    sec_perm |= UC_PROT_EXEC
-
-                if sec_size:
-                    ql.mem.map(sec_base, sec_size, sec_perm, f'{image_name} ({sec_name})')
-                    ql.mem.write(sec_base, sec_data)
-
-        def __map_all():
-            """Load the entire PE as a single memory region."""
-            ql.mem.map(image_base, image_size, info=image_name)
-            ql.mem.write(image_base, bytes(pe_data))
-
-        # if sections are page-aligned, map them separately for granular permissions
-        if (sec_alignment % ql.mem.pagesize) == 0:
-            __map_sections()
-        else:
-            __map_all()
+        _pe_map_image(ql, pe, image_base, image_size, image_name, pe_data, skip_discardable=True)
 
         ql.log.info(f'Module {path} loaded to {image_base:#x}')
 

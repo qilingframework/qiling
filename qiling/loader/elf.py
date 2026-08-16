@@ -6,7 +6,6 @@
 import io
 import os
 
-import struct
 from enum import IntEnum
 from typing import Any, AnyStr, Optional, Sequence, Mapping, Tuple
 
@@ -645,11 +644,11 @@ class QlLoaderELF(QlLoader):
         self.ql.log.debug(f'mem_end   : {mem_end:#x}')
 
         self.ql.mem.map(mem_start, mem_end - mem_start, info=os.path.basename(self.ql.path))
-        self.ql.mem.write(loadbase, elfdata_mapping)
+        self.ql.mem.write(mem_start, elfdata_mapping)
 
         self.images.append(Image(mem_start, mem_end, os.path.abspath(self.path)))
 
-        init_module = loadbase + self.lkm_get_init(binary)
+        init_module = mem_start + self.lkm_get_init(binary)
         self.ql.log.debug(f'init_module : {init_module:#x}')
 
         self.brk_address = mem_end
@@ -663,13 +662,13 @@ class QlLoaderELF(QlLoader):
         self.ql.os.entry_point = self.entry_point
 
         self.stack_address = self.ql.mem.align(stack_addr, self.ql.arch.pointersize)
-        self.load_address = loadbase
+        self.load_address = mem_start
 
         # setup syscall table
         self.ql.mem.map(SYSCALL_MEM, SYSCALL_SIZE, info="[syscall_mem]")
         self.ql.mem.write(SYSCALL_MEM, b'\x00' * SYSCALL_SIZE)
 
-        rev_reloc_symbols = self.lkm_dynlinker(binary, raw, loadbase)
+        rev_reloc_symbols = self.lkm_dynlinker(binary, raw, mem_start)
 
         # iterate over relocatable symbols, but pick only those who start with 'sys_'
         for sc, addr in rev_reloc_symbols.items():
