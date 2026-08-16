@@ -61,43 +61,6 @@ SYSCALL_MEM = API_HOOK_MEM + 0x1000
 SYSCALL_SIZE = 0x1000
 
 
-# workaround for https://github.com/lief-project/LIEF/issues/795
-def _iter_raw_relocations(binary: ELF.Binary, raw: bytes):
-    is_be = binary.header.identity_data == ELF.Header.ELF_DATA.MSB
-    is_64 = binary.header.identity_class == ELF.Header.CLASS.ELF64
-    endian = '>' if is_be else '<'
-
-    for sec in binary.sections:
-        if sec.type not in (ELF.Section.TYPE.REL, ELF.Section.TYPE.RELA):
-            continue
-
-        is_rela = (sec.type == ELF.Section.TYPE.RELA)
-
-        # sh_info = section being relocated; sh_link = symbol table section
-        info_idx = sec.information
-        if info_idx >= len(list(binary.sections)):
-            continue
-        target_sec = list(binary.sections)[info_idx]
-
-        entry_size = (24 if is_rela else 16) if is_64 else (12 if is_rela else 8)
-        raw_sec = raw[sec.offset : sec.offset + sec.size]
-
-        for i in range(len(raw_sec) // entry_size):
-            entry = raw_sec[i * entry_size : (i + 1) * entry_size]
-            if is_64:
-                r_offset, r_info = struct.unpack_from(f'{endian}QQ', entry)
-                r_sym  = r_info >> 32
-                r_type = r_info & 0xFFFFFFFF
-                r_addend = struct.unpack_from(f'{endian}q', entry, 16)[0] if is_rela else 0
-            else:
-                r_offset, r_info = struct.unpack_from(f'{endian}II', entry)
-                r_sym  = r_info >> 8
-                r_type = r_info & 0xFF
-                r_addend = struct.unpack_from(f'{endian}i', entry, 8)[0] if is_rela else 0
-
-            yield target_sec, r_sym, r_offset, r_type, r_addend
-
-
 def _iter_lief_relocations(binary: ELF.Binary):
     """Primary relocation iterator using LIEF's parsed relocations.
 
@@ -527,17 +490,7 @@ class QlLoaderELF(QlLoader):
 
         prev_mips_hi16_loc = 0  # used by R_MIPS_HI16/LO16 pair
 
-        is_be = binary.header.identity_data == ELF.Header.ELF_DATA.MSB
-        if is_be and e_machine == A.MIPS:
-            # fall back to raw parser: LIEF has an endianness bug for big-endian MIPS REL (issue #795)
-            # lift raw ints back to ELF.Relocation.TYPE so dispatch is uniform
-            mips_arch_bits = int(T.MIPS_32) & 0xFF000000
-            def reloc_iter():
-                for target_sec, r_sym, r_offset, r_type_raw, r_addend in _iter_raw_relocations(binary, raw):
-                    yield target_sec, r_sym, r_offset, T(mips_arch_bits | r_type_raw), r_addend
-            reloc_source = reloc_iter()
-        else:
-            reloc_source = _iter_lief_relocations(binary)
+        reloc_source = _iter_lief_relocations(binary)
 
         for target_sec, r_sym, r_offset, r_type, r_addend in reloc_source:
             # skip relocations for non-alloc sections (e.g. .gnu.linkonce.this_module)

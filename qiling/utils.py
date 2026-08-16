@@ -245,13 +245,13 @@ def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Op
     if pe is None:
         return None, None, None
 
-    M = PE.Header.MACHINE_TYPES
+    MACHINE_TYPES = PE.Header.MACHINE_TYPES
     machine_map = {
-        M.I386  : QL_ARCH.X86,
-        M.AMD64 : QL_ARCH.X8664,
-        M.ARM   : QL_ARCH.ARM,
-        M.ARMNT : QL_ARCH.ARM,   # Thumb (0x01c2)
-        M.ARM64 : QL_ARCH.ARM64,
+        MACHINE_TYPES.I386  : QL_ARCH.X86,
+        MACHINE_TYPES.AMD64 : QL_ARCH.X8664,
+        MACHINE_TYPES.ARM   : QL_ARCH.ARM,
+        MACHINE_TYPES.ARMNT : QL_ARCH.ARM,   # Thumb (0x01c2)
+        MACHINE_TYPES.ARM64 : QL_ARCH.ARM64,
     }
 
     arch = machine_map.get(pe.header.machine)
@@ -259,12 +259,12 @@ def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Op
     archendian = None
 
     if arch:
-        S = PE.OptionalHeader.SUBSYSTEM
+        SUBSYSTEMS = PE.OptionalHeader.SUBSYSTEM
         subsystem_uefi = (
-            S.EFI_APPLICATION,
-            S.EFI_BOOT_SERVICE_DRIVER,
-            S.EFI_RUNTIME_DRIVER,
-            S.EFI_ROM,
+            SUBSYSTEMS.EFI_APPLICATION,
+            SUBSYSTEMS.EFI_BOOT_SERVICE_DRIVER,
+            SUBSYSTEMS.EFI_RUNTIME_DRIVER,
+            SUBSYSTEMS.EFI_ROM,
         )
 
         if pe.optional_header.subsystem in subsystem_uefi:
