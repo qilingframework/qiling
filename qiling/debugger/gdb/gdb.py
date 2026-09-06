@@ -15,6 +15,7 @@
 
 import os
 import socket
+import select
 import re
 import tempfile
 from functools import partial
@@ -30,7 +31,7 @@ from unicorn.unicorn_const import (
 )
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS, QL_STATE
+from qiling.const import QL_ARCH, QL_ENDIAN, QL_OS
 from qiling.debugger import QlDebugger
 from qiling.debugger.gdb.xmlregs import QlGdbFeatures
 from qiling.debugger.gdb.utils import QlGdbUtils
@@ -55,6 +56,21 @@ SIGTERM = 15
 SIGCHLD = 16
 SIGCONT = 17
 SIGSTOP = 18
+
+# translate a unicorn cpu fault into the closest posix signal, shared by the
+# continue ('c') and single-step ('s') handlers when emulation faults
+UC_ERROR_SIGMAP = {
+    UC_ERR_READ_UNMAPPED   : SIGSEGV,
+    UC_ERR_WRITE_UNMAPPED  : SIGSEGV,
+    UC_ERR_FETCH_UNMAPPED  : SIGSEGV,
+    UC_ERR_WRITE_PROT      : SIGSEGV,
+    UC_ERR_READ_PROT       : SIGSEGV,
+    UC_ERR_FETCH_PROT      : SIGSEGV,
+    UC_ERR_READ_UNALIGNED  : SIGBUS,
+    UC_ERR_WRITE_UNALIGNED : SIGBUS,
+    UC_ERR_FETCH_UNALIGNED : SIGBUS,
+    UC_ERR_INSN_INVALID    : SIGILL
+}
 
 # common replies
 REPLY_ACK = b'+'
@@ -124,6 +140,10 @@ class QlGdb(QlDebugger):
         server = GdbSerialConn(self.ip, self.port, self.ql.log)
         killed = False
 
+        # let the run hook break into a free-running guest when the client sends
+        # an async interrupt (ctrl-c / \x03); see QlGdbUtils.dbg_hook.
+        self.gdb.check_interrupt = server.poll_interrupt
+
         def __hexstr(value: int, nibbles: int = 0) -> str:
             """Encode a value into a hex string.
             """
@@ -184,6 +204,7 @@ class QlGdb(QlDebugger):
             from unicorn.arm64_const import UC_ARM64_REG_X29
             from unicorn.mips_const import UC_MIPS_REG_INVALID
             from unicorn.ppc_const import UC_PPC_REG_31
+            from unicorn.riscv_const import UC_RISCV_REG_S0
 
             arch_uc_bp = {
                 QL_ARCH.X86      : UC_X86_REG_EBP,
@@ -193,7 +214,9 @@ class QlGdb(QlDebugger):
                 QL_ARCH.MIPS     : UC_MIPS_REG_INVALID, # skipped
                 QL_ARCH.A8086    : UC_X86_REG_EBP,
                 QL_ARCH.CORTEX_M : UC_ARM_REG_R11,
-                QL_ARCH.PPC      : UC_PPC_REG_31
+                QL_ARCH.PPC      : UC_PPC_REG_31,
+                QL_ARCH.RISCV    : UC_RISCV_REG_S0,
+                QL_ARCH.RISCV64  : UC_RISCV_REG_S0
             }[self.ql.arch.type]
 
             def __get_reg_idx(ucreg: int) -> int:
@@ -226,33 +249,24 @@ class QlGdb(QlDebugger):
             try:
                 self.gdb.resume_emu()
             except UcError as err:
-                sigmap = {
-                    UC_ERR_READ_UNMAPPED   : SIGSEGV,
-                    UC_ERR_WRITE_UNMAPPED  : SIGSEGV,
-                    UC_ERR_FETCH_UNMAPPED  : SIGSEGV,
-                    UC_ERR_WRITE_PROT      : SIGSEGV,
-                    UC_ERR_READ_PROT       : SIGSEGV,
-                    UC_ERR_FETCH_PROT      : SIGSEGV,
-                    UC_ERR_READ_UNALIGNED  : SIGBUS,
-                    UC_ERR_WRITE_UNALIGNED : SIGBUS,
-                    UC_ERR_FETCH_UNALIGNED : SIGBUS,
-                    UC_ERR_INSN_INVALID    : SIGILL
-                }
-
                 # determine signal from uc error; default to SIGTERM
-                reply = f'S{sigmap.get(err.errno, SIGTERM):02x}'
+                reply = f'S{UC_ERROR_SIGMAP.get(err.errno, SIGTERM):02x}'
 
             except KeyboardInterrupt:
                 # emulation was interrupted with ctrl+c
                 reply = f'S{SIGINT:02x}'
 
             else:
-                if getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) == self.gdb.last_bp:
+                if self.gdb.interrupted:
+                    # emulation was stopped by an async interrupt from the client
+                    reply = f'S{SIGINT:02x}'
+                elif getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) == self.gdb.last_bp:
                     # emulation stopped because it hit a breakpoint
                     reply = f'S{SIGTRAP:02x}'
                 else:
-                    # emulation has completed successfully
-                    reply = f'W{self.ql.os.exit_code:02x}'
+                    # emulation has completed successfully. note bare-metal os layers
+                    # do not have an exit code (issue #1276)
+                    reply = f'W{getattr(self.ql.os, "exit_code", 0):02x}'
 
             return reply
 
@@ -662,10 +676,17 @@ class QlGdb(QlDebugger):
                     for grp in groups:
                         cmd, *tid = grp.split(':', maxsplit=1)
 
-                        if cmd in ('c', f'C{SIGTRAP:02x}'):
+                        # 'C sig' and 'S sig' resume or step while delivering a signal
+                        # to the guest. we do not deliver signals, so the signal value
+                        # is ignored and the action is carried out as a plain resume or
+                        # step. matching only 'C05' and 'S05' here made clients that
+                        # resume with any other pending signal (e.g. 'S0f' after a stop
+                        # reply we sent) receive an empty reply and bail out with
+                        # 'Invalid remote reply' (issue #1377)
+                        if cmd[:1] in ('c', 'C'):
                             return handle_c('')
 
-                        elif cmd in ('s', f'S{SIGTRAP:02x}'):
+                        elif cmd[:1] in ('s', 'S'):
                             return handle_s('')
 
                         # FIXME: not sure how to handle multiple command
@@ -678,11 +699,23 @@ class QlGdb(QlDebugger):
             """Perform a single step.
             """
 
-            self.gdb.resume_emu(steps=1)
+            try:
+                self.gdb.resume_emu(steps=1)
+            except UcError as err:
+                # stepping faulted; report the closest posix signal
+                return f'S{UC_ERROR_SIGMAP.get(err.errno, SIGTERM):02x}'
 
-            # if emulation has been stopped, signal program termination
-            if self.ql.emu_state is QL_STATE.STOPPED:
-                return f'S{SIGTERM:02x}'
+            except KeyboardInterrupt:
+                # emulation was interrupted with ctrl+c
+                return f'S{SIGINT:02x}'
+
+            # emu_start always leaves emu_state as STOPPED after a step, so that
+            # cannot tell an ordinary step apart from the guest exiting (see
+            # issues #1377 and #1538). instead, the guest has terminated only
+            # when the step carried pc all the way to the emulation exit point.
+            if getattr(self.ql.arch, 'effective_pc', self.ql.arch.regs.arch_pc) == self.gdb.exit_point:
+                # program terminated; report its exit code
+                return f'W{getattr(self.ql.os, "exit_code", 0):02x}'
 
             # otherwise, this is just single stepping
             return f'S{SIGTRAP:02x}'
@@ -822,6 +855,27 @@ class GdbSerialConn:
 
         self.client.close()
         self.sock.close()
+
+    def poll_interrupt(self) -> bool:
+        """Non-blocking check for an async interrupt from the client.
+
+        While the target is running the only thing gdb sends is a bare ``\\x03``
+        break byte (it waits for a stop reply before sending anything else), so
+        any readable bytes here are that interrupt or a stray protocol ack.
+        Returns True if a break was seen. Called from the run hook, so it must
+        never block.
+        """
+
+        readable, _, _ = select.select([self.client], [], [], 0)
+        if not readable:
+            return False
+
+        try:
+            incoming = self.client.recv(self.BUFSIZE)
+        except (ConnectionError, OSError):
+            return False
+
+        return b'\x03' in incoming
 
     def readpackets(self) -> Iterator[bytes]:
         """Iterate through incoming packets in an active connection until

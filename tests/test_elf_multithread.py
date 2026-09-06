@@ -17,9 +17,10 @@ from typing import List
 sys.path.append("..")
 from qiling import Qiling
 from qiling.arch.models import X86_CPU_MODEL
-from qiling.const import QL_VERBOSE, QL_INTERCEPT
+from qiling.const import QL_VERBOSE, QL_INTERCEPT, QL_ARCH, QL_OS
 from qiling.os.filestruct import ql_file
 from qiling.os.stats import QlOsNullStats
+import qiling.os.posix.syscall.sched as ql_sched
 
 
 BASE_ROOTFS = r'../examples/rootfs'
@@ -200,6 +201,55 @@ class ELFTest(unittest.TestCase):
         self.assertGreaterEqual(len(logged), 2)
         self.assertTrue(logged[-2].startswith('thread 1 ret val is'))
         self.assertTrue(logged[-1].startswith('thread 2 ret val is'))
+
+    def test_clone3_translates_to_clone(self):
+        # clone3(struct clone_args *, size) must unpack the struct and delegate
+        # to the legacy clone() handler with translated args. Modern glibc issues
+        # clone3 from pthread_create, so without this thread creation fails.
+        # This drives ql_syscall_clone3 directly (stock unicorn, no clone3 binary
+        # needed) and asserts the translation.
+        CL = 0x100000
+        FLAGS, CHILD_TID, PARENT_TID = 0x00010f00, 0x222000, 0x223000
+        EXIT_SIGNAL, STACK, STACK_SIZE, TLS = 0x11, 0x7ff00000, 0x8000, 0x224000
+
+        def run_case(archtype: QL_ARCH, rootfs: str):
+            ql = Qiling(code=b"\x00\x00\x00\x00", archtype=archtype, ostype=QL_OS.LINUX,
+                        rootfs=rootfs, verbose=QL_VERBOSE.OFF)
+            ql.mem.map(CL, 0x1000)
+            for off, val in ((0, FLAGS), (16, CHILD_TID), (24, PARENT_TID),
+                             (32, EXIT_SIGNAL), (40, STACK), (48, STACK_SIZE), (56, TLS)):
+                ql.mem.write_ptr(CL + off, val, 8)
+
+            captured = {}
+
+            def fake_clone(ql, flags, child_stack, parent_tidptr, newtls, child_tidptr):
+                captured.update(flags=flags, child_stack=child_stack, parent_tidptr=parent_tidptr,
+                                newtls=newtls, child_tidptr=child_tidptr)
+                return 0xabc
+
+            orig = ql_sched.ql_syscall_clone
+            ql_sched.ql_syscall_clone = fake_clone
+            try:
+                ret = ql_sched.ql_syscall_clone3(ql, CL, 88)
+            finally:
+                ql_sched.ql_syscall_clone = orig
+
+            return captured, ret
+
+        # generic path (no x8664 register swap)
+        cap, ret = run_case(QL_ARCH.ARM, fr'{ARM_LINUX_ROOTFS}')
+        self.assertEqual(ret, 0xabc)
+        self.assertEqual(cap['child_stack'], STACK + STACK_SIZE)   # base + size -> stack top
+        self.assertEqual(cap['flags'], FLAGS | EXIT_SIGNAL)        # exit_signal folded in
+        self.assertEqual(cap['parent_tidptr'], PARENT_TID)
+        self.assertEqual(cap['newtls'], TLS)
+        self.assertEqual(cap['child_tidptr'], CHILD_TID)
+
+        # x8664: clone3 pre-swaps newtls<->child_tid so ql_syscall_clone's own
+        # x8664 swap cancels out to the same logical mapping
+        cap, _ = run_case(QL_ARCH.X8664, fr'{X64_LINUX_ROOTFS}')
+        self.assertEqual(cap['newtls'], CHILD_TID)
+        self.assertEqual(cap['child_tidptr'], TLS)
 
     def test_tcp_elf_linux_x86(self):
         logged: List[str] = []

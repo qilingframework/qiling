@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+#
+
+import argparse
+import os
+import sys
+import ast
+import pickle
+
+from pprint import pprint
+from typing import TYPE_CHECKING, Any, AnyStr, Dict, Literal, Mapping, Type, overload
+
+from unicorn import __version__ as uc_ver
+from qiling import __version__ as ql_ver
+
+from qiling import Qiling
+from qiling.arch import utils as arch_utils
+from qiling.debugger.qdb import QlQdb
+from qiling.const import QL_ENDIAN, QL_VERBOSE, endian_map, os_map, arch_map, verbose_map
+from qiling.extensions.coverage import utils as cov_utils
+from qiling.extensions import report
+
+
+if TYPE_CHECKING:
+    from enum import Enum
+
+
+@overload
+def read_file(fname: AnyStr) -> str: ...
+
+
+@overload
+def read_file(fname: AnyStr, mode: Literal['b']) -> bytes: ...
+
+
+def read_file(fname: AnyStr, mode: Literal['b', ''] = ''):
+    """Read file contents.
+    """
+
+    with open(fname, f'r{mode}') as f:
+        content = f.read()
+
+    return content
+
+
+class __arg_env(argparse.Action):
+    def __call__(self, parser, namespace, values: str, option_string):
+        if os.path.exists(values):
+            with open(values, 'rb') as f:
+                env = pickle.load(f)
+        else:
+            env = ast.literal_eval(values)
+
+        setattr(namespace, self.dest, env or {})
+
+
+def __make_enum_arg(enum_rmap: Mapping[str, 'Enum'], aliases: Mapping[str, str] = {}) -> Type[argparse.Action]:
+    class __enum_arg(argparse.Action):
+        def __call__(self, parser, namespace, values: str, option_string):
+            values = values.casefold()
+
+            if values in aliases:
+                values = aliases[values]
+
+            setattr(namespace, self.dest, enum_rmap[values])
+
+    return __enum_arg
+
+
+__arg_endian = __make_enum_arg(endian_map)
+__arg_archtype = __make_enum_arg(arch_map, {'x86_64': 'x8664', 'riscv32': 'riscv'})
+__arg_ostype = __make_enum_arg(os_map, {'darwin': 'macos'})
+__arg_verbose = __make_enum_arg(verbose_map)
+
+
+def handle_code(options: argparse.Namespace) -> Dict[str, Any]:
+    if options.format == 'hex':
+        if options.input is not None:
+            print("Loading HEX from ARGV")
+            payload = str(options.input)
+
+        elif options.filename is not None:
+            print("Loading HEX from FILE")
+            payload = read_file(options.filename)
+
+        else:
+            print("Error: please specify an input source for hex")
+            exit(1)
+
+        code = bytes.fromhex(payload.replace(r'\x', ''))
+
+    elif options.format == 'asm':
+        print("Loading ASM from FILE")
+
+        if options.filename is None:
+            print("Error: please specify an input source for asm")
+            exit(1)
+
+        payload = read_file(options.filename)
+
+        # assemble the payload and turn it into opcodes bytes
+        assembler = arch_utils.assembler(options.arch, options.endian, options.thumb)
+        code, _ = assembler.asm(payload)
+        code = bytes(code)
+
+    elif options.format == 'bin':
+        print("Loading BIN from FILE")
+
+        if options.filename is None:
+            print("Error: please specify an input source for bin")
+            exit(1)
+
+        code = read_file(options.filename, 'b')
+
+    ql_args = {
+        'rootfs':   options.rootfs,
+        'code':     code,
+        'ostype':   options.os,
+        'archtype': options.arch,
+        'endian':   options.endian,
+        'thumb':    options.thumb
+    }
+
+    return ql_args
+
+
+def handle_run(options: argparse.Namespace) -> Dict[str, Any]:
+    effective_argv = []
+
+    # with argv
+    if options.filename is not None and options.run_args == []:
+        effective_argv = [options.filename] + options.args
+
+    # Without argv
+    elif options.filename is None and options.args == [] and options.run_args != []:
+        effective_argv = options.run_args
+
+    else:
+        print("ERROR: Command error!")
+
+    ql_args = {
+        'argv':   effective_argv,
+        'rootfs': options.rootfs
+    }
+
+    return ql_args
+
+
+def handle_examples(parser: argparse.ArgumentParser):
+    prog = parser.prog
+
+    __ql_examples = f"""Examples:
+
+    With code:
+        {prog} code --os linux --arch arm --format hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
+        {prog} code --os linux --arch x86 --format asm -f examples/shellcodes/lin32_execve.asm
+
+    With binary file:
+        {prog} run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs examples/rootfs/x8664_linux
+        {prog} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
+
+    With binary file and Qdb:
+        {prog} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --qdb
+        {prog} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --qdb --rr
+
+    With binary file and gdbserver:
+        {prog} run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
+
+    With binary file and additional argv:
+        {prog} run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3
+
+    With binary file and various output format:
+        {prog} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --verbose disasm
+        {prog} run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --filter ^open
+
+    With UEFI file:
+        {prog} run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel
+
+    With binary file and json output:
+        {prog} run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs examples/rootfs/x86_windows --no-console --json
+
+"""
+
+    parser.exit(0, __ql_examples)
+
+
+def run():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--version', action='version', version=f'qltool for Qiling {ql_ver}, using Unicorn {uc_ver}')
+
+    commands = parser.add_subparsers(title='sub commands', description='select execution mode', dest='subcommand', required=True)
+
+    # set "run" subcommand options
+    run_parser = commands.add_parser('run', help='run a program')
+    run_parser.add_argument('-f', '--filename', default=None, metavar="FILE", help="filename")
+    run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
+    run_parser.add_argument('--args', default=[], nargs=argparse.REMAINDER, dest="args", help="args")
+    run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
+
+    # set "code" subcommand options
+    code_parser = commands.add_parser('code', help='execute a shellcode')
+    code_parser.add_argument('-f', '--filename', metavar="FILE", help="filename")
+    code_parser.add_argument('-i', '--input', metavar="INPUT", dest="input", help='input hex value')
+    code_parser.add_argument('--arch', required=True, choices=arch_map, action=__arg_archtype)
+    code_parser.add_argument('--thumb', action='store_true', default=False, help='specify thumb mode for ARM')
+    code_parser.add_argument('--endian', choices=endian_map, default=QL_ENDIAN.EL, action=__arg_endian, help='specify endianness for bi-endian archs')
+    code_parser.add_argument('--os', required=True, choices=os_map, action=__arg_ostype)
+    code_parser.add_argument('--rootfs', default='.', help='emulated root filesystem, that is where all libraries reside')
+    code_parser.add_argument('--format', choices=('asm', 'hex', 'bin'), default='bin', help='input file format')
+
+    # set "examples" subcommand
+    expl_parser = commands.add_parser('examples', help='show examples and exit', add_help=False)
+
+    # set "qltui" subcommand
+    qltui_parser = commands.add_parser('qltui', help='show qiling Terminal User Interface', add_help=False)
+
+    comm_parser = run_parser
+
+    if len(sys.argv) > 1 and sys.argv[1] == 'code':
+        comm_parser = code_parser
+
+    # set common options
+    comm_parser.add_argument('-v', '--verbose', choices=verbose_map, default=QL_VERBOSE.DEFAULT, action=__arg_verbose, help='set verbosity level')
+    comm_parser.add_argument('--env', metavar="FILE", action=__arg_env, default={}, help="pickle file containing an environment dictionary")
+    comm_parser.add_argument('-g', '--gdb', nargs='?', metavar='SERVER:PORT', const='gdb', help='enable gdb server')
+    comm_parser.add_argument('--qdb', action='store_true', help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported only for now')
+    comm_parser.add_argument('--rr', action='store_true', help='switch on record and replay feature in qdb, only works with --qdb')
+    comm_parser.add_argument('--profile', help="define a customized profile")
+    comm_parser.add_argument('--no-console', action='store_false', dest='console', help='do not emit output to console')
+    comm_parser.add_argument('-e', '--filter', metavar='REGEXP', default=None, help="apply a filtering regexp on log output")
+    comm_parser.add_argument('--log-file', help="write log to a file")
+    comm_parser.add_argument('--log-plain', action='store_true', help="do not use colors in log output")
+    comm_parser.add_argument('--root', action='store_true', help='enable sudo required mode')
+    comm_parser.add_argument('--debug-stop', action='store_true', help='stop running on error; requires verbose to be set to either "debug" or "dump"')
+    comm_parser.add_argument('-m', '--multithread', action='store_true', help='run in multithread mode')
+    comm_parser.add_argument('--timeout', type=int, default=0, help='set emulation timeout')
+    comm_parser.add_argument('-c', '--coverage-file', default=None, help='code coverage file name')
+    comm_parser.add_argument('--coverage-format', default='drcov', choices=cov_utils.factory.formats, help='code coverage file format')
+    comm_parser.add_argument('--json', action='store_true', help='print a json report of the emulation')
+    comm_parser.add_argument('--libcache', action='store_true', help='enable dll caching for windows')
+    options = parser.parse_args()
+
+    qltui_enabled = False
+    ql_args = {}
+
+    if options.subcommand == 'qltui':
+        import qltui
+        options = qltui.get_data()
+        qltui_enabled = True
+
+    if options.subcommand == 'examples':
+        handle_examples(parser)
+
+    # ql file setup
+    elif options.subcommand == 'run':
+        ql_args = handle_run(options)
+
+    # ql code setup
+    elif options.subcommand == 'code':
+        ql_args = handle_code(options)
+
+    ql_args.update({
+        'env':         options.env,
+        'verbose':     options.verbose,
+        'profile':     options.profile,
+        'console':     options.console,
+        'filter':      options.filter,
+        'log_devices': options.log_file and [options.log_file],
+        'log_plain':   options.log_plain,
+        'multithread': options.multithread,
+        'libcache':    options.libcache
+    })
+
+    ql = Qiling(**ql_args)
+
+    # attach Qdb at entry point
+    if options.qdb:
+        QlQdb(ql, rr=bool(options.rr)).run()
+
+        parser.exit(0)
+
+    # ql execute additional options
+    if options.gdb:
+        argval = options.gdb
+
+        if argval != 'gdb':
+            argval = f'gdb:{argval}'
+
+        ql.debugger = argval
+
+    if options.debug_stop:
+        if options.verbose not in (QL_VERBOSE.DEBUG, QL_VERBOSE.DUMP):
+            parser.error('the debug_stop option requires verbose to be set to either "debug" or "dump"')
+
+        ql.debug_stop = True
+
+    if options.root:
+        ql.os.root = True
+
+    if qltui_enabled:
+        hook_dictionary = qltui.hook(ql)
+
+    # ql run
+    if options.coverage_file:
+        with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
+            ql.run(timeout=options.timeout)
+    else:
+        ql.run(timeout=options.timeout)
+
+    if options.json:
+        rep = report.generate_report(ql)
+
+        if qltui_enabled:
+            rep["syscalls"] = qltui.transform_syscalls(ql.os.stats.syscalls)
+            qltui.show_report(ql, rep, hook_dictionary)
+        else:
+            pprint(rep)
+
+    exit(ql.os.exit_code)
+
+if __name__ == '__main__':
+    run()

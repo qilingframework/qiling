@@ -380,24 +380,32 @@ class linux_mips_socket_level(Enum):
 # https://docs.huihoo.com/doxygen/linux/kernel/3.7/arch_2mips_2include_2uapi_2asm_2socket_8h_source.html
 # https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/socket.h
 class linux_mips_socket_options(Enum):
-    SO_DEBUG              = 0x01
-    SO_REUSEADDR          = 0x04
-    SO_KEEPALIVE          = 0x08
-    SO_DONTROUTE          = 0x10
-    SO_BINDTODEVICE       = 0x19
-    SO_BROADCAST          = 0x20
-    SO_LINGER             = 0x80
-    SO_OOBINLINE          = 0x00
-    SO_REUSEPORT          = 0x00
-    SO_SNDBUF             = 0x01
-    SO_RCVBUF             = 0x02
-    SO_SNDLOWAT           = 0x03
-    SO_RCVLOWAT           = 0x04
-    SO_SNDTIMEO_OLD       = 0x05
-    SO_RCVTIMEO_OLD       = 0x06
-    SO_TIMESTAMP_OLD      = 0x1d
-    # SO_TIMESTAMPNS_OLD  = 0x23
-    # SO_TIMESTAMPING_OLD = 0x25
+    # MIPS uses its own SO_* numbering (arch/mips/include/uapi/asm/socket.h);
+    # the buffer/timeout/type options live in the 0x1000 range, unlike the
+    # generic asm-generic values.
+    SO_DEBUG              = 0x0001
+    SO_REUSEADDR          = 0x0004
+    SO_KEEPALIVE          = 0x0008
+    SO_DONTROUTE          = 0x0010
+    SO_BINDTODEVICE       = 0x0019
+    SO_BROADCAST          = 0x0020
+    SO_LINGER             = 0x0080
+    SO_OOBINLINE          = 0x0100
+    SO_REUSEPORT          = 0x0200
+    SO_TYPE               = 0x1008
+    SO_ERROR              = 0x1007
+    SO_SNDBUF             = 0x1001
+    SO_RCVBUF             = 0x1002
+    SO_SNDLOWAT           = 0x1003
+    SO_RCVLOWAT           = 0x1004
+    SO_SNDTIMEO_OLD       = 0x1005
+    SO_RCVTIMEO_OLD       = 0x1006
+    SO_ACCEPTCONN         = 0x1009
+    SO_PROTOCOL           = 0x1028
+    SO_DOMAIN             = 0x1029
+    SO_TIMESTAMP_OLD      = 0x001d
+    # SO_TIMESTAMPNS_OLD  = 0x0023
+    # SO_TIMESTAMPING_OLD = 0x0025
     SO_TIMESTAMP_NEW      = 0x3f
     SO_TIMESTAMPNS_NEW    = 0x40
     SO_TIMESTAMPING_NEW   = 0x41

@@ -926,7 +926,15 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
             d_off = 0
             d_name = (result.name if isinstance(result, os.DirEntry) else result._str).encode() + b'\x00'
             d_type = _type_mapping(result)
-            d_reclen = n + n + 2 + len(d_name) + 1
+
+            # The kernel rounds each record up to the alignment of its leading
+            # (pointer-sized) d_ino, so the next record's d_ino stays aligned.
+            # Without this, strict-alignment guests (e.g. MIPS) fault with an
+            # unaligned load when walking the buffer; x86 tolerates it, which is
+            # why it was never caught. Matches the kernel's ALIGN(reclen,
+            # sizeof(long)) for both getdents and getdents64.
+            unaligned_reclen = n + n + 2 + len(d_name) + 1
+            d_reclen = (unaligned_reclen + (n - 1)) & ~(n - 1)
 
             # TODO: Dirty fix for X8664 MACOS 11.6 APFS
             # For some reason MACOS return int value is 64bit
@@ -936,6 +944,8 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
                 packed_d_ino = (ql.pack64(d_ino), n)
 
             if is_64:
+                # getdents64 places d_type *before* d_name, so the trailing pad
+                # bytes are inert.
                 fields = (
                     (ql.pack64(d_ino), n),
                     (ql.pack64(d_off), n),
@@ -944,11 +954,18 @@ def __getdents_common(ql: Qiling, fd: int, dirp: int, count: int, *, is_64: bool
                     (d_name, len(d_name))
                 )
             else:
+                # legacy linux_dirent stores d_type in the record's last byte
+                # (offset d_reclen-1), so the alignment padding goes *between*
+                # d_name and d_type to keep d_type there. padding without
+                # relocating d_type is what got the earlier blanket fix
+                # (PR #1419) reverted.
+                pad = d_reclen - unaligned_reclen
                 fields = (
                     packed_d_ino,
                     (ql.pack(d_off), n),
                     (ql.pack16(d_reclen), 2),
                     (d_name, len(d_name)),
+                    (b'\x00' * pad, pad),
                     (d_type, 1)
                 )
 

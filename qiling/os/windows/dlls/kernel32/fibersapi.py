@@ -25,6 +25,15 @@ def hook_FlsFree(ql: Qiling, address: int, params):
 def hook_FlsGetValue(ql: Qiling, address: int, params):
     return ql.os.fiber_manager.get(params['dwFlsIndex'])
 
+# LPVOID FlsGetValue2(
+#  DWORD dwFlsIndex
+# );
+@winsdkapi(cc=STDCALL, params={
+    'dwFlsIndex' : DWORD
+})
+def hook_FlsGetValue2(ql: Qiling, address: int, params):
+    return ql.os.fiber_manager.get_noerr(params['dwFlsIndex'])
+
 # BOOL FlsSetValue(
 #  DWORD dwFlsIndex
 #  PVOID lpFlsData

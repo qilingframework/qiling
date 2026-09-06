@@ -53,6 +53,20 @@ class DebuggerTest(unittest.TestCase):
             r'qdb_scripts/x86.qdb'
         )
 
+    def test_qdb_riscv32_hello(self):
+        self.__test_common(
+            r'/bin/hello',
+            r'../examples/rootfs/riscv32_linux',
+            r'qdb_scripts/riscv32.qdb'
+        )
+
+    def test_qdb_riscv64_hello(self):
+        self.__test_common(
+            r'/bin/hello',
+            r'../examples/rootfs/riscv64_linux',
+            r'qdb_scripts/riscv64.qdb'
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

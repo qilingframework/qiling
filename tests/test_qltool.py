@@ -7,7 +7,11 @@ import os
 import subprocess
 import re
 import sys
+import sysconfig
+import tempfile
 import unittest
+from importlib.metadata import version
+from pathlib import Path
 
 
 class Qltool_Test(unittest.TestCase):
@@ -46,6 +50,44 @@ class Qltool_Test(unittest.TestCase):
         # make sure that all log entries are of the expected regex filter pattern
         p = re.compile(filter_pattern.encode())
         self.assertTrue(all(p.search(entry) is not None for entry in log_entries))
+
+
+class InstalledQltool_Test(unittest.TestCase):
+    """Exercise the installed distribution outside the source checkout."""
+
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.cwd = directory.name
+        self.qltool = Path(sysconfig.get_path('scripts')) / ('qltool.exe' if os.name == 'nt' else 'qltool')
+
+    def __run(self, *args: str, expected_exit: int = 0) -> str:
+        result = subprocess.run(
+            [str(self.qltool), *args], cwd=self.cwd,
+            env={**os.environ, 'PYTHONPATH': ''},
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, timeout=30
+        )
+        self.assertEqual(result.returncode, expected_exit, result.stdout)
+        return result.stdout
+
+    def test_qltool_version_and_examples(self):
+        self.assertIn(f'Qiling {version("qiling")}', self.__run('--version'))
+        self.assertIn('qltool code --os linux', self.__run('examples'))
+
+    def test_qltool_shellcode_exit_status(self):
+        # Linux x86 exit(7), using the profiles shipped in the installed wheel.
+        self.__run('code', '--os', 'linux', '--arch', 'x86', '--format', 'hex',
+                   '--input', 'b801000000bb07000000cd80', '--verbose', 'off',
+                   expected_exit=7)
+
+    def test_qltui_import(self):
+        result = subprocess.run(
+            [sys.executable, '-I', '-c', 'import qltui; assert callable(qltui.get_data)'],
+            cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, timeout=30
+        )
+        self.assertEqual(result.returncode, 0, result.stdout)
 
 
 if __name__ == "__main__":

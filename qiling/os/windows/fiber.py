@@ -33,7 +33,7 @@ class FiberManager:
 
     def free(self, idx: int) -> bool:
         if idx not in self.fibers:
-            self.last_error = ERROR_INVALID_PARAMETER
+            self.ql.os.last_error = ERROR_INVALID_PARAMETER
             return False
 
         fiber = self.fibers[idx]
@@ -99,7 +99,7 @@ class FiberManager:
 
     def set(self, idx: int, data: int) -> bool:
         if idx not in self.fibers:
-            self.last_error = ERROR_INVALID_PARAMETER
+            self.ql.os.last_error = ERROR_INVALID_PARAMETER
             return False
 
         self.fibers[idx].data = data
@@ -108,7 +108,14 @@ class FiberManager:
 
     def get(self, idx: int) -> int:
         if idx not in self.fibers:
-            self.last_error = ERROR_INVALID_PARAMETER
+            self.ql.os.last_error = ERROR_INVALID_PARAMETER
+            return 0
+
+        return self.fibers[idx].data
+    
+    # equivalent to get, but does not set errors; used for FlsGetValue2
+    def get_noerr(self, idx: int) -> int:
+        if idx not in self.fibers:
             return 0
 
         return self.fibers[idx].data

@@ -130,6 +130,38 @@ def ql_syscall_clone(ql: Qiling, flags: int, child_stack: int, parent_tidptr: in
 
     return regreturn
 
+def ql_syscall_clone3(ql: Qiling, cl_args: int, size: int):
+    # clone3(struct clone_args *uargs, size_t size). Translate the struct into
+    # the legacy clone() argument set and delegate. Modern glibc (used by recent
+    # toolchains) issues clone3 from pthread_create; without this it falls through
+    # to the "not implemented" path and thread creation fails.
+    #
+    # struct clone_args (all fields __aligned_u64):
+    #   0:flags 8:pidfd 16:child_tid 24:parent_tid 32:exit_signal
+    #   40:stack 48:stack_size 56:tls 64:set_tid 72:set_tid_size 80:cgroup
+    flags       = ql.mem.read_ptr(cl_args + 0, 8)
+    child_tid   = ql.mem.read_ptr(cl_args + 16, 8)
+    parent_tid  = ql.mem.read_ptr(cl_args + 24, 8)
+    exit_signal = ql.mem.read_ptr(cl_args + 32, 8)
+    stack       = ql.mem.read_ptr(cl_args + 40, 8)
+    stack_size  = ql.mem.read_ptr(cl_args + 48, 8)
+    tls         = ql.mem.read_ptr(cl_args + 56, 8)
+
+    # legacy clone() takes the highest stack address; clone3 gives the base + size
+    child_stack = (stack + stack_size) if stack else 0
+
+    # clone3 keeps exit_signal in its own field; legacy clone packs it into the
+    # low CSIGNAL byte of flags
+    flags |= exit_signal & 0xff
+
+    # ql_syscall_clone swaps newtls<->child_tidptr for x8664 to undo that arch's
+    # raw-syscall register order. clone3 hands us already-logical args, so on
+    # x8664 we pre-swap to cancel that out.
+    if ql.arch.type == QL_ARCH.X8664:
+        return ql_syscall_clone(ql, flags, child_stack, parent_tid, child_tid, tls)
+
+    return ql_syscall_clone(ql, flags, child_stack, parent_tid, tls, child_tid)
+
 def ql_syscall_sched_yield(ql: Qiling):
     def _sched_yield(cur_thread):
         gevent.sleep(0)

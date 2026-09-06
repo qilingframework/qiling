@@ -462,6 +462,10 @@ class Process:
             self.ql.log.error(f'Error encountered while running {dll_name} DllMain, bailing')
 
             self.ql.arch.regs.restore(regs_state)
+
+            # emu_start leaves the state at STARTED when it raises; reset it so a single
+            # failing DllMain does not gate every subsequently loaded DLL's entry point.
+            self.ql._state = QL_STATE.STOPPED
         else:
             fcall.cc.unwind(len(args))
 

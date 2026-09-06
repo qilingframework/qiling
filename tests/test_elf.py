@@ -408,6 +408,34 @@ class ELFTest(unittest.TestCase):
         ql.os.set_api('puts', my_puts)
         ql.run()
         del ql
+
+
+    def test_setsockopt_mips_so_rcvbuf(self):
+        # MIPS uses its own SO_* numbering (SO_RCVBUF = 0x1002, not the generic
+        # 0x08). The MIPS socket-option table had the wrong values, so e.g.
+        # busybox ping's setsockopt(SOL_SOCKET, SO_RCVBUF, ...) raised
+        # NotImplementedError ("Could not convert emulated socket option 4098").
+        from qiling.const import QL_ENDIAN
+        from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_setsockopt
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips32_linux",
+                    verbose=QL_VERBOSE.OFF)
+
+        AF_INET, SOCK_DGRAM = 2, 2
+        SOL_SOCKET, SO_RCVBUF = 0xffff, 0x1002   # MIPS values
+
+        fd = ql_syscall_socket(ql, AF_INET, SOCK_DGRAM, 0)
+        self.assertGreaterEqual(fd, 0)
+
+        base = 0x100000
+        ql.mem.map(base, 0x1000)
+        ql.mem.write_ptr(base, 16384, 4)         # requested SO_RCVBUF size
+
+        # must map SO_RCVBUF (0x1002) to the host option and succeed, not raise
+        self.assertEqual(ql_syscall_setsockopt(ql, fd, SOL_SOCKET, SO_RCVBUF, base, 4), 0)
+
+        del ql
     @unittest.skip("AttributeError: 'Uc' object has no attribute 'cpr_read'")
     def test_elf_linux_arm_static(self):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello_static"], "../examples/rootfs/arm_linux", verbose=QL_VERBOSE.DEFAULT)
@@ -723,6 +751,90 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertIn("bin\n", ql.os.stdout.read().decode("utf-8"))
+
+        del ql
+
+    # Regression for getdents64 record alignment. Each linux_dirent64 record
+    # must be padded so the next record's leading u64 d_ino stays 8-byte
+    # aligned; otherwise a strict-alignment guest (e.g. MIPS) faults with an
+    # unaligned load while walking the buffer. x86 tolerates the unaligned read,
+    # which is why it was never caught.
+    def test_linux_getdents64_alignment(self):
+        from qiling.const import QL_ENDIAN
+        from qiling.os.posix.syscall.fcntl import ql_syscall_open
+        from qiling.os.posix.syscall.unistd import ql_syscall_getdents64
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips32_linux",
+                    verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x4000)
+        path_ptr, buf_ptr = base, base + 0x100
+        ql.mem.write(path_ptr, b"/\x00")
+
+        fd = ql_syscall_open(ql, path_ptr, 0, 0)   # O_RDONLY on a directory
+        self.assertGreaterEqual(fd, 0)
+
+        nbytes = ql_syscall_getdents64(ql, fd, buf_ptr, 0x2000)
+        self.assertGreater(nbytes, 0)
+
+        # walk the linux_dirent64 records; every record (hence its leading u64
+        # d_ino) must start at an 8-byte boundary. d_reclen is a u16 at offset 16.
+        buf = bytes(ql.mem.read(buf_ptr, nbytes))
+        off = 0
+        while off < nbytes:
+            self.assertEqual(off % 8, 0, f"dirent at offset {off} is not 8-byte aligned")
+            d_reclen = int.from_bytes(buf[off + 16:off + 18], "big")
+            self.assertNotEqual(d_reclen, 0)
+            off += d_reclen
+
+        del ql
+
+    def test_linux_getdents_alignment(self):
+        # the legacy getdents record was not rounded up to the alignment of its
+        # word-sized d_ino either, so a strict-alignment guest faulted walking
+        # the buffer. unlike getdents64, legacy linux_dirent keeps d_type in the
+        # record's last byte (offset d_reclen-1), so the padding must sit between
+        # d_name and d_type -- verify the records are aligned AND d_type survives.
+        from qiling.const import QL_ENDIAN
+        from qiling.os.posix.syscall.fcntl import ql_syscall_open
+        from qiling.os.posix.syscall.unistd import ql_syscall_getdents
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips32_linux",
+                    verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x4000)
+        path_ptr, buf_ptr = base, base + 0x100
+        ql.mem.write(path_ptr, b"/\x00")
+
+        fd = ql_syscall_open(ql, path_ptr, 0, 0)   # O_RDONLY on a directory
+        self.assertGreaterEqual(fd, 0)
+
+        nbytes = ql_syscall_getdents(ql, fd, buf_ptr, 0x2000)
+        self.assertGreater(nbytes, 0)
+
+        # walk the linux_dirent records; on 32-bit MIPS d_ino is 4 bytes, so each
+        # record must start at a 4-byte boundary. d_reclen is a u16 at offset 8
+        # (after the 4-byte d_ino + 4-byte d_off); d_name starts at offset 10.
+        buf = bytes(ql.mem.read(buf_ptr, nbytes))
+        off = 0
+        while off < nbytes:
+            self.assertEqual(off % 4, 0, f"dirent at offset {off} is not 4-byte aligned")
+            d_reclen = int.from_bytes(buf[off + 8:off + 10], "big")
+            self.assertNotEqual(d_reclen, 0)
+
+            name = buf[off + 10:buf.index(b"\x00", off + 10)].decode()
+            # legacy getdents stores d_type in the record's last byte; '.' and
+            # '..' must still report DT_DIR (4) after the alignment padding
+            if name in (".", ".."):
+                self.assertEqual(buf[off + d_reclen - 1], 4, f"{name}: d_type not DT_DIR")
+
+            off += d_reclen
+
+        self.assertEqual(off, nbytes)   # records tile the buffer exactly
 
         del ql
 

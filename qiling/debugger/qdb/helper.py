@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, List, Tuple
 
 from qiling.const import QL_ARCH
 from .context import Context
-from .arch import ArchCORTEX_M, ArchARM, ArchMIPS, ArchX86, ArchX64
+from .arch import ArchCORTEX_M, ArchARM, ArchMIPS, ArchRISCV, ArchRISCV64, ArchX86, ArchX64
 
 
 if TYPE_CHECKING:
@@ -26,7 +26,9 @@ def setup_command_helper(ql: Qiling):
         QL_ARCH.X8664:    ArchX64,
         QL_ARCH.MIPS:     ArchMIPS,
         QL_ARCH.ARM:      ArchARM,
-        QL_ARCH.CORTEX_M: ArchCORTEX_M
+        QL_ARCH.CORTEX_M: ArchCORTEX_M,
+        QL_ARCH.RISCV:    ArchRISCV,
+        QL_ARCH.RISCV64:  ArchRISCV64,
     }
 
     ret = type('CommandHelper', (CommandHelper, atypes[ql.arch.type]), {})

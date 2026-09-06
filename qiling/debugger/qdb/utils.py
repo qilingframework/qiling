@@ -16,7 +16,9 @@ from .render import (
     ContextRenderX64,
     ContextRenderARM,
     ContextRenderCORTEX_M,
-    ContextRenderMIPS
+    ContextRenderMIPS,
+    ContextRenderRISCV,
+    ContextRenderRISCV64,
 )
 
 from .branch_predictor import (
@@ -26,6 +28,8 @@ from .branch_predictor import (
     BranchPredictorARM,
     BranchPredictorCORTEX_M,
     BranchPredictorMIPS,
+    BranchPredictorRISCV,
+    BranchPredictorRISCV64,
 )
 
 from .const import color, QDB_MSG
@@ -111,12 +115,15 @@ def setup_branch_predictor(ql: Qiling) -> BranchPredictor:
         QL_ARCH.X8664:    BranchPredictorX64,
         QL_ARCH.ARM:      BranchPredictorARM,
         QL_ARCH.CORTEX_M: BranchPredictorCORTEX_M,
-        QL_ARCH.MIPS:     BranchPredictorMIPS
+        QL_ARCH.MIPS:     BranchPredictorMIPS,
+        QL_ARCH.RISCV:    BranchPredictorRISCV,
+        QL_ARCH.RISCV64:  BranchPredictorRISCV64,
     }
 
     p = preds[ql.arch.type]
 
     return p(ql)
+
 
 def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRender:
     """Setup context render according to arch.
@@ -127,7 +134,9 @@ def setup_context_render(ql: Qiling, predictor: BranchPredictor) -> ContextRende
         QL_ARCH.X8664:    ContextRenderX64,
         QL_ARCH.ARM:      ContextRenderARM,
         QL_ARCH.CORTEX_M: ContextRenderCORTEX_M,
-        QL_ARCH.MIPS:     ContextRenderMIPS
+        QL_ARCH.MIPS:     ContextRenderMIPS,
+        QL_ARCH.RISCV:    ContextRenderRISCV,
+        QL_ARCH.RISCV64:  ContextRenderRISCV64,
     }
 
     r = rends[ql.arch.type]

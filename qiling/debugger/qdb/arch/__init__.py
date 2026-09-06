@@ -6,3 +6,4 @@
 from .arch_arm import ArchARM, ArchCORTEX_M
 from .arch_intel import ArchIntel, ArchX86, ArchX64
 from .arch_mips import ArchMIPS
+from .arch_riscv import ArchRISCV, ArchRISCV64

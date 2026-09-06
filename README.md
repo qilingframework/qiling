@@ -208,6 +208,10 @@ Qiling Framework emulates MBR
 
 Qiling also provides a friendly tool named `qltool` to quickly emulate shellcode & executable binaries.
 
+Installing Qiling with pip also installs the `qltool` command, including
+`qltool qltui` for the terminal UI. In a source checkout, use `./qltool` as
+shown below. Example binaries and rootfs files must be downloaded separately.
+
 With qltool, easy execution can be performed:
 
 

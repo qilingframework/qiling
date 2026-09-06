@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- Copyright (C) 2018-2025 Free Software Foundation, Inc.
+
+     Copying and distribution of this file, with or without modification,
+     are permitted in any medium without royalty provided the copyright
+     notice and this notice are preserved.  -->
+
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target xmlns:xi="http://www.w3.org/2001/XInclude">
+    <architecture>riscv:rv64</architecture>
+    <osabi>GNU/Linux</osabi>
+
+    <xi:include href="riscv64-core.xml"/>
+    <xi:include href="riscv64-fpu.xml"/>
+</target>

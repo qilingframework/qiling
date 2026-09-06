@@ -1,0 +1,6 @@
+x/8xw $sp
+x/8i $pc
+s 1
+info snapshot
+p
+q

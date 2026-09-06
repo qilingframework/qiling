@@ -1,13 +1,13 @@
 [tool.poetry]
 urls = { homepage = "https://qiling.io" }
 name = "qiling"
-version = "1.4.11-dev"
+version = "1.4.12.dev0"
 description = "Qiling is an advanced binary emulation framework that cross-platform-architecture"
 authors = ["KaiJern Lau (xwings) <info@qiling.io>"]
-license = "GPLv2"
+license = "GPL-2.0-or-later"
 readme = "README.md"
 classifiers = [
-	"Development Status :: 3 - Beta",
+	"Development Status :: 4 - Beta",
 	"Intended Audience :: Developers",
 	"Topic :: Software Development :: Disassemblers",
 	"Topic :: System :: Emulators",
@@ -23,6 +23,15 @@ keywords = [
 	"UEFI",
 	"IoT",
 ]
+
+packages = [
+	{ include = "qiling" },
+	{ include = "qltui.py" },
+]
+include = [{ path = "qltool", format = "sdist" }]
+
+[tool.poetry.scripts]
+qltool = "qiling.cli:run"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -50,5 +59,5 @@ fuzz = ["unicornafl", "fuzzercorn"]
 RE = ["r2libr"]
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0,<3.0"]
 build-backend = "poetry.core.masonry.api"

@@ -108,6 +108,9 @@ class Render:
 
                     elements.clear()
 
+            if elements:
+                yield '\t'.join(elements)
+
         for line in __render_regs_line():
             print(line)
 
