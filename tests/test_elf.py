@@ -836,6 +836,37 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    # Regression for statx() byte order on big-endian guests: the statx struct
+    # must be serialized in the guest's endianness. Otherwise stx_mode is byte-
+    # swapped and a directory loses its S_IFDIR bit (so e.g. `ls` treats a
+    # directory as a regular file). Exercised on a big-endian MIPS context.
+    def test_linux_statx_bigendian(self):
+        import stat as _stat
+        from qiling.const import QL_ENDIAN
+        from qiling.os.posix.syscall.stat import ql_syscall_statx, Statx32
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips32_linux",
+                    verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x1000)
+        path_ptr, buf_ptr = base, base + 0x200
+        ql.mem.write(path_ptr, b"/\x00")
+
+        AT_FDCWD = -100 & 0xffffffff
+        STATX_BASIC_STATS = 0x07ff
+        ret = ql_syscall_statx(ql, AT_FDCWD, path_ptr, 0, STATX_BASIC_STATS, buf_ptr)
+        self.assertEqual(ret, 0)
+
+        # the guest is big-endian, so it reads stx_mode in big-endian byte order;
+        # it must come back as a directory (S_IFDIR). Before the fix the struct
+        # was emitted little-endian and the type bits were lost.
+        mode = int.from_bytes(ql.mem.read(buf_ptr + Statx32.stx_mode.offset, 2), 'big')
+        self.assertTrue(_stat.S_ISDIR(mode))
+
+        del ql
+
     def test_memory_search(self):
         ql = Qiling(code=b"\xCC", archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.DEBUG)
 
