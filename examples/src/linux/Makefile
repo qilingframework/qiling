@@ -130,6 +130,9 @@ patch_test.bin: patch_test.bin.c libpatch_test.so
 x8664_onestraw_server: x8664_linux_onestraw.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -m64 -o $@ $<
 
+x8664_linux_utime: x8664_linux_utime.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -m64 -o $@ $<
+
 $(OBJS):%.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
