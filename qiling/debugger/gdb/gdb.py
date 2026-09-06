@@ -167,7 +167,13 @@ class QlGdb(QlDebugger):
 
                 hexstr = __hexstr(value, nibbles)
             else:
-                hexstr = __unkown_reg_value(nibbles)
+                # registers the target description declares but the backend cannot
+                # supply (e.g. MIPS cp0 badvaddr/cause or the fpu regs, which unicorn
+                # does not expose) are reported as zero rather than '<unavailable>':
+                # plain gdb tolerates unavailable regs, but stricter clients such as
+                # Ghidra's ghidragdb abort when a register in the 'general' group is
+                # unavailable.
+                hexstr = '0' * nibbles
 
             return hexstr
 
@@ -212,6 +218,7 @@ class QlGdb(QlDebugger):
                 QL_ARCH.ARM      : UC_ARM_REG_R11,
                 QL_ARCH.ARM64    : UC_ARM64_REG_X29,
                 QL_ARCH.MIPS     : UC_MIPS_REG_INVALID, # skipped
+                QL_ARCH.MIPS64   : UC_MIPS_REG_INVALID, # skipped
                 QL_ARCH.A8086    : UC_X86_REG_EBP,
                 QL_ARCH.CORTEX_M : UC_ARM_REG_R11,
                 QL_ARCH.PPC      : UC_PPC_REG_31,
@@ -237,7 +244,7 @@ class QlGdb(QlDebugger):
                 return f'{regnum:02x}:{hexval};'
 
             # mips targets skip this reg info pair
-            bp_info = '' if self.ql.arch.type == QL_ARCH.MIPS else __get_reg_info(arch_uc_bp)
+            bp_info = '' if self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64) else __get_reg_info(arch_uc_bp)
 
             # FIXME: a8086 should use 'esp' and 'eip' here instead of 'sp' and 'ip' set by its arch instance
             sp_info = __get_reg_info(self.ql.arch.regs.uc_sp)
@@ -515,7 +522,16 @@ class QlGdb(QlDebugger):
                     return b'l' + auxv_data
 
                 elif feature == 'exec-file' and op == 'read':
-                    return f'l{self.ql.os.path.host_to_virtual_path(self.ql.path)}'
+                    # map the host path of the executable to its guest path; if the
+                    # binary was loaded from outside the rootfs (common when running
+                    # a target straight from its build tree) there is no such mapping,
+                    # so fall back to reporting the host path as-is.
+                    try:
+                        execpath = self.ql.os.path.host_to_virtual_path(self.ql.path)
+                    except ValueError:
+                        execpath = self.ql.path
+
+                    return f'l{execpath}'
 
                 elif feature == 'libraries-svr4' and op == 'read':
                     # TODO: this one requires information of loaded libraries which currently not provided

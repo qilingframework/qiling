@@ -1082,13 +1082,23 @@ class QNXARMStat64(ctypes.Structure):
     _pack_ = 8
 
 def get_stat64_struct(ql: Qiling):
-    if ql.arch.bits == 64:
+    # MIPS64 (n64) has no separate stat64: it is reached only through the
+    # stat-family handlers that share pack_stat64_struct, and its layout is the
+    # 64-bit stat struct. handle it explicitly instead of warning + falling back
+    # to the (little-endian, 32-bit) x86 struct, which corrupts every field.
+    if ql.arch.bits == 64 and ql.arch.type != QL_ARCH.MIPS64:
         ql.log.warning(f"Trying to stat64 on a 64bit system with {ql.os.type} and {ql.arch.type}!")
     if ql.os.type == QL_OS.LINUX:
         if ql.arch.type == QL_ARCH.X86:
             return LinuxX86Stat64()
-        elif ql.arch.type == QL_ARCH.MIPS:
-            return LinuxMips32Stat64()
+        elif ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
+            if ql.arch.bits == 64:
+                if ql.arch.endian == QL_ENDIAN.EL:
+                    return LinuxMips64Stat()
+                else:
+                    return LinuxMips64EBStat()
+            else:
+                return LinuxMips32Stat64()
         elif ql.arch.type == QL_ARCH.ARM:
             return LinuxARMStat64()
         elif ql.arch.type in (QL_ARCH.RISCV, QL_ARCH.RISCV64):
@@ -1115,7 +1125,7 @@ def get_stat_struct(ql: Qiling):
             return LinuxX8664Stat()
         elif ql.arch.type == QL_ARCH.X86:
             return LinuxX86Stat()
-        elif ql.arch.type == QL_ARCH.MIPS:
+        elif ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             if ql.arch.bits == 64:
                 if ql.arch.endian == QL_ENDIAN.EL:
                     return LinuxMips64Stat()
@@ -1413,17 +1423,45 @@ class Statx64(ctypes.Structure):
 
     _pack_ = 4
 
+# Big-endian counterparts of the statx structs. The kernel statx layout is the
+# same on every architecture, so the big-endian variants reuse the little-endian
+# field lists verbatim and only change the ctypes base class (and the nested
+# timestamp type, which must itself be big-endian). Without these, statx() byte-
+# swaps every field on a big-endian guest (e.g. MIPS/MIPS64 EB), so stx_mode
+# loses its S_IFDIR bit and tools like `ls` treat directories as plain files.
+class StatxTimestamp32EB(ctypes.BigEndianStructure):
+    _fields_ = StatxTimestamp32._fields_
+
+class StatxTimestamp64EB(ctypes.BigEndianStructure):
+    _fields_ = StatxTimestamp64._fields_
+
+def _statx_fields_eb(fields):
+    swap = {StatxTimestamp32: StatxTimestamp32EB, StatxTimestamp64: StatxTimestamp64EB}
+    return [(name, swap.get(ftype, ftype)) for (name, ftype) in fields]
+
+class Statx32EB(ctypes.BigEndianStructure):
+    _fields_ = _statx_fields_eb(Statx32._fields_)
+    _pack_ = 8
+
+class Statx64EB(ctypes.BigEndianStructure):
+    _fields_ = _statx_fields_eb(Statx64._fields_)
+    _pack_ = 4
+
 # int statx(int dirfd, const char *restrict pathname, int flags,
 #                  unsigned int mask, struct statx *restrict statxbuf);
 def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, buf_ptr: int):
+    is_eb = ql.arch.endian == QL_ENDIAN.EB
+
     def statx_convert_timestamp(tv_sec, tv_nsec):
         tv_sec  = struct.unpack('i', struct.pack('f', tv_sec))[0]
         tv_nsec = struct.unpack('i', struct.pack('f', tv_nsec))[0]
 
         if ql.arch.bits == 32:
-            return StatxTimestamp32(tv_sec=tv_sec, tv_nsec=tv_nsec)
+            Timestamp = StatxTimestamp32EB if is_eb else StatxTimestamp32
         else:
-            return StatxTimestamp64(tv_sec=tv_sec, tv_nsec=tv_nsec)
+            Timestamp = StatxTimestamp64EB if is_eb else StatxTimestamp64
+
+        return Timestamp(tv_sec=tv_sec, tv_nsec=tv_nsec)
 
 
     def major(dev):
@@ -1438,9 +1476,9 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
         st = Stat(real_path, fd)
         
         if ql.arch.bits == 32:
-            Statx = Statx32
+            Statx = Statx32EB if is_eb else Statx32
         else:
-            Statx = Statx64
+            Statx = Statx64EB if is_eb else Statx64
 
         stx = Statx(
             stx_mask = 0x07ff, # STATX_BASIC_STATS
