@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Extensions — optional tooling on top of the core
@@ -17,10 +17,10 @@ roadmap milestone applies; maturity-based status.
 
 ## Status
 
-`done` — the history coverage tracker is tested in CI (observed:
-`Ran 4 tests … OK`); pipes are exercised by many suites; AFL and r2 need
-optional extras (`fuzz`, `RE`) and are untested here; the IDA plugin needs
-IDA Pro and is untested in CI.
+`done` — the history coverage tracker has its own suite, run manually
+rather than by CI (observed: `Ran 4 tests … OK`); pipes are exercised by
+many suites; AFL and r2 need optional extras (`fuzz`, `RE`) and are
+untested here; the IDA plugin needs IDA Pro and is untested in CI.
 
 ## Code Structure
 
@@ -54,15 +54,15 @@ file with IDA-specific conventions; treat it as its own style domain.
 - Everything here consumes only public APIs of [core.md](core.md) (hooks,
   `mem`, `arch.regs`, `save/restore`) and [os-base.md](os-base.md) (heap,
   stdio, `set_syscall`/`set_api`). Nothing in `qiling/os`, `qiling/loader`,
-  or `qiling/arch` may import from here except the documented cases:
-  `qiling/cli.py:22-23` for coverage/report, `qiling/arch/utils.py:94`
-  lazy r2, and the multitask/mcu owners noted above.
+  or `qiling/arch` may import from here except the exceptions listed under
+  "Downward imports only" in the root System Design section.
 - `collect_coverage` activates hooks on enter and dumps on exit even on
   exceptions (`qiling/extensions/coverage/utils.py:48-63`); `qltool
   --coverage-format` lists `factory.formats` (`qiling/cli.py:240`).
 - The heap sanitizer replaces `ql.os.heap` with a compatible object that
-  surrounds chunks with canaries and detects double-free/UAF; it hooks
-  memory access to report faults (`qiling/extensions/sanitizers/heap.py:29`).
+  surrounds chunks with canaries and detects double-free/UAF; `alloc` and
+  `free` install memory hooks on the canaries to report faults
+  (`qiling/extensions/sanitizers/heap.py:97-107`, `:125`).
 - `pipe.py` streams implement the `ql_file` surface expected by the fd
   table so they can be assigned to `ql.os.stdin/stdout/stderr`.
 - AFL: `ql_afl_fuzz` wraps `unicornafl.uc_afl_fuzz` with input placement,
@@ -98,8 +98,9 @@ file with IDA-specific conventions; treat it as its own style domain.
   tenda_ac15,dlink_dir815,rt_n12_b1}` pair AFL with `pipe.py` and
   `set_syscall` ([os-posix.md](os-posix.md)) or MCU mode
   ([os-baremetal.md](os-baremetal.md)).
-- `pipe.py` is used by `tests/test_pe.py`, `test_windows_stdio.py`,
-  `test_riscv.py`, `test_windows_cpp_x86.py`, and `test_kernel_proxy.py`.
+- `pipe.py` is used by `tests/test_elf.py`, `test_pe.py`,
+  `test_windows_stdio.py`, `test_riscv.py`, `test_windows_cpp_x86.py`,
+  `test_windows_cpp_x8664.py`, and `test_kernel_proxy.py`.
 - The IDA plugin offers a front end comparable to [debugger.md](debugger.md).
 
 ## How to Test

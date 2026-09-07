@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # CLI — qltool and qltui
@@ -44,8 +44,8 @@ argparse actions mapping lowercase names to `QL_ARCH`/`QL_OS`/`QL_ENDIAN`/
   `--arch`, `--os`, `--endian`, `--thumb`, `--format asm|hex|bin`),
   `examples`, `qltui` (`qiling/cli.py:196-217`); common flags cover
   verbosity, `--env` (pickled dict), `--gdb`, `--qdb`, `--rr`,
-  `--profile`, `--filter`, `--log-file`, `--log-plain`, `--root`,
-  `--debug-stop`, `--multithread`, `--timeout`, `--coverage-file`,
+  `--profile`, `--filter`, `--log-file`, `--log-plain`, `--no-console`,
+  `--root`, `--debug-stop`, `--multithread`, `--timeout`, `--coverage-file`,
   `--coverage-format`, `--json`, `--libcache` (`:225-242`).
 - `handle_run`/`handle_code` return the kwargs dict; `Qiling(**ql_args)`
   at `qiling/cli.py:276` is the single construction point, followed by

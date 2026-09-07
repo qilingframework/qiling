@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # OS POSIX — Linux, FreeBSD, macOS, QNX
@@ -50,8 +50,8 @@ linter):
   register untouched (`qiling/os/posix/posix.py:227-229`).
 - Constants are re-declared locally where the platform defines them
   (`qiling/os/posix/syscall/sched.py:14-39`); MIPS-specific socket values
-  live in `qiling/os/posix/const.py:309-371`.
-- Guest structs use `get_packed_struct` (`qiling/os/posix/syscall/epoll.py:31`).
+  live in `qiling/os/posix/const.py:309-456`.
+- Guest structs use `get_packed_struct` (`qiling/os/posix/syscall/epoll.py:35`).
 - `qiling/os/posix/syscall/epoll.py:140-141` still contains tab-indented
   lines (the other such file is in [debugger.md](debugger.md)); do not add
   more.
@@ -81,7 +81,7 @@ linter):
   `QlLinuxThreadManagement` (`qiling/os/linux/thread.py:537`); otherwise
   run ld.so to `elf_entry`, apply lib patches, then run to the exit point.
 - **Processes**: `clone` without `CLONE_VM` forks the host process
-  (`qiling/os/posix/syscall/sched.py:52-60`); threads are gevent greenlets.
+  (`qiling/os/posix/syscall/sched.py:50-59`); threads are gevent greenlets.
 - **Networking** uses host sockets; the profile `[NETWORK]` section
   controls IPv6 and bind-to-localhost (`qiling/os/posix/posix.py:58-61`).
 
@@ -125,10 +125,12 @@ cd tests && python3 test_posix.py   # pass = "Ran 65 tests … OK (skipped=2)", 
 ```
 
 - `tests/test_posix.py` aggregates `test_elf.py`, `test_riscv.py`, and
-  `test_qltool.py`; the CI script `tests/test_onlinux.sh` adds
-  `test_elf_multithread.py` (`Ran 24 tests … OK (skipped=1)`, includes
-  TCP/UDP/HTTP and `clone3`), `test_elf_ko.py`, `test_qnx.py`,
-  `test_android.py`, `test_edl.py`, `test_tendaac15_httpd.py`.
+  `test_qltool.py`; the POSIX members the CI script `tests/test_onlinux.sh`
+  adds are `test_elf_multithread.py` (`Ran 24 tests … OK (skipped=1)`,
+  includes TCP/UDP/HTTP and `clone3`), `test_elf_ko.py`, `test_qnx.py`,
+  `test_android.py`, `test_edl.py`, `test_tendaac15_httpd.py`. Run them
+  one at a time (fixed localhost ports; see the root Verification and
+  Review Map).
 - `test_elf_ko.py` needs `unzip -P infected m0hamed_rootkit.ko.zip` in
   `examples/rootfs/x86_linux/kernel/` first (CI does this,
   `.github/workflows/build-ci.yml:73`); without it one case errors with

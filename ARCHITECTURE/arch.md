@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Arch — CPU architecture layer
@@ -14,9 +14,9 @@ exceptions below). No roadmap milestone applies; maturity-based status.
 
 ## Status
 
-`done` — all ten architectures are exercised by the CI suites; CPU model
-selection is covered by `tests/test_cpu_models.py` (observed:
-`Ran 7 tests … OK`).
+`done` — all ten architectures are exercised by the CI suites; the CPU
+model enums are checked against Unicorn's constants by
+`tests/test_cpu_models.py` (observed: `Ran 7 tests … OK`).
 
 ## Code Structure
 
@@ -52,10 +52,12 @@ Python; root rules apply. Local patterns:
 
 ## Design and Invariants
 
-- `QlArch` creates the `Uc` lazily as a cached property (`qiling/arch/arch.py:34`)
-  and exposes `regs` (`:42`), `stack_push/stack_pop` (`:52`/`:66`),
-  `save/restore` via `UcContext` (`:108`/`:112`), `disassembler` (`:117`),
-  and `assembler` (`:125`). Everything above arch must go through these.
+- `QlArch` declares `uc` as an abstract property that each concrete arch
+  builds lazily as a `cached_property` (`qiling/arch/x86.py:27`); the base
+  (`qiling/arch/arch.py:32-34`) exposes `regs` (`:42`),
+  `stack_push/stack_pop` (`:52`/`:66`), `save/restore` via `UcContext`
+  (`:108`/`:112`), `disassembler` (`:117`), and `assembler` (`:125`).
+  Everything above arch must go through these.
 - `ql.uc` is a proxy to `arch.uc` (`qiling/core.py:479`); there is exactly
   one Unicorn instance per `Qiling` (the multi-Unicorn threading idea in
   `TODO.md:462-488` is a proposal only).
@@ -66,9 +68,10 @@ Python; root rules apply. Local patterns:
   base for the GDT manager's constructor annotation. Do not add further
   upward imports; see [os-baremetal.md](os-baremetal.md) for the multitask
   contract.
-- CPU models are selected by the `cputype` kwarg and validated by
-  `select_arch`; a model belongs to exactly one enum in
-  `qiling/arch/models.py`.
+- CPU models come in through the `cputype` kwarg; `select_arch` forwards
+  the value unvalidated (`qiling/utils.py:377`) and the arch class applies
+  it with `ctl_set_cpu_model` (`qiling/arch/arm.py:47`); a model belongs
+  to exactly one enum in `qiling/arch/models.py`.
 - Endianness and thumb are constructor inputs for ARM/MIPS only
   (`qiling/utils.py:379-386`).
 
