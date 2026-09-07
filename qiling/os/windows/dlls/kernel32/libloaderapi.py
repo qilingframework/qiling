@@ -10,7 +10,7 @@ from qiling.exception import QlErrorNotImplemented
 from qiling.os.windows.api import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import has_lib_ext
+from qiling.os.windows.utils import has_lib_ext, resolve_export
 
 def _GetModuleHandle(ql: Qiling, address: int, params):
     lpModuleName = params["lpModuleName"]
@@ -169,10 +169,12 @@ def hook_GetProcAddress(ql: Qiling, address: int, params):
 
         return next((addr for addr, entry in ql.loader.export_symbols.items() if search_func(entry)), 0)
 
-    # in any other case, look through the import address table for that dll
-    iat = ql.loader.import_address_table[dll_name]
+    # in any other case, resolve against the target dll's own export table
+    # (falling back to its import table first for backwards compatibility --
+    # see resolve_export()'s docstring)
+    image = next(image for image in ql.loader.images if image.base == hModule)
 
-    return iat.get(procname or ordinal, 0)
+    return resolve_export(ql, image, name=procname, ordinal=ordinal) or 0
 
 def _LoadLibrary(ql: Qiling, address: int, params):
     lpLibFileName = params["lpLibFileName"]
