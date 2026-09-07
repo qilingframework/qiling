@@ -12,6 +12,8 @@ from qiling import Qiling
 from qiling.arch.x86_const import GS_SEGMENT_ADDR, GS_SEGMENT_SIZE
 from qiling.arch.x86_utils import GDTManager, SegmentManager86, SegmentManager64
 from qiling.arch import arm_utils
+from qiling.arch.cortex_m_const import EXCP
+from qiling.arch.mips_const import EXCP as MIPS_EXCP
 from qiling.cc import QlCC, intel, arm, mips, riscv, ppc
 from qiling.const import QL_ARCH, QL_OS
 from qiling.os.fcall import QlFunctionCall
@@ -56,7 +58,8 @@ class QlOsLinux(QlOsPosix):
         # ARM
         if self.ql.arch.type == QL_ARCH.ARM:
             self.ql.arch.enable_vfp()
-            self.ql.hook_intno(self.hook_syscall, 2)
+            self.ql.hook_intno(self.hook_syscall, EXCP.SWI)
+            self.ql.hook_intno(self.hook_cpu_exception, EXCP.UDEF)
             self.thread_class = thread.QlLinuxARMThread
             arm_utils.init_linux_traps(self.ql, {
                 'memory_barrier': 0xffff0fa0,
@@ -66,13 +69,15 @@ class QlOsLinux(QlOsPosix):
 
         # MIPS32
         elif self.ql.arch.type == QL_ARCH.MIPS:
-            self.ql.hook_intno(self.hook_syscall, 17)
+            self.ql.hook_intno(self.hook_syscall, MIPS_EXCP.SYSCALL)
+            self.ql.hook_intno(self.hook_cpu_exception, MIPS_EXCP.RI)
             self.thread_class = thread.QlLinuxMIPS32Thread
 
         # ARM64
         elif self.ql.arch.type == QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
-            self.ql.hook_intno(self.hook_syscall, 2)
+            self.ql.hook_intno(self.hook_syscall, EXCP.SWI)
+            self.ql.hook_intno(self.hook_cpu_exception, EXCP.UDEF)
             self.thread_class = thread.QlLinuxARM64Thread
 
         # X86
@@ -136,6 +141,24 @@ class QlOsLinux(QlOsPosix):
 
     def hook_syscall(self, ql, intno = None):
         return self.load_syscall()
+
+    def hook_cpu_exception(self, ql, intno = None):
+        # A cpu exception the kernel would turn into a fatal signal that
+        # terminates the process (e.g. SIGILL on an undefined instruction).
+        # Emulate that termination by stopping cleanly instead of letting the
+        # unhandled-interrupt dispatcher raise QlErrorCoreHook. This commonly
+        # happens with shellcode that falls through into trailing data once a
+        # terminal syscall (e.g. a denied execve) returns instead of replacing
+        # the image.
+        signame = {
+            EXCP.UDEF:      'SIGILL',   # ARM / ARM64 undefined instruction
+            MIPS_EXCP.RI:   'SIGILL',   # MIPS reserved (illegal) instruction
+        }.get(intno, f'exception {intno:#x}')
+
+        pc = ql.arch.regs.arch_pc
+
+        ql.log.debug(f'CPU raised {signame} at {pc:#x}; terminating emulated process')
+        ql.stop()
 
     def register_function_after_load(self, function):
         if function not in self.function_after_load_list:
