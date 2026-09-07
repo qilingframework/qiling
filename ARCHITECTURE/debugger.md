@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Debugger — GDB server and Qdb
@@ -67,8 +67,10 @@ Python; root rules apply. Local patterns:
   (`qiling/debugger/gdb/xmlregs.py:56-137`, `qiling/debugger/gdb/gdb.py:488`).
 - **Qdb** installs a breakpoint hook and drives `ql.emu_start` per
   step; branch predictors compute the next pc for `step_over`; `rr` mode
-  snapshots full state per step in `SnapshotManager`
-  (`qiling/debugger/qdb/utils.py:260`) for `do_backward`.
+  takes a full `ql.save()` before and after each stepping command and
+  keeps only the diff as a `SnapshotManager` layer
+  (`qiling/debugger/qdb/utils.py:260`, decorator `:275-297`) for
+  `do_backward`.
 - **State access** goes through `ql.arch.regs`, `ql.mem`, and
   `hook_address`; the one concrete-type import is `QlProcFS`, used to
   serve `/proc/self/maps` to the client (`qiling/debugger/gdb/gdb.py:38`,
@@ -138,5 +140,7 @@ cd tests && python3 test_qdb.py   # pass = "Ran 6 tests … OK", exit 0
 
 - Qdb has no PowerPC support (`qiling/debugger/qdb/arch/`); GDB XML covers
   all ten arches.
-- Record/replay stores full state per step; memory-heavy on long runs.
+- Record/replay keeps one diff layer per step but performs two full
+  `ql.save()` calls per step (`qiling/debugger/qdb/utils.py:273`); slow
+  on long runs.
 - `TODO.md:628-636` lists bare `except:` blocks in `qiling/debugger/qdb/qdb.py`.

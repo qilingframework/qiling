@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # OS bare-metal — MCU firmware and raw blobs
@@ -18,7 +18,9 @@ applies; maturity-based status.
 
 `done` — MCU covered by `tests/test_mcu.py` (observed: `Ran 18 tests … OK`,
 STM32F1/F4, GD32VF103, SAM3X8E firmware); BLOB by
-`test_blob.BlobTest.test_uboot_arm` (`OK`) and `tests/test_edl.py` (`OK`).
+`test_blob.BlobTest.test_uboot_arm` (`OK`). `tests/test_edl.py` is not
+BLOB coverage: its ELF is sniffed as Linux and runs under `QlOsLinux`
+([os-posix.md](os-posix.md)).
 `test_blob.BlobTest.test_blob_raw` errors on the pinned rootfs submodule
 (see Open Gaps).
 
@@ -53,8 +55,10 @@ memory manager.
   installed by the MCU loader (`qiling/loader/mcu.py:140`).
 - **Effective PC**: run loops read `arch.effective_pc` when present to
   keep the thumb bit consistent (`qiling/os/mcu/mcu.py:54-58`).
-- **BLOB**: `QlOsBlob.run` executes `entry_point` → `exit_point` with the
-  standard `emu_start` and nothing else (`qiling/os/blob/blob.py:43`).
+- **BLOB**: `QlOsBlob.run` resolves entry/exit overrides, creates a heap
+  only if the profile `[CODE]` section defines `heap_address`/`heap_size`,
+  then runs `entry_point` → `exit_point` with the standard `emu_start`
+  (`qiling/os/blob/blob.py:43-60`).
 - `ql.hw` exists only when `ql.baremetal` (`qiling/core.py:191`,
   `:357`); BLOB targets needing hardware must use MCU mode.
 
@@ -79,7 +83,8 @@ memory manager.
   `qiling/utils.py:419`).
 - Interrupt entry/exit uses [arch.md](arch.md) `QlArchCORTEX_M`; the
   Cortex-M arch constructs a `MultiTaskUnicorn` instead of a plain `Uc`
-  (`qiling/arch/cortex_m.py:22`), the one upward import in the arch layer.
+  (`qiling/arch/cortex_m.py:78`; the import at `:22` is one of the three
+  documented upward imports in the arch layer, see [arch.md](arch.md)).
 - Fuzzing MCU firmware (`examples/fuzzing/stm32f429/`) combines this mode
   with [extensions.md](extensions.md) AFL support.
 - Snapshots include hardware state when `save(hw=True)`
@@ -93,8 +98,6 @@ cd tests && python3 -m unittest test_blob.BlobTest.test_uboot_arm   # pass = "OK
 
 - MCU (also proves [hw.md](hw.md)): `cd tests && python3 test_mcu.py`
   — pass = `Ran 18 tests … OK`.
-- Qualcomm EDL blob: `cd tests && python3 test_edl.py` — pass =
-  `Ran 1 test … OK`.
 - `python3 test_blob.py` as a whole fails on a clean checkout; see Open Gaps.
 
 ## Review and Refactor Guide

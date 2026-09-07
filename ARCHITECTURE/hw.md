@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # HW — peripheral emulation for bare-metal targets
@@ -17,8 +17,8 @@ No roadmap milestone applies; maturity-based status.
 ## Status
 
 `done` — exercised by `tests/test_mcu.py` (observed: `Ran 18 tests … OK`)
-across GPIO, USART, EXTI, I2C, SPI, DMA, CRC, RTC, timers, and NVIC on
-STM32F103/F407/F411/F429, GD32VF103, and SAM3X8E firmware.
+across GPIO, USART, EXTI, I2C, SPI, DMA, CRC, ADC, watchdog, timers, and
+NVIC on STM32F103/F407/F411/F429, GD32VF103, and SAM3X8E firmware.
 
 ## Code Structure
 
@@ -40,10 +40,10 @@ Python; root rules apply. Local patterns (observed, enforced by
 - A peripheral is a class whose inner `Type(ctypes.Structure)` lists
   registers in datasheet order with offset comments
   (`qiling/hw/char/stm32f4xx_usart.py:12-49`); `__init__(ql, label,
-  **kwargs)` builds `self.instance` with reset values (`:52-58`).
+  **kwargs)` builds `self.instance` with reset values (`:51-58`).
 - Register access overrides `read/write` decorated with
   `@QlPeripheral.monitor()` and falls back to `raw_read/raw_write`
-  (`:60-70`, `qiling/hw/peripheral.py:162-172`).
+  (`:60-70`, `qiling/hw/peripheral.py:157-173`).
 - Class names are looked up by `struct` string through
   `ql_get_module_function('qiling.hw', struct)` (`qiling/hw/hw.py:81`), so
   every peripheral must be exported from `qiling/hw/__init__.py`.
@@ -70,8 +70,10 @@ Python; root rules apply. Local patterns (observed, enforced by
 - **User hooks**: `hook_read/hook_write` with `QL_INTERCEPT` stages
   (`qiling/hw/peripheral.py:34-46`); `watch()` enables verbose access logs.
 - **Snapshots**: `QlHwManager.save/restore` (`qiling/hw/hw.py:165-171`)
-  pickle peripheral instances; `QlPripheralHandler.__getstate__` strips
-  the manager reference (`:24`).
+  serialize each peripheral's ctypes register struct to bytes and back
+  (`qiling/hw/peripheral.py:258-262`); `QlPripheralHandler.__getstate__`
+  (`qiling/hw/hw.py:24`) strips the manager reference so the MMIO handler
+  can be pickled with the memory map.
 - Peripheral fidelity is demand-driven: registers behave as observed
   firmware needs, not per full datasheets (root deviations).
 

@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Core — the Qiling facade and plumbing
@@ -42,7 +42,7 @@ Python only; root toolchain and style rules apply (see
 patterns to follow:
 
 - Circular-import avoidance with `TYPE_CHECKING` guards and string
-  annotations (`qiling/core.py:1-33`, `qiling/log.py:15-19`).
+  annotations (`qiling/core.py:1-33`, `qiling/log.py:19-20`).
 - Components are reached through read-only properties (`mem`, `arch`,
   `loader`, `os`, `hw`, `log`; `qiling/core.py:203-244`); setters exist only
   for `verbose`, `debugger`, `filter`, `debug_stop`.
@@ -70,12 +70,13 @@ patterns to follow:
   `QL_HOOK_BLOCK` set (`qiling/const.py:77`) stops remaining hooks
   (`qiling/core_hooks.py:186`, `:209`). Address hooks are keyed per address
   (`hook_address`, `:550`). `begin=1, end=0` means "whole address space".
-- **Exceptions raised inside hooks** are captured by the OS layer into
-  `ql.internal_exception` and re-raised after `uc.emu_start` returns
+- **Exceptions raised inside hooks** are captured by the hook wrapper
+  (`qiling/core_hooks.py:141-144`) into `ql._internal_exception`, which
+  `emu_start` resets beforehand and re-raises after `uc.emu_start` returns
   (`qiling/core.py:763`, `:773-774`), because Unicorn cannot propagate
   Python exceptions through its C callbacks.
 - **Emulation state** is tracked in `QL_STATE` (`qiling/const.py:67`) around
-  `emu_start` (`qiling/core.py:768-771`); `QlOs.call` refuses to move `pc`
+  `emu_start` (`qiling/core.py:765-770`); `QlOs.call` refuses to move `pc`
   once stopped to work around a Unicorn bug (`qiling/os/os.py:215-221`).
 - **Stop guard**: when `stop=QL_STOP.*` is requested, a trap page is mapped
   at or above `0x9000000` (`qiling/core.py:525`) and the loader's

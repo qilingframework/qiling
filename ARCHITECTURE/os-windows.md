@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # OS Windows family — Windows, UEFI, DOS
@@ -39,7 +39,7 @@ Python; root rules apply. Local patterns:
 - A Windows API is `hook_<Name>(ql, address, params)` decorated with
   `@winsdkapi(cc=STDCALL|CDECL|MS64, params={...})` where param types are
   the aliases in `qiling/os/windows/api.py`; canonical example:
-  `qiling/os/windows/dlls/kernel32/fibersapi.py:14-57`. The C prototype
+  `qiling/os/windows/dlls/kernel32/fibersapi.py:10-57`. The C prototype
   is kept as a comment above each hook.
 - UEFI services use `@dxeapi(params=…)` (`qiling/os/uefi/fncc.py:11`),
   e.g. `qiling/os/uefi/bs.py:23-35`.
@@ -74,7 +74,7 @@ Python; root rules apply. Local patterns:
   known gaps (`qiling/os/uefi/rt.py:204-205`).
 - **DOS**: `hook_syscall` installs an interrupt hook that dispatches on
   `(intno, AH)` with ENTER/CALL/EXIT user overrides keyed by that tuple
-  (`qiling/os/dos/dos.py:83-107`).
+  (`qiling/os/dos/dos.py:83-105`).
 - **Trust boundary**: DLLs, hives, and PE images come from the rootfs; the
   root Review deviations apply to any header-derived size that reaches
   host allocations.

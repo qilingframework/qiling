@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Qiling Framework — Architecture
@@ -49,14 +49,14 @@ Constraints and non-goals:
 | ---- | --------------- | -------- |
 | `qiling/`, `tests/`, `examples/*.py`, `qltool`, `qltui.py` | Python, declared `^3.10` | `pyproject.toml:37` |
 | CI matrix | Python 3.11 and 3.13 on `windows-latest` and `ubuntu-latest` (four jobs); the ubuntu/3.13 job carries a `container: Docker` marker | `.github/workflows/build-ci.yml:13-18` |
-| Packaging | Poetry 2 (`poetry-core>=2.0,<3.0`), version `1.4.12.dev0`, GPL-2.0-or-later; `qltool` console script | `pyproject.toml:4`, `:33-34`, `:61-63` |
+| Packaging | Poetry 2 (`poetry-core>=2.0,<3.0`), version `1.4.12.dev0`, GPL-2.0-or-later; `qltool` console script | `pyproject.toml:4`, `:7`, `:33-34`, `:61-63` |
 | Wheel/sdist build check | `poetry check --lock`, `python -m build`, `twine check --strict` | `.github/workflows/pythonpublish.yml:20-44` |
 | Container | `python:3.13-slim-trixie` multi-stage Poetry wheel build | `Dockerfile:1`, `:18-23` |
 | Editor config | 4-space indent, LF, UTF-8, final newline for `*.py` | `.editorconfig:6-12` |
 | Fixture sources | C/asm under `examples/src/`, `examples/shellcodes/`, `examples/fuzzing/*/fuzz.c` (built out-of-tree; binaries live in the rootfs submodule) | `examples/src/linux/hello.c` |
-| Test scripts | Bash (`tests/test_onlinux.sh`, `tests/test_macho.sh`), batch (`tests/test_pe.bat`) | `tests/test_onlinux.sh:8-20` |
+| Test scripts | Bash (`tests/test_onlinux.sh`, `tests/test_macho.sh`), batch (`tests/test_pe.bat`) | `tests/test_onlinux.sh:7-20` |
 
-Runtime dependencies (`pyproject.toml:36-55`): `unicorn == 2.1.3`
+Runtime dependencies (`pyproject.toml:36-50`): `unicorn == 2.1.3`
 (hard-pinned), `capstone ^5`, `keystone-engine ^0.9.2`, `pefile`,
 `pyelftools`, `python-registry`, `gevent >=24.10`, `multiprocess`,
 `pyyaml ^6`, `windows-curses` (Windows only), and the TUI trio
@@ -110,7 +110,7 @@ Rules a change must respect:
 - **Trust boundaries.** The guest is untrusted. Host exposure exists at:
   rootfs path resolution (`qiling/os/path.py:239`), loader parsing of
   header-derived sizes (`qiling/loader/`), host sockets and `os.fork` in
-  POSIX (`qiling/os/posix/syscall/sched.py:52-60`), and explicitly
+  POSIX (`qiling/os/posix/syscall/sched.py:50-59`), and explicitly
   forwarded syscalls in the kernel proxy.
 - **Fidelity over abstraction.** Per-OS and per-chip code is deliberately
   repetitive to mirror real platform behavior (see deviations).
@@ -120,7 +120,7 @@ Rules a change must respect:
 1. Entry: `qltool` (checkout) or the installed console script call
    `qiling.cli.run`, which ends in `Qiling(**ql_args)` (`qiling/cli.py:276`);
    library users construct `Qiling` directly.
-2. `Qiling.__init__` (`qiling/core.py:35`) guesses arch/OS from the file if
+2. `Qiling.__init__` (`qiling/core.py:36`) guesses arch/OS from the file if
    not given (`qiling/utils.py:278`), then composes in fixed order: arch →
    struct/hook mixins → logger → profile → loader → memory manager → OS →
    hardware manager (bare-metal only) → `loader.run()` → stop guard
@@ -165,10 +165,10 @@ process over a Unix socketpair.
 | `qiling/profiles/*.ql` | Default per-OS INI profiles |
 | `qiling/os/posix/kernel_proxy/` | Kernel proxy (Linux-host optional feature) |
 | `qiling/extensions/mcu/` | Chip `env` maps (owned by [hw.md](ARCHITECTURE/hw.md)) |
-| `tests/` | Standalone `unittest` files run from `tests/`; CI drivers `test_onlinux.sh`, `test_pe.bat`, `test_macho.sh`; Qdb scripts in `qdb_scripts/`; scratch output in `log_test/` |
+| `tests/` | Standalone `unittest` files run from `tests/`; CI drivers `test_onlinux.sh`, `test_pe.bat`, `test_macho.sh`; Qdb scripts in `qdb_scripts/`; test-only INI profiles in `profiles/`; scratch output in `log_test/` |
 | `examples/` | Demo scripts, `fuzzing/`, `mcu/`, `shellcodes/`, `extensions/`, `scripts/` (DLL/dylib collectors), `src/` (fixture sources), and the `rootfs/` submodule (fixture binaries; do not edit in place, update the submodule) |
 | `jexamples/` | Legacy examples, not covered by CI |
-| `docs/` | One-line pointers to https://docs.qiling.io plus images; not a documentation source |
+| `docs/` | One-line pointers to https://docs.qiling.io, images, and two Windows DLL inventory lists (`DLLX86.txt`, `DLLX8664.txt`); not a documentation source |
 | `qltool`, `qiling/cli.py`, `qltui.py` | CLI launcher, implementation, TUI ([cli.md](ARCHITECTURE/cli.md)) |
 | `pyproject.toml`, `poetry.lock` | The only manifest and lock file |
 | `Dockerfile` | Container build of the wheel (build tooling; no runtime code) |
@@ -186,8 +186,8 @@ target descriptions.
 No enforced formatter/linter/type checker exists; the rules below are
 observed conventions with canonical implementations.
 
-- **Indentation**: 4 spaces (`.editorconfig:9-10`); 432 of 506 package
-  files use it consistently. Two files still contain tab-indented lines
+- **Indentation**: 4 spaces (`.editorconfig:9-10`); every package file
+  indents with spaces except two that still contain tab-indented lines
   (`qiling/os/posix/syscall/epoll.py:140-141`,
   `qiling/debugger/qdb/branch_predictor/__init__.py:13-17`); do not add
   more.
@@ -195,23 +195,27 @@ observed conventions with canonical implementations.
   (`qiling/core.py:1-4`).
 - **Typing**: public APIs are annotated; circular imports are avoided with
   `from __future__ import annotations` and `TYPE_CHECKING` guards
-  (`qiling/log.py:6`, `:17-19`; used in 42/49 modules respectively).
-  Callback signatures are `Protocol`s (`qiling/core_hooks.py:55-131`).
+  (`qiling/log.py:6`, `:19-20`; used in 42/49 modules respectively).
+  Callback signatures are `Protocol`s (`qiling/core_hooks.py:55-134`).
 - **Naming**: classes `Ql<Thing>`; enums `QL_*` (`qiling/const.py`);
   syscall handlers `ql_syscall_<name>` (`qiling/os/posix/posix.py:19`);
   Win32 hooks `hook_<Name>` with `@winsdkapi`
-  (`qiling/os/windows/dlls/kernel32/fibersapi.py:14`); UEFI `@dxeapi`;
+  (`qiling/os/windows/dlls/kernel32/fibersapi.py:13-16`); UEFI `@dxeapi`;
   peripherals `<Chip><Periph>` with an inner `Type` struct
   (`qiling/hw/char/stm32f4xx_usart.py:12`).
 - **Errors**: raise `QlErrorBase` subclasses from `qiling/exception.py`;
   unknown syscalls/APIs log a warning and raise only under `debug_stop`
-  (`qiling/os/posix/posix.py:255-258`, `qiling/os/windows/windows.py:195-198`).
+  (`qiling/os/posix/posix.py:255-258`, `qiling/os/windows/windows.py:196-199`).
   `TODO.md:628-644` lists bare `except:` sites and `assert`-based
-  validation as known debt (18 bare `except:` remain in the tree today);
+  validation as known debt (18 bare `except:` remained at this refresh);
   do not add new ones.
-- **Logging**: always `ql.log` (613 call sites); `print` is reserved for
-  Qdb/TUI/IDA output. Syscall/API lines go through
-  `QlOsUtils.print_function` (`qiling/os/utils.py:106`).
+- **Logging**: always `ql.log`; `print` is reserved for Qdb/TUI/IDA and
+  guest console output. Stray diagnostic prints remain in
+  `qiling/extensions/multitask.py:328`, `:365`, `qiling/exception.py:90`,
+  `qiling/loader/macho.py:313`, `qiling/os/macos/kernel_api/kernel_api.py:1397`,
+  and `qiling/extensions/tracing/formats/tenet.py:64`; do not add more.
+  Syscall/API lines go through `QlOsUtils.print_function`
+  (`qiling/os/utils.py:106`).
 - **Guest structs**: `ctypes` via `qiling/os/struct.py` factories
   (`get_packed_struct`/`get_aligned_struct`) so endian/pointer width follow
   the target (`qiling/os/posix/syscall/epoll.py:31-45`).
@@ -219,7 +223,7 @@ observed conventions with canonical implementations.
   in core; rely on the `select_*` factories (`qiling/utils.py:297-417`).
 - **Tests**: one standalone `unittest` module per subsystem in `tests/`,
   run from that directory with relative rootfs paths
-  (`tests/test_elf.py:120`); host-gated cases use `unittest.skipUnless`
+  (`tests/test_elf.py:146`); host-gated cases use `unittest.skipUnless`
   (`tests/test_kernel_proxy.py:17`, `tests/test_pathutils.py:31`).
 - **Docstrings**: Google-style `Args:`/`Returns:` on public methods
   (`qiling/core.py:561-570`); comments explain workarounds with issue links
@@ -236,6 +240,10 @@ cd examples/rootfs/x86_linux/kernel && unzip -P infected m0hamed_rootkit.ko.zip 
 ```
 
 All test commands run from `tests/`; a pass is unittest `OK` and exit 0.
+Run suites one at a time: several bind fixed localhost ports
+(`tests/test_elf.py:926`, `tests/test_tendaac15_httpd.py:98`,
+`tests/test_debugger.py:112`); during this refresh a `test_posix.py` run
+started alongside `test_elf.py` blocked in `epoll_wait` until killed.
 
 | Change area | Run | Owner doc |
 | ----------- | --- | --------- |
@@ -246,7 +254,7 @@ All test commands run from `tests/`; a pass is unittest `OK` and exit 0.
 | POSIX syscalls | `python3 test_posix.py` (adds `test_elf.py`, `test_riscv.py`, `test_qltool.py`); then `./test_onlinux.sh` for the CI set | [os-posix.md](ARCHITECTURE/os-posix.md) |
 | Kernel proxy | `python3 test_kernel_proxy.py` (Linux host) | [kernel-proxy.md](ARCHITECTURE/kernel-proxy.md) |
 | Windows/UEFI/DOS | `python3 test_uefi.py && python3 test_dos.py`; PE suites via `test_pe.bat` on Windows | [os-windows.md](ARCHITECTURE/os-windows.md) |
-| MCU/BLOB run loops, peripherals | `python3 test_mcu.py`; `python3 -m unittest test_blob.BlobTest.test_uboot_arm`; `python3 test_edl.py` | [os-baremetal.md](ARCHITECTURE/os-baremetal.md), [hw.md](ARCHITECTURE/hw.md) |
+| MCU/BLOB run loops, peripherals | `python3 test_mcu.py`; `python3 -m unittest test_blob.BlobTest.test_uboot_arm` | [os-baremetal.md](ARCHITECTURE/os-baremetal.md), [hw.md](ARCHITECTURE/hw.md) |
 | Debuggers | `python3 test_qdb.py`; `python3 test_debugger.py` | [debugger.md](ARCHITECTURE/debugger.md) |
 | Extensions | `python3 test_history.py`; `python3 test_r2.py` with `[RE]` | [extensions.md](ARCHITECTURE/extensions.md) |
 | CLI/packaging | `python3 test_qltool.py` (needs the package installed); `python -I tests/test_qltool.py InstalledQltool_Test -v` from the repo root against an installed wheel | [cli.md](ARCHITECTURE/cli.md) |
@@ -295,162 +303,114 @@ the arch layer; implement Windows/UEFI `save/restore`; hook-engine
 wchar tests. Cross-cutting gaps: `ChangeLog` stops at 1.4.6
 (`ChangeLog:4`); macOS CI is commented out
 (`.github/workflows/build-ci.yml:83-93`); `jexamples/` is unexercised;
-`build-ci.yml:77` reads `matrix.contrainer` (typo) so the Docker job
-always takes the native branch. The feature wishlist is GitHub issue
-[#333](https://github.com/qilingframework/qiling/issues/333).
+`.github/workflows/build-ci.yml:77` reads `matrix.contrainer` (typo) so
+the Docker job always takes the native branch. The feature wishlist is
+GitHub issue [#333](https://github.com/qilingframework/qiling/issues/333).
 
 ## Development Loop
 
-Coding Discipline governs writing; Review Checks govern review. This
-loop connects them and defines when work is ready to release.
+Frame → Write → Prove → Review → Gate. Findings return to Write;
+uncertainty that changes the plan returns to Frame.
 
-```text
-Frame → Write → Prove → Review → Gate
-          ▲          findings      │
-          └────────────────────────┘
-```
+Use one subagent per role when available, otherwise distinct labeled
+passes. Tester and Verifier report findings and never edit; Coder repairs.
+
+| Role | Stages | Handoff |
+| ---- | ------ | ------- |
+| Planner | Frame | Goal, observable checks, assumptions, affected files/owners, and plan. |
+| Coder | Write | Planned changes or repairs to named findings. |
+| Tester | Prove | Commands, results, and behavioral/structural evidence. |
+| Verifier | Review + Gate | Evidence-backed findings or verified completion. |
 
 ### The loop
 
-**1. Frame.** Convert the request into a goal with an observable check.
-Inspect the request, code, docs, and repository conventions; record the
-narrowest supported assumptions. When using eatmycode, run its Version
-and Freshness Gate before trusting architecture guidance. Ask one focused
-question only when a required decision cannot be discovered or safely
-inferred and guessing would materially change the result. Once framed,
-continue without an approval pause.
+1. **Frame:** Inspect the request, code, docs, and conventions before
+   planning. Give the goal and each plan step an observable check. When
+   using eatmycode, run its Version and Freshness Gate before trusting
+   architecture; include versions, migration scope, Index/agent-file
+   changes, and verification commands in architecture plans. Resolve
+   uncertainty from evidence and record the narrowest supported assumptions.
+   Only Planner may ask one focused question, when a required decision
+   cannot be discovered or safely inferred and guessing changes the result.
+2. **Write:** Apply Coding Discipline. Make the planned change; for a
+   repair, address only named findings. Update affected architecture with
+   changes to its documented contracts.
+3. **Prove:** Run relevant tests and structural checks, retaining observable
+   evidence. For architecture work under eatmycode, apply its Architecture
+   Verification. Failures and missing, duplicate, or obsolete coverage
+   become Coder findings. Re-run affected checks after repairs; never send
+   a red result to Review.
+4. **Review:** Apply every Review Check as a separate pass over full affected
+   files. Use an independent agent or isolated pass for Fit, Dependencies,
+   and Security when available. Return findings to Coder, then re-prove
+   and re-review the repairs.
+5. **Gate:** Confirm completion only when the Definition of Done passes.
+   Return unmet criteria to the responsible stage; continue until resolved.
+   If an external constraint prevents verification, state the missing
+   evidence and remaining work without claiming completion or readiness.
 
-**2. Write.** Make the smallest change that reaches the goal. Add no
-unrequested features or abstractions, match local style, touch only
-in-scope code, and remove only orphans created by the change.
-
-**3. Prove.** Run relevant tests and retain observable evidence.
-
-*Survey the suite before touching it.* Before adding, changing, merging,
-or deleting any test, inventory the whole suite: enumerate every test
-file and case name, then read in full each test whose subject, fixtures,
-or assertions touch this change. Use a subagent for broad inventory when
-supported. From that inventory decide the complete set of test edits at
-once — what to change, what to add, what to merge, what to remove — each
-backed by `file:line`, then execute only that plan. Never write a test
-before the survey, and never discover existing coverage afterward.
-
-The plan obeys four rules:
-
-- **Reuse or extend first.** Add a case to the test that already owns
-  the behavior or shares its setup, fixtures, and subject. A new test
-  function or file is justified only when the survey found no existing
-  test owning the behavior, or when merging would hide which case
-  failed.
-- **Add only what the goal needs.** A bug fix needs a reproducing
-  regression test; a new capability needs a test of its claimed
-  behavior. Nothing further.
-- **Retire what this change made obsolete.** Delete tests whose behavior
-  no longer exists, and merge tests this change turned into duplicates,
-  citing the surviving test. Leave unrelated pre-existing tests alone;
-  record suspected redundancy under **Open Gaps / Roadmap**.
-- **Never delete to reach green.** A failing test is a finding for
-  Write. Removal requires evidence that its behavior is gone or is still
-  covered elsewhere, cited by `file:line`.
-
-Coverage of claimed behavior must not decrease. A failure returns
-directly to Write, never forward to Review.
-
-**4. Review.** Walk all seven Review Checks as separate passes. Read
-whole affected files, not only the diff. Every finding needs `file:line`
-evidence. Use an independent agent or isolated pass for Fit,
-Dependencies, and Security when available.
-
-**5. Gate.** Apply the Definition of Done. Any unticked criterion,
-`blocker`, or unresolved `major` returns its evidence to Write. All
-criteria passing means the change is ready for public or production
-release. There is no separate approval or reporting phase.
+Handoffs are automatic. Continue without pauses for plan approval,
+permission to continue, or review/reporting ceremonies. Finish with the
+harness's normal concise completion handoff.
 
 ### Definition of Done
 
-**Correctness**
-
-- The framed goal and its named check pass.
-- Tests cover claimed behavior and pass; a bug fix has a regression test.
-- The suite was surveyed before any test was written, changed, or
-  deleted; no added test duplicates coverage another test owns, and no
-  removal left claimed behavior uncovered.
-- The owning module's **How to Test** command passes with evidence.
-- The project builds and tests from a fresh clone without local-only
-  dependencies.
-
-**Review**
-
-- All seven Review Checks ran; none was skipped or assumed.
-- No `blocker` or unresolved `major` remains.
-- Nits were applied or consciously declined.
-
-**Legibility and contract**
-
-- An agent can locate the owning code, identify language/style/design
-  constraints, select a safe change or refactor, review its impact, and
-  run the right checks from `ARCHITECTURE.md` and the owning module docs.
-- Every changed line serves the goal; no drive-by formatting, debugging
-  remnants, commented-out code, secrets, tokens, or local paths remain.
-- Public names, signatures, errors, and recovery are intelligible.
-- Architecture docs and `file:line` references reflect current source;
-  version stamps certify a verified contract migration, not just a
-  metadata edit.
-- Architecture docs contain only coding context; any encountered
-  deployment guides or other non-coding material and obsolete links were
-  removed from the doc set.
-- Breaking changes, deprecations, dependencies, licenses, and attribution
-  are handled; commit or PR text explains why.
+- **Correctness:** The goal and named checks pass. Tests cover claimed
+  behavior; bug fixes have a reproducing regression test. The project
+  builds and tests from a fresh clone without local-only dependencies.
+  Owning modules' **How to Test** commands pass with evidence.
+- **Review:** Every Review Check ran and its completion threshold passes.
+- **Contract:** Docs reflect source and let an agent locate owners,
+  constraints, and verification commands. When using eatmycode, architecture
+  satisfies its Output Contract, verification, and version rules. Public
+  names, signatures, errors, and recovery are intelligible. Breaking
+  changes, deprecations, dependencies, licenses, and attribution are handled;
+  commit or PR text, when present, explains why.
+- **Scope:** Changed lines serve the goal and follow Coding Discipline;
+  no debugging remnants, commented-out code, secrets, tokens, or local paths
+  remain. Test edits follow the inventory and coverage rules below.
 
 ### Iterating without thrashing
 
-- Every pass closes a named finding and touches only what it names.
-- Nits alone do not trigger another pass.
-- Re-run Prove after every fix.
-- Two no-change passes force Gate re-evaluation: release if Done passes;
-  otherwise return the surviving evidence to Frame.
-- Three passes on one finding return automatically to Frame for a new
-  approach.
-- Never widen scope to satisfy a finding. Record coding-related follow-up
-  work under **Open Gaps / Roadmap**; keep non-coding work outside the
-  architecture doc set.
+- Each repair pass targets a named finding; nits alone do not trigger one.
+- Two no-change passes force Gate re-evaluation. If Done still fails,
+  return the surviving evidence to Frame.
+- Three passes against the same finding return to Frame for a new approach.
+- Never widen scope to satisfy a finding. Record coding follow-ups under
+  **Open Gaps / Roadmap** and keep non-coding work outside architecture.
 
 ## Coding Discipline
 
-### 1. Think Before Coding
-
-- Understand the request, code, goal, and repository conventions first.
-- Record assumptions and choose the narrowest evidence-backed reading.
-- Prefer the simpler approach when it reaches the same verified goal.
-- Ask only during planning and only for a required answer that cannot be
-  discovered or safely inferred.
-
-### 2. Simplicity First
-
-- Implement only what was requested.
-- Do not add single-use abstractions, speculative flexibility, or checks
-  for impossible conditions.
-- If the implementation is materially larger than the problem, simplify
-  it.
-
-### 3. Surgical Changes
-
-- Do not refactor, reformat, or clean up unrelated code.
-- Match the surrounding style.
-- Remove imports, variables, and functions made unused by this change;
+- Implement only the goal. Prefer the simplest approach that passes its
+  checks; simplify code materially larger than the problem.
+- Match local style. Avoid speculative features, flexibility, single-use
+  abstractions, and checks for impossible conditions.
+- Keep edits surgical: no unrelated refactoring, reformatting, or cleanup.
+  Remove imports, variables, and functions made unused by this change;
   leave pre-existing dead code alone unless requested.
-- Every changed line must trace to the stated goal.
+- Make success concrete: validation rejects invalid input in a named test;
+  a regression test fails before a bug fix and passes after; behavior tests
+  pass before and after a refactor.
 
-### 4. Goal-Driven Execution
+### Before editing tests
 
-Turn work into verifiable outcomes, then loop until they pass:
+Before any test edit, including during Write, inventory the whole suite:
+enumerate every test file and case name, then read in full tests whose
+subject, fixtures, or assertions touch the change. Use a subagent for broad
+inventory when supported. Plan all additions, changes, merges, and removals
+from that evidence, citing `file:line`, before executing the test edits.
 
-- Add validation → invalid inputs are rejected by a named passing test.
-- Fix a bug → a regression test fails before the fix and passes after.
-- Refactor → behavior tests pass before and after.
-
-Give every plan step its own check. Strengthen vague criteria from
-repository evidence before implementation.
+- **Reuse first:** Extend the test owning the behavior or sharing its
+  setup, fixtures, and subject. Add a function/file only if no existing
+  owner fits or merging would obscure which case failed.
+- **Add only required coverage:** A bug fix needs its regression test;
+  a capability needs a test of its claimed behavior. Avoid duplicates.
+- **Retire only what changed:** Remove tests of deleted behavior and merge
+  new duplicates, citing surviving coverage. Record unrelated suspected
+  redundancy under **Open Gaps / Roadmap**.
+- **Preserve coverage:** Never delete or weaken tests to turn red green.
+  Removal needs evidence that behavior is gone or covered elsewhere;
+  coverage of claimed behavior must not decrease.
 
 ### Project-Specific Deviations
 
@@ -471,86 +431,75 @@ repository evidence before implementation.
 
 ## Review Checks
 
-Run every check against every change before merge. Keep checks separate.
+Run every check against every change before confirming a code edit is
+complete, even when no commit or merge is requested. Keep checks separate.
 
-Four rules bind all checks:
+- **Evidence or no finding:** Cite `file:line` for every finding.
+- **Repository authority:** Demand only conventions supported by the tree.
+- **Full context:** Read affected files, not only hunks; context can expose
+  unreachable code, unused parameters, or hidden duplication.
+- **Code and impact:** Review the change, never the author or how it was made.
 
-- **Evidence or no finding.** Every finding cites `file:line`.
-- **The repository is authoritative.** Demand only conventions visible
-  in the tree.
-- **Read files, not only hunks.** Context can invalidate a finding or
-  reveal unreachable code, unused parameters, and hidden duplication.
-- **Review the change, never the author.** Describe code and impact, not
-  how or by whom it was produced.
+### 1. Style and Naming
 
-### 1. Style
+Check indentation and local conventions; leave machine-checkable formatting
+to existing formatters/linters and never demand unrelated reformatting.
+Mixed indentation is `major`; a consistent new file with the wrong local
+indent is `nit`. Compare names with nearby precedents. If the repository
+is inconsistent, demand nothing. A local naming mismatch is `nit`; an
+inconsistent public name is `major`.
 
-Check indentation and local file conventions. Mixed indentation is
-`major`; a consistent new file using the wrong local indent is `nit`.
-Leave machine-checkable formatting to existing formatters and linters;
-never demand unrelated reformatting.
+### 2. Duplication
 
-### 2. Naming
+Search distinctive constants, errors, fields, and call sequences, beyond
+symbol names, for the same job. Cite both sites and a remedy. Cross-layer
+duplication is `major`; small local repetition is `nit`. Similar code with
+meaningfully different branches is not duplication.
 
-Compare new names with nearby precedents before filing a finding. If the
-repository is inconsistent, demand nothing. A local mismatch is `nit`;
-an inconsistent public name is `major`.
-
-### 3. Duplication
-
-Search distinctive constants, errors, fields, and call sequences—not
-only symbol names—for code performing the same job. Cite both sites and
-the remedy. Cross-layer duplication is `major`; small local repetition
-is `nit`. Similar code with meaningfully different branches is not
-duplication.
-
-### 4. Quality
+### 3. Quality
 
 Require followable control flow, errors handled where they occur, and
-abstractions proportional to the problem. Swallowed errors,
-inappropriate prints, unexplained magic values, and dead branches are
-`major`. Remove unrequested configurability, one-caller wrappers, filler
-comments, debugging remnants, and unrelated formatting. Missing tests
-belong to Prove, not this check.
+proportionate abstractions. Swallowed errors, inappropriate prints,
+unexplained magic values, and dead branches are `major`. Remove unrequested
+configurability, one-caller wrappers, filler comments, debugging remnants,
+and unrelated formatting. Missing tests belong to Prove.
 
-### 5. Fit
+### 4. Fit
 
-Read `ARCHITECTURE.md` and the owning module doc before the diff. Check
-documented language/toolchain constraints, code-design conventions,
-scope, layering, ownership, invariants, public-API growth, compatibility,
-and performance claims against source evidence. A layering violation or
-unjustified public API is `major`. Architectural or public-behavior changes
-must update the relevant docs in the same change.
+Read the root architecture and owning module before the diff. Check
+language/toolchain constraints, conventions, scope, layering, ownership,
+invariants, public-API growth, compatibility, and performance claims against
+source. A layering violation or unjustified public API is `major`.
+Architectural/public-behavior changes need matching docs in the same change.
 
-### 6. Dependencies
+### 5. Dependencies
 
-Check manifests and imports, maintenance, supply-chain risk, advisories,
-install-time behavior, license, transitive cost, and whether the standard
-library is sufficient. An unjustified top-level dependency is `major`;
-a live advisory or abandoned upstream is `blocker`. Incomplete evidence
-does not pass.
+Check manifests/imports, maintenance, supply-chain risk, advisories,
+install-time behavior, license, transitive cost, and standard-library
+alternatives. An unjustified top-level dependency is `major`; a live
+advisory or abandoned upstream is `blocker`. Incomplete evidence does not pass.
 
-### 7. Security
+### 6. Security
 
-Check both defects and widened exposure: unsafe memory access, unchecked
-sizes or offsets, integer overflow, path traversal, unsafe
-deserialization, command construction, committed secrets, and unbounded
-untrusted input. Trace input to impact; without a reachable path there is
-no finding. A real defect is `major`; a trust-boundary break is `blocker`.
-Describe the fix without publishing exploit steps.
+Check defects and widened exposure: unsafe memory access, unchecked sizes
+or offsets, integer overflow, traversal, unsafe deserialization, command
+construction, committed secrets, and unbounded untrusted input. Trace input
+to impact; without a reachable path there is no finding. A real defect is
+`major`; a trust-boundary break is `blocker`. Describe fixes without exploit
+steps.
 
-### Severity and the merge threshold
+### Severity and the completion threshold
 
 | Severity | Effect |
 | -------- | ------ |
-| `blocker` | Must not merge. |
-| `major` | Must be resolved before merge. |
+| `blocker` | Must not confirm completion or merge. |
+| `major` | Must be resolved before confirming completion or merging. |
 | `nit` | Apply or consciously decline. |
 | `info` | Context or a question; no action implied. |
 
-Merge only with no `blocker` and no unresolved `major`. A check that did
-not run does not pass. Findings feed Write and Gate directly; they do not
-create a reporting phase.
+Confirm completion or merge only with no `blocker` or unresolved `major`.
+A check that did not run does not pass; explain evidence-backed
+inapplicability. Findings feed Write and Gate directly.
 
 ### Project-Specific Deviations
 
@@ -561,11 +510,12 @@ create a reporting phase.
   offsets reaching host allocations or `struct` unpacking, parser input in
   `qiling/loader/` reachable from an untrusted image, and syscalls
   forwarded to the host by the kernel proxy
-  (`qiling/os/posix/kernel_proxy/__init__.py:237-265`).
+  (`qiling/os/posix/kernel_proxy/__init__.py:168-211`; guest-buffer
+  marshalling at `:237-265`).
 - **Dependencies.** `pyproject.toml` is the only manifest. A new
   top-level runtime dependency is `blocker` absent an explicit request;
   optional integrations belong in an extra (`fuzz`, `RE`).
-- **Style.** No formatter or linter runs in CI; the Style check enforces
+- **Style and Naming.** No formatter or linter runs in CI; the check enforces
   only `.editorconfig` (4-space indent, LF, final newline) and the local
   conventions in *Coding Style and Code Design*.
 
@@ -577,7 +527,7 @@ and its listed partners before the code.
 
 | Module doc | Source paths | Responsibility | Read it when you… |
 | ---------- | ------------ | -------------- | ------------------ |
-| [core.md](ARCHITECTURE/core.md) | `qiling/core.py`, `core_hooks*.py`, `core_struct.py`, `utils.py`, `const.py`, `exception.py`, `log.py`, `host.py`, `profiles/` | `Qiling` facade, composition order, hook engine, component factories, profiles, logging | add a constructor option or hook type, register a new arch/OS/loader name, change save/restore or logging. Partners: every other module |
+| [core.md](ARCHITECTURE/core.md) | `qiling/__init__.py`, `core.py`, `core_hooks*.py`, `core_struct.py`, `utils.py`, `const.py`, `exception.py`, `log.py`, `host.py`, `profiles/` | `Qiling` facade, composition order, hook engine, component factories, profiles, logging | add a constructor option or hook type, register a new arch/OS/loader name, change save/restore or logging. Partners: every other module |
 | [arch.md](ARCHITECTURE/arch.md) | `qiling/arch/`, `qiling/cc/` | CPU layer: Unicorn instance, registers, stack, disassembler, CPU models, calling conventions | add an architecture or CPU model, touch registers/thumb handling, change argument marshalling. Partners: os-base, debugger, os-posix (syscall ABI) |
 | [loader.md](ARCHITECTURE/loader.md) | `qiling/loader/` | ELF, PE, PE/UEFI, Mach-O, DOS, MCU firmware, raw blob loading and initial state | change image parsing, entry/exit points, DLL/ld.so resolution, PE cache, MCU peripheral wiring. Partners: os-base, os-posix, os-windows, hw |
 | [os-base.md](ARCHITECTURE/os-base.md) | `qiling/os/*.py` | Shared OS services: memory manager/heap, fcall, rootfs paths, fs mapper, fd objects, threads, stats, structs | change memory mapping, path virtualization, API-call protocol, stdio, struct helpers. Partners: all OS personalities, extensions |

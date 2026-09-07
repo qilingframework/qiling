@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Kernel proxy — hybrid syscall forwarding to a real Linux kernel
@@ -48,7 +48,7 @@ through the standard `logging` module, not `ql.log`, because it has no
 
 - **Integration is only `set_syscall`**: `forward_syscall` registers a
   CALL hook named `ql_syscall_<name>`
-  (`qiling/os/posix/kernel_proxy/__init__.py:136-166`, `:211`), so
+  (`qiling/os/posix/kernel_proxy/__init__.py:136-166`, `:210`), so
   user ENTER/EXIT hooks still fire around it and a later user CALL hook
   overrides it (`tests/test_kernel_proxy.py:186-257`).
 - **Two syscall tables**: guest numbers come from the guest arch table and
@@ -116,9 +116,10 @@ through the standard `logging` module, not `ql.log`, because it has no
 cd tests && python3 test_kernel_proxy.py   # Linux host; currently "Ran 21 tests … FAILED (errors=1)"
 ```
 
-- Expected after the Open Gaps fix: `Ran 21 tests … OK`. Every case builds
-  a `Qiling` on `examples/rootfs/x8664_linux/bin/x8664_hello` and invokes
-  the registered hook directly.
+- Expected after the Open Gaps fix: `Ran 21 tests … OK`. All cases except
+  the pure unit tests `test_ipc_roundtrip` and `test_ptr_size_callable`
+  build a `Qiling` on `examples/rootfs/x8664_linux/bin/x8664_hello` and
+  invoke the registered hook directly.
 - Non-Linux hosts skip the whole class (`tests/test_kernel_proxy.py:17`).
 - No end-to-end test runs a guest binary that actually issues a forwarded
   syscall (`TODO.md:251-259` lists the intended validation).
@@ -130,7 +131,7 @@ cd tests && python3 test_kernel_proxy.py   # Linux host; currently "Ran 21 tests
   instead, and add a message type to `ipc.py` if the wire format grows.
 - **Wire-format changes** must update both `ProxyClient` and
   `ProxyServer`, and the format comment at
-  `qiling/os/posix/kernel_proxy/ipc.py:40-52`.
+  `qiling/os/posix/kernel_proxy/ipc.py:40-53`.
 - **Security review** focuses on `_collect_buffers`/`_writeback_buffers`
   sizes (guest-controlled via `PtrOut(size=callable)`) and on which
   syscalls a harness chooses to forward; there is no allow-list.

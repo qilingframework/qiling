@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # Loader — binary format loaders
@@ -43,9 +43,10 @@ Python; root rules apply. Local patterns:
   segments are mapped through `ql.mem.map` with an `info` label naming the
   image so `QlMemoryManager.get_lib_base` can find it by basename
   (`qiling/os/memory.py:254`).
-- Loaders expose `entry_point`, `exit_point`/OS exit point, `images`, and
-  `skip_exit_check` (`qiling/loader/loader.py:27`); the ELF loader also sets
-  `elf_entry` and `is_driver` (`qiling/loader/elf.py:121`).
+- The base loader owns `images` and `skip_exit_check`
+  (`qiling/loader/loader.py:26-27`); concrete loaders set `entry_point`,
+  and the exit point lives on `ql.os`. The ELF loader also sets
+  `is_driver` (`qiling/loader/elf.py:121`) and `elf_entry` (`:221`).
 
 ## Design and Invariants
 

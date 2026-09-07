@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "1.1.0"
+eatmycode_version: "1.2.0"
 ---
 
 # OS base — shared OS-layer services
@@ -46,9 +46,9 @@ Python; root rules apply. Local patterns:
   constants in `qiling/os/const.py:9-32`; resolvers turn pointers into
   Python values (`qiling/os/os.py:96-104`).
 - Errors: `QlErrorNotImplemented`, `QlMemoryMappedError`, `QlOutOfMemory`
-  from `qiling/exception.py`. `assert` is used for page alignment in
-  `qiling/os/memory.py:65`; `TODO.md:638-644` flags this as observed, not
-  a convention.
+  from `qiling/exception.py`. `assert` is used for page-size and alignment
+  checks in `qiling/os/memory.py:65`, `:281`, `:303`; `TODO.md:638-644`
+  flags this as observed, not a convention.
 - Logging goes through `ql.log`; `QlOsUtils.print_function`
   (`qiling/os/utils.py:106`) is the single formatter for syscall/API log
   lines.
@@ -59,7 +59,7 @@ Python; root rules apply. Local patterns:
   (`qiling/core.py:188-189`); `QlOs.__init__` reads the profile, builds
   `QlOsPath`/`QlFsMapper` only for POSIX, Windows, and DOS
   (`qiling/os/os.py:44-49`), and sets a bit-width default exit point
-  (`:81-86`).
+  (`:82-87`).
 - **Rootfs confinement**: every guest path resolves through `QlOsPath`;
   `__is_safe_host_path` canonicalizes and requires the result to stay under
   the rootfs (`qiling/os/path.py:239-266`). `QlFsMapper` overrides win only
@@ -69,7 +69,7 @@ Python; root rules apply. Local patterns:
 - **API call protocol**: `QlOs.call` (`qiling/os/os.py:198`) resolves
   params via the current `fcall`, invokes the handler with `onenter/onexit`
   hooks from `user_defined_api`, logs, records stats, and sets `pc` to the
-  return address unless emulation already stopped (`:216-224`).
+  return address unless emulation already stopped (`:215-221`).
 - **Memory manager owns `map_info`**; all mapping goes through
   `map`/`map_mmio`/`unmap`/`protect` (`qiling/os/memory.py:622`, `:644`,
   `:451`, `:612`). MMIO regions are Unicorn callbacks bound to a
@@ -95,7 +95,8 @@ Python; root rules apply. Local patterns:
 - `qiling/os/fcall.py:21` - `QlFunctionCall(ql, cc, accessors)` - argument
   and return-value marshalling over `qiling/cc/`.
 - `qiling/os/mapper.py:64` - `QlFsMapper` - behind `Qiling.add_fs_mapper`
-  (`qiling/core.py:701`); `open_ql_file` (`:129`), `add_mapping` (`:189`).
+  (`qiling/core.py:701`); `open_ql_file` (`qiling/os/mapper.py:129`),
+  `add_mapping` (`:189`).
 - `qiling/os/path.py:16` - `QlOsPath` - `virtual_to_host_path` (`:311`),
   `is_safe_host_path` (`:326`), `host_to_virtual_path` (`:268`).
 - `qiling/os/filestruct.py:18` - `ql_file` - fd object interface
