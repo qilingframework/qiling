@@ -235,37 +235,39 @@ def __emu_env_from_macho(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS],
 
 
 def __emu_env_from_pe(path: str) -> Tuple[Optional[QL_ARCH], Optional[QL_OS], Optional[QL_ENDIAN]]:
-    import pefile
+    from lief import PE
 
     try:
-        pe = pefile.PE(path, fast_load=True)
-    except:
+        pe = PE.parse(path)
+    except Exception:
         return None, None, None
 
-    arch = None
+    if pe is None:
+        return None, None, None
+
+    MACHINE_TYPES = PE.Header.MACHINE_TYPES
+    machine_map = {
+        MACHINE_TYPES.I386  : QL_ARCH.X86,
+        MACHINE_TYPES.AMD64 : QL_ARCH.X8664,
+        MACHINE_TYPES.ARM   : QL_ARCH.ARM,
+        MACHINE_TYPES.ARMNT : QL_ARCH.ARM,   # Thumb (0x01c2)
+        MACHINE_TYPES.ARM64 : QL_ARCH.ARM64,
+    }
+
+    arch = machine_map.get(pe.header.machine)
     ostype = None
     archendian = None
 
-    machine_map = {
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']  : QL_ARCH.X86,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64'] : QL_ARCH.X8664,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']   : QL_ARCH.ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB'] : QL_ARCH.ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64'] : QL_ARCH.ARM64
-    }
-
-    # get arch
-    arch = machine_map.get(pe.FILE_HEADER.Machine)
-
     if arch:
+        SUBSYSTEMS = PE.OptionalHeader.SUBSYSTEM
         subsystem_uefi = (
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_APPLICATION'],
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER'],
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER'],
-            pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_ROM']
+            SUBSYSTEMS.EFI_APPLICATION,
+            SUBSYSTEMS.EFI_BOOT_SERVICE_DRIVER,
+            SUBSYSTEMS.EFI_RUNTIME_DRIVER,
+            SUBSYSTEMS.EFI_ROM,
         )
 
-        if pe.OPTIONAL_HEADER.Subsystem in subsystem_uefi:
+        if pe.optional_header.subsystem in subsystem_uefi:
             ostype = QL_OS.UEFI
         else:
             ostype = QL_OS.WINDOWS
