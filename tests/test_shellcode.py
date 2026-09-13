@@ -123,6 +123,29 @@ class TestShellcode(unittest.TestCase):
         ql.os.set_syscall('execve', graceful_execve, QL_INTERCEPT.EXIT)
         ql.run()
 
+    # the tests above end the emulation from the execve hook, so they never reach
+    # the shellcode's trailing '/bin/sh' string. the two below deliberately let
+    # execve return and fall through into it: those bytes are not valid code, so
+    # the cpu raises an undefined/reserved instruction exception. the kernel would
+    # deliver a fatal SIGILL and terminate the process, and qiling must do the
+    # same. before this fix nothing hooked those exceptions, so the unhandled
+    # interrupt was turned into QlErrorCoreHook and ql.run() blew up.
+    def _run_past_execve(self, code: bytes, archtype: QL_ARCH):
+        def returning_execve(ql: Qiling, pathname: int, argv: int, envp: int, retval: int):
+            assert retval != 0, 'execve is not expected to return on success'
+
+        ql = Qiling(code=code, archtype=archtype, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
+        ql.os.set_syscall('execve', returning_execve, QL_INTERCEPT.EXIT)
+        ql.run()
+
+    def test_linux_arm64_illegal_instruction(self):
+        print("Linux ARM 64bit illegal instruction")
+        self._run_past_execve(ARM64_LIN, QL_ARCH.ARM64)
+
+    def test_linux_mips32_illegal_instruction(self):
+        print("Linux MIPS 32bit EL illegal instruction")
+        self._run_past_execve(MIPS32EL_LIN, QL_ARCH.MIPS)
+
     # #This shellcode needs to be changed to something simpler not requiring rootfs
     # def test_windows_x86(self):
     #     print("Windows X86 32bit Shellcode")

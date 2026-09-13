@@ -3,7 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+from enum import IntEnum
+
 from unicorn.mips_const import *
+
+
+class EXCP(IntEnum):
+    # subset of QEMU's MIPS exception codes, as reported to unicorn interrupt hooks
+    SYSCALL = 17   # system call
+    BREAK   = 18   # breakpoint
+    RI      = 20   # reserved (illegal) instruction
 
 reg_map = {
     "r0":  UC_MIPS_REG_0,
