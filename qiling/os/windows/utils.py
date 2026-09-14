@@ -3,12 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
-from typing import Iterable, Optional, Tuple, TypeVar
+import os
+
+from typing import Iterable, Optional, Tuple, TypeVar, Union
+
+import pefile
 
 from unicorn import UcError
 
 from qiling import Qiling
 from qiling.exception import QlErrorSyscallError
+from qiling.loader.loader import Image
 from qiling.os.const import POINTER
 from qiling.os.windows.fncc import STDCALL
 from qiling.os.windows.wdk_const import *
@@ -27,6 +32,100 @@ def has_lib_ext(name: str) -> bool:
     ext = name.lower().rpartition('.')[-1]
 
     return ext in ("dll", "exe", "sys", "drv")
+
+
+def __export_from_dll_file(ql: Qiling, image: Image, name: Optional[bytes], ordinal: Optional[int], seen: set) -> Optional[int]:
+    """Resolve an export by parsing the target DLL's export directory from disk.
+    Forwarder exports (e.g. kernel32.HeapAlloc -> ntdll.RtlAllocateHeap) are
+    followed to the DLL that actually implements the function.
+    """
+
+    try:
+        pe = pefile.PE(image.path, fast_load=True)
+        pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXPORT']])
+    except (pefile.PEFormatError, OSError):
+        # a malformed pe or a file that vanished after being mapped -> treat as not found
+        return None
+
+    export_dir = getattr(pe, 'DIRECTORY_ENTRY_EXPORT', None)
+
+    if export_dir is None:
+        return None
+
+    for sym in export_dir.symbols:
+        if (name is not None and sym.name == name) or (ordinal is not None and sym.ordinal == ordinal):
+            if sym.forwarder:
+                return __follow_forwarder(ql, sym.forwarder, seen)
+
+            return image.base + sym.address
+
+    return None
+
+
+def __follow_forwarder(ql: Qiling, forwarder: bytes, seen: set) -> Optional[int]:
+    # a forwarder is a 'dll.symbol' or 'dll.#ordinal' string, e.g. b'NTDLL.RtlAllocateHeap'
+    if forwarder in seen or b'.' not in forwarder:
+        return None
+
+    seen.add(forwarder)
+
+    # split on the last dot: the module name may itself contain dots (api-ms-win-*).
+    # latin1 decodes any byte, so a corrupt module name degrades to a miss rather than raising.
+    target_dll, _, target_sym = forwarder.rpartition(b'.')
+    target_name = f'{target_dll.decode("latin1")}.dll'.casefold()
+
+    if target_sym.startswith(b'#'):
+        if not target_sym[1:].isdigit():
+            return None
+
+        fwd_name, fwd_ordinal = None, int(target_sym[1:])
+    else:
+        fwd_name, fwd_ordinal = target_sym, None
+
+    image = ql.loader.get_image_by_name(target_name, casefold=True)
+
+    if image is None:
+        return None
+
+    return resolve_export(ql, image, name=fwd_name, ordinal=fwd_ordinal, seen=seen)
+
+
+def resolve_export(ql: Qiling, image: Image, *, name: Union[str, bytes, None] = None, ordinal: Optional[int] = None, seen: Optional[set] = None) -> Optional[int]:
+    """Resolve the address of a function exported by the DLL mapped at ``image``.
+
+    Resolution proceeds in two steps:
+
+      1. Look the function up in ``ql.loader.import_address_table[dll_name]``
+         first. This is the table qiling populates while loading dependencies;
+         consulting it first keeps every already-working resolution unchanged.
+      2. Fall back to parsing the DLL's real export directory from disk with
+         pefile, following forwarder exports to the DLL that implements them.
+
+    Args:
+        name    : function name (str or bytes); mutually exclusive with ``ordinal``
+        ordinal : export ordinal; used when ``name`` is not given
+
+    Returns: the resolved address, or ``None`` if the function was not found.
+    """
+
+    # export names in the tables and in pefile are bytes; normalize early so a
+    # name-based lookup can match (str keys never would).
+    if isinstance(name, str):
+        name = name.encode('latin1')
+
+    key = name if name is not None else ordinal
+
+    if key is None:
+        return None
+
+    # 1. the table qiling already built (backwards compatible)
+    iat = ql.loader.import_address_table.get(os.path.basename(image.path).casefold())
+
+    if iat and iat.get(key):
+        return iat[key]
+
+    # 2. the target dll's own export table
+    return __export_from_dll_file(ql, image, name, ordinal, seen if seen is not None else set())
 
 
 def io_Write(ql: Qiling, in_buffer: bytes) -> int:
