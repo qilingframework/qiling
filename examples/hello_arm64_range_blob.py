@@ -7,7 +7,7 @@ stub page standing in for loader-populated tables. Invalid instructions
 surface as structured UDF faults (immediate logged, never skipped);
 unmapped accesses stop at the loader-table boundary.
 
-Usage: qiling_aarch64_chpe.py <blob> <load-addr-hex> [max-steps]
+Usage: hello_arm64_range_blob.py <blob> <load-addr-hex> [max-steps]
 """
 import struct
 import sys
@@ -26,7 +26,7 @@ def main() -> int:
     from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 
     if len(sys.argv) < 3:
-        print("usage: qiling_aarch64_chpe.py <blob> <load-addr-hex> [max-steps]")
+        print("usage: hello_arm64_range_blob.py <blob> <load-addr-hex> [max-steps]")
         return 2
     code = Path(sys.argv[1]).read_bytes()
     load_at = int(sys.argv[2], 16)
