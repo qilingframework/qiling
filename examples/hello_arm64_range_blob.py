@@ -32,7 +32,7 @@ def main() -> int:
     load_at = int(sys.argv[2], 16)
     max_steps = int(sys.argv[3]) if len(sys.argv) > 3 else 4096
 
-    ql = Qiling(code=code, archtype=QL_ARCH.AARCH64, ostype=QL_OS.BLOB,
+    ql = Qiling(code=code, archtype=QL_ARCH.ARM64, ostype=QL_OS.BLOB,
                 profile="blob_raw.ql", verbose=QL_VERBOSE.OFF)
     ql.mem.map(load_at, (len(code) + 0xFFF) & ~0xFFF)
     ql.mem.write(load_at, code)
@@ -41,18 +41,21 @@ def main() -> int:
     ql.mem.map(STACK_TOP - 0x4000, 0x4000)
 
     events: list = []
-    state = {"steps": 0}
+    state: dict = {"steps": 0, "stop": None}
 
-    def hook_code(ql_inner):
+    def hook_code(ql_inner, address, size):
         state["steps"] += 1
         if state["steps"] >= max_steps:
+            state["stop"] = "STEP-CAP"
             events.append({"type": "STEP-CAP", "steps": state["steps"]})
             ql_inner.emu_stop()
 
     def hook_unmapped(ql_inner, access, addr, size, value):
+        state["stop"] = "UNMAPPED"
         events.append({"type": "UNMAPPED", "pc": hex(ql_inner.arch.regs.pc),
                        "addr": hex(addr), "size": size})
-        return False
+        ql_inner.emu_stop()
+        return True
 
     ql.hook_code(hook_code)
     ql.hook_mem_unmapped(hook_unmapped)
@@ -60,19 +63,23 @@ def main() -> int:
     ql.arch.regs.sp = STACK_TOP - 0x100
     try:
         ql.run(begin=load_at, end=load_at + len(code), count=max_steps)
-        events.append({"type": "RETURNED", "steps": state["steps"]})
+        if state["stop"] is None:
+            events.append({"type": "RETURNED", "steps": state["steps"]})
     except Exception as exc:
-        pc = ql.arch.regs.pc
-        try:
-            word = u32(ql.mem.read, pc)
-        except Exception:
-            events.append({"type": "STOP", "pc": hex(pc),
-                           "detail": f"{type(exc).__name__}: {exc}"})
+        if state["stop"] is not None:
+            pass
         else:
-            # True UDF (D42...) and zero-top-half padding share the logger.
-            imm = word & 0xFFFF if (word & 0xFFFF0000) == 0 else (word >> 5) & 0xFFFF
-            events.append({"type": "UDF", "pc": hex(pc),
-                           "imm": hex(imm), "word": hex(word)})
+            pc = ql.arch.regs.pc
+            try:
+                word = u32(ql.mem.read, pc)
+            except Exception:
+                events.append({"type": "STOP", "pc": hex(pc),
+                               "detail": f"{type(exc).__name__}: {exc}"})
+            else:
+                # True UDF (D42...) and zero-top-half padding share the logger.
+                imm = word & 0xFFFF if (word & 0xFFFF0000) == 0 else (word >> 5) & 0xFFFF
+                events.append({"type": "UDF", "pc": hex(pc),
+                               "imm": hex(imm), "word": hex(word)})
     print(f"blob={sys.argv[1]} load={hex(load_at)} steps={state['steps']} events={events}")
     return 0
 
