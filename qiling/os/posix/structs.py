@@ -143,3 +143,48 @@ def make_pollfd(archbits: int, endian: QL_ENDIAN):
         )
 
     return pollfd
+
+def make_utimbuf(archbits: int, endian: QL_ENDIAN):
+    Struct = struct.get_aligned_struct(archbits, endian)
+    class utimbuf(Struct):
+        if archbits == 32:
+            _fields_ = (
+                ('actime', ctypes.c_int32),
+                ('modtime', ctypes.c_int32)
+            )
+        else:
+            _fields_ = (
+                ('actime', ctypes.c_int64),
+                ('modtime', ctypes.c_int64)
+            )
+    return utimbuf
+
+def make_timespec_buf(archbits: int, endian: QL_ENDIAN):
+    Struct = struct.get_aligned_struct(archbits, endian)
+    class timespec(Struct):
+        if archbits == 32:
+            _fields_ = (
+                ('tv_sec', ctypes.c_uint32),
+                ('tv_nsec', ctypes.c_uint32)
+            )
+        else:
+            _fields_ = (
+                ('tv_sec', ctypes.c_long),
+                ('tv_nsec', ctypes.c_long)
+            )
+    return timespec
+
+def make_timeval_buf(archbits: int, endian: QL_ENDIAN):
+    Struct = struct.get_aligned_struct(archbits, endian)
+    class timeval(Struct):
+        if archbits == 64:
+            _fields_ = (
+                ('tv_sec', ctypes.c_long),
+                ('tv_usec', ctypes.c_long)
+            )
+        else:
+            _fields_ = (
+                ('tv_sec', ctypes.c_uint32),
+                ('tv_usec', ctypes.c_uint32)
+            )
+    return timeval
