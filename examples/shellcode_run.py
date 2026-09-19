@@ -3,11 +3,22 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 #
 
+import os
 import sys
 
 sys.path.append("..")
 from qiling import Qiling
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
+
+
+def windows_rootfs_ready(rootfs: str) -> bool:
+    # The Windows examples need genuine Windows system DLLs, which cannot be
+    # redistributed and are therefore not shipped with Qiling. They must be
+    # collected from a licensed Windows host using the helper script at
+    # examples/scripts/dllscollector.bat. Probe for ntdll.dll so we can skip
+    # these stages with a helpful message instead of crashing on an unmapped
+    # read when the DLLs are absent.
+    return os.path.isfile(os.path.join(rootfs, 'Windows', 'System32', 'ntdll.dll'))
 
 X86_LIN = bytes.fromhex('31c050682f2f7368682f62696e89e3505389e1b00bcd80')
 X8664_LIN = bytes.fromhex('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f05')
@@ -87,12 +98,20 @@ if __name__ == "__main__":
     ql.run()
 
     print("\nWindows x86 Shellcode")
-    ql = Qiling(code=X86_WIN, archtype=QL_ARCH.X86, ostype=QL_OS.WINDOWS, rootfs=r'rootfs/x86_windows')
-    ql.run()
+    if windows_rootfs_ready(r'rootfs/x86_windows'):
+        ql = Qiling(code=X86_WIN, archtype=QL_ARCH.X86, ostype=QL_OS.WINDOWS, rootfs=r'rootfs/x86_windows')
+        ql.run()
+    else:
+        print("  [skipped] Windows system DLLs not found under rootfs/x86_windows/Windows/System32.")
+        print("  Collect them from a licensed Windows host with examples/scripts/dllscollector.bat.")
 
     print("\nWindows x86-64 Shellcode")
-    ql = Qiling(code=X8664_WIN, archtype=QL_ARCH.X8664, ostype=QL_OS.WINDOWS, rootfs=r'rootfs/x8664_windows')
-    ql.run()
+    if windows_rootfs_ready(r'rootfs/x8664_windows'):
+        ql = Qiling(code=X8664_WIN, archtype=QL_ARCH.X8664, ostype=QL_OS.WINDOWS, rootfs=r'rootfs/x8664_windows')
+        ql.run()
+    else:
+        print("  [skipped] Windows system DLLs not found under rootfs/x8664_windows/Windows/System32.")
+        print("  Collect them from a licensed Windows host with examples/scripts/dllscollector.bat.")
 
     # FIXME: freebsd sockets are currently broken.
     #
