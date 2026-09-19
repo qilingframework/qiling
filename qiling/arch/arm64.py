@@ -7,7 +7,10 @@ from functools import cached_property
 from typing import Optional
 
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM
-from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
+try:
+    from capstone import Cs, CS_ARCH_AARCH64 as CS_ARCH_ARM64, CS_MODE_ARM
+except ImportError:
+    from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
 from keystone import Ks, KS_ARCH_ARM64, KS_MODE_ARM
 
 from qiling import Qiling
