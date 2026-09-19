@@ -146,7 +146,7 @@ def __host_socket_option(vsock_level: int, vsock_opt: int, arch_type: QL_ARCH, o
             vsock_opt_name = socket_option_mapping(vsock_opt, arch_type)
 
         # Fix for mips
-        if arch_type == QL_ARCH.MIPS:
+        if arch_type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             if vsock_opt_name.endswith(('_NEW', '_OLD')):
                 vsock_opt_name = vsock_opt_name[:-4]
 

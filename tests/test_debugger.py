@@ -182,6 +182,39 @@ class DebuggerTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_gdbdebug_mips64(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux/bin/mips64_hello_static"], "../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.DEBUG)
+        ql.debugger = True
+
+        # some random command test just to make sure we covered most of the command
+        def gdb_test_client():
+            # yield to allow ql to launch its gdbserver
+            time.sleep(1.337 * 2)
+
+            with SimpleGdbClient('127.0.0.1', 9999) as client:
+                client.send('qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;no-resumed+;xmlRegisters=mips')
+                client.send('vMustReplyEmpty')
+                client.send('QStartNoAckMode')
+                client.send('Hgp0.0')
+                # exercise the 64-bit target description served for MIPS64
+                client.send('qXfer:features:read:target.xml:0,1000')
+                client.send('?')
+                client.send('qC')
+                client.send('g')
+                # pc (regnum 37) and sp (regnum 29) as 64-bit values
+                client.send('p25')
+                client.send('p1d')
+                client.send('c')
+                client.send('k')
+
+                # yield to make sure ql gdbserver has enough time to receive our last command
+                time.sleep(1.337)
+
+        threading.Thread(target=gdb_test_client, daemon=True).start()
+
+        ql.run()
+        del ql
+
     def test_gdbdebug_armeb(self):
         ql = Qiling(["../examples/rootfs/armeb_linux/bin/armeb_hello"], "../examples/rootfs/armeb_linux", verbose=QL_VERBOSE.DEBUG)
         ql.debugger = True
