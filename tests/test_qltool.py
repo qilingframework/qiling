@@ -90,6 +90,32 @@ class InstalledQltool_Test(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout)
 
+    def test_qltui_without_tui_extra(self):
+        """Without the "tui" extra, `qltool qltui` explains how to install it."""
+
+        # hide questionary from the interpreter to emulate an install that did
+        # not ask for the "tui" extra
+        script = (
+            'import sys\n'
+            'class Hide:\n'
+            '    def find_spec(self, name, path=None, target=None):\n'
+            '        if name == "questionary":\n'
+            '            raise ModuleNotFoundError(name)\n'
+            'sys.meta_path.insert(0, Hide())\n'
+            'sys.argv = ["qltool", "qltui"]\n'
+            'from qiling.cli import run\n'
+            'run()\n'
+        )
+
+        result = subprocess.run(
+            [sys.executable, '-I', '-c', script],
+            cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, timeout=30
+        )
+
+        self.assertEqual(result.returncode, 2, result.stdout)
+        self.assertIn('pip install qiling[tui]', result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

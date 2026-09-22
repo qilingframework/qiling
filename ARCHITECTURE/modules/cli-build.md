@@ -31,9 +31,10 @@ examples/tests belongs to its runtime owner.
 
 Use the [root baseline](../../ARCHITECTURE.md#code-conventions).
 `argparse` actions convert enum/environment inputs and build `Qiling` keyword
-arguments. Preserve option names and exit status. TUI uses questionary/termcolor; its
-interactive report viewer imports `fx` lazily and ships in the `tui`
-extra; testing its import is not testing its prompts. Keep build metadata
+arguments. Preserve option names and exit status. TUI uses questionary/termcolor/fx, all
+shipped in the `tui` extra and absent from a default install; `qiling.cli`
+must degrade with an install hint rather than traceback when it is missing.
+Testing its import is not testing its prompts. Keep build metadata
 in the manifest, resolve its lock with Poetry, and retain package license
 and resource attribution. Documentation here contains coding context only.
 

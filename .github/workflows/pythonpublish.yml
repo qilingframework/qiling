@@ -40,7 +40,7 @@ jobs:
         run: python -m twine check --strict dist/*
       - name: Test installed wheel
         run: |
-          python -m pip install dist/*.whl
+          python -m pip install "$(echo dist/*.whl)[tui]"
           python -I tests/test_qltool.py InstalledQltool_Test -v
       - uses: actions/upload-artifact@v4
         with:
