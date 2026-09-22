@@ -45,7 +45,7 @@ jobs:
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
           powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command  Add-MpPreference -ExclusionPath $GITHUB_WORKSPACE'"
-          pip3 install .
+          pip3 install ".[test]"
           cd examples
           rm -rf rootfs
           curl -LJk -o master.zip https://github.com/qilingframework/rootfs/archive/refs/heads/master.zip && unzip master.zip
