@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # UEFI Services
@@ -68,8 +68,8 @@ UEFI shares PE parsing infrastructure, not Windows API semantics.
 ## Verification
 
 From `tests/`: **`python test_uefi.py`** with root dependencies and
-`examples/rootfs/x8664_efi` fixtures. Both tests passed during rebuild;
-they exercise interception and sanitized heap behavior. Do not substitute
+`examples/rootfs/x8664_efi` fixtures. Both tests passed during the latest
+refresh; they exercise interception and sanitized heap behavior. Do not substitute
 `python -m unittest test_uefi`: actual bodies are guarded by `__main__`.
 For package/coverage output changes also use the CLI coverage test through
 [extensions](extensions.md).

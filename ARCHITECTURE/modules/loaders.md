@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # Executable Loaders
@@ -75,8 +75,8 @@ OS imports in loaders are intentional construction dependencies.
 ## Verification
 
 From `tests/`: `python -m unittest test_elf.ELFTest.test_elf_linux_x8664 test_blob.BlobTest.test_uboot_arm`
-and `python test_uefi.py`. These passed during rebuild with local fixtures.
-Use direct UEFI script execution: its test bodies are guarded by `__main__`.
+and `python test_uefi.py`. These passed during the latest refresh with
+local fixtures. Use direct UEFI script execution: its test bodies are guarded by `__main__`.
 For changed formats, use the corresponding test files in Code Map; Windows
 and macOS need their system-library fixtures. Passing ELF does not verify PE.
 

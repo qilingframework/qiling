@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # Instrumentation and Integrations
@@ -77,7 +77,7 @@ From `tests/`: `python -m unittest test_history` passed 4 tests;
 `python test_uefi.py` passed 2 direct integration tests including sanitizer
 behavior. For coverage output run
 `python -m unittest test_qltool.Qltool_Test.test_qltool_coverage` with UEFI
-fixtures; that coverage case also passed during rebuild. For r2 changes use `python test_r2.py` after root setup with `RE`;
+fixtures; that coverage case also passed during the latest refresh. For r2 changes use `python test_r2.py` after root setup with `RE`;
 this optional check was not run. AFL/IDA require their external runtimes and
 matching harnesses; a base-package import does not validate them.
 

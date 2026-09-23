@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # Core Runtime
@@ -45,6 +45,9 @@ by `hookcallback` and re-raised by `emu_start`, not silently consumed.
 - Factories derive modules/class names from enums with explicit format/arch
   mappings. A new enum alone is insufficient (`utils.py`). Hook callback
   signatures and `QL_HOOK_BLOCK` behavior must survive dispatcher changes.
+  Interrupt, memory-fault and invalid-instruction events that no hook
+  handles raise `QlErrorCoreHook` (`core_hooks.py`); OS personalities
+  choose which interrupt numbers they hook.
 - Profiles use defaults plus OS/user overrides; MCU uses YAML-derived maps
   (`profile_setup`). Parsing belongs here; the consumer owns each key.
 - `save` includes only selected components. `restore` applies only included
@@ -80,7 +83,8 @@ not a claim that the tree is an acyclic import graph.
 
 From `tests/`, after root setup: `python -m unittest test_shellcode`;
 `python -m unittest test_elf.ELFTest.test_memory_search` checks memory-facing
-facade behavior. Both passed during rebuild on Linux/Python 3.13/Unicorn 2.1.3.
+facade behavior. Both passed during the latest refresh on Linux/Python
+3.13/Unicorn 2.1.3.
 For snapshot changes use matching cases in `test_elf.py` and
 `test_mcu.MCUTest.test_mcu_snapshot_stm32f411` (the MCU case also passed).
 Fixtures are relative to `tests/`. Passing these does not certify every

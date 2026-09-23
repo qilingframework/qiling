@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # CPU Architecture and Calling Conventions
@@ -21,7 +21,7 @@ or cross-platform compatibility certification.
 | --- | --- |
 | [arch/arch.py](../../qiling/arch/arch.py): `QlArch` | CPU, pointer width, stack, context interface |
 | [arch/register.py](../../qiling/arch/register.py): `QlRegisterManager` | Name-to-Unicorn registers and PC/SP aliases |
-| [arch/](../../qiling/arch/), [arch/models.py](../../qiling/arch/models.py) | Concrete x86/ARM/MIPS/RISC-V/PPC/Cortex-M adapters and CPU enums |
+| [arch/](../../qiling/arch/), [arch/models.py](../../qiling/arch/models.py), `*_const.py` | Concrete x86/ARM/MIPS/RISC-V/PPC/Cortex-M adapters, CPU enums, register maps and `EXCP` exception codes |
 | [cc/__init__.py](../../qiling/cc/__init__.py): `QlCC`, `QlCommonBaseCC` | Register/stack slots, result, return address, frame unwind |
 | [arch/cortex_m.py](../../qiling/arch/cortex_m.py): `QlArchCORTEX_M` | Exception/vector state and task-aware Unicorn |
 | [test_cpu_models.py](../../tests/test_cpu_models.py), [test_riscv.py](../../tests/test_riscv.py), [test_shellcode.py](../../tests/test_shellcode.py) | Model selection and instruction/ABI samples |
@@ -43,8 +43,13 @@ versions come from the root manifest, not individual adapters.
   multiword arguments, shadow space, register exhaustion, stack return
   addresses and unwind rules differ (`cc/__init__.py`, `cc/intel.py`).
 - Endianness, CPU mode and Thumb PC handling affect execution and instruction
-  decoding. Preserve `effective_pc` and Cortex-M exception return behavior
-  when changing ARM mode; inspect the core Thumb workaround too.
+  decoding. Preserve the ARM adapter's `effective_pc` (consumers fall back
+  to `arch_pc` via `getattr`) and Cortex-M exception return behavior when
+  changing ARM mode; inspect the core Thumb workaround too.
+- Interrupt numbers delivered to `hook_intno` are QEMU exception codes.
+  **Observed:** ARM/ARM64 and MIPS Linux traps use the `EXCP` enums in
+  `cortex_m_const.py` and `mips_const.py`; x86/RISC-V/PPC still pass
+  literals. Prefer an existing enum and extend it for new codes.
 - Concrete adapters instantiate engine/assembler/disassembler objects;
   supported enums do not imply support for every OS/CPU combination.
   Cortex-M uses `MultiTaskUnicorn` and hardware interrupt state.
@@ -73,8 +78,9 @@ never substitute host pointer size for a guest ABI.
 
 From `tests/`: `python -m unittest test_cpu_models test_riscv test_shellcode`
 with root dependencies and relevant rootfs samples. All selected modules
-passed during rebuild; CPU-model suite has 7 tests. Their scope is selected
-models/instructions and guest execution, not instruction-set conformance.
+passed during the latest refresh (11 CPU-model/RISC-V and 8 shellcode
+cases). Their scope is selected models/instructions and guest execution,
+not instruction-set conformance.
 For PPC changes use `test_elf.ELFTest.test_elf_linux_powerpc`; for ABI changes
 run the consuming OS API/syscall regression as well.
 

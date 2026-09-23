@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # DOS and BIOS Interrupts
@@ -69,8 +69,8 @@ not apply to DOS interrupt leaves.
 ## Verification
 
 From `tests/`: `python -m unittest test_dos` passed one program test during
-rebuild with the existing DOS rootfs fixture. Use `python test_dos_exe.py`
-for EXE-loader changes; it was not part of the verified subset. Terminal
+the latest refresh with the existing DOS rootfs fixture. Use
+`python test_dos_exe.py` for EXE-loader changes; it was not part of the verified subset. Terminal
 cases need usable curses/TTY support. A successful sample does not certify
 all BIOS services or error leaves.
 

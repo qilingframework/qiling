@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # Bare-metal Execution
@@ -71,8 +71,8 @@ semantics into unrelated POSIX/Windows run loops.
 ## Verification
 
 From `tests/`: `python -m unittest test_mcu.MCUTest.test_mcu_snapshot_stm32f411 test_mcu.MCUTest.test_mcu_usart_input_stm32f411 test_blob.BlobTest.test_uboot_arm`
-passed 3 cases during rebuild. Root dependencies and matching STM32/U-Boot
-fixtures are required. Run `python test_mcu.py` for broader device/timing
+passed 3 cases during the latest refresh. Root dependencies and matching
+STM32/U-Boot fixtures are required. Run `python test_mcu.py` for broader device/timing
 changes and `python test_blob.py` for raw behavior; the full suites are not
 certified by the selected cases.
 
@@ -80,7 +80,8 @@ certified by the selected cases.
 
 `test_blob.BlobTest.test_blob_raw` fails because rootfs lacks
 `blob/example_raw.bin`; [fixture source](../../examples/src/blob/Makefile)
-exists but was not built or copied into the submodule during this rebuild.
+exists but is not built or copied into the submodule; the case still
+errors with a missing-file error.
 Fast-mode faults currently stop cleanly instead of delivering hardware
 HardFault. Timeout units differ by execution path; full scheduler timing
 and MCU exception fidelity remain unverified.
