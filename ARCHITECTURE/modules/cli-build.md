@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # CLI, Packaging and Development Tooling
@@ -95,10 +95,12 @@ CLI/version/profile behavior and TUI import outside the checkout. For
 checkout behavior from `tests/`: `python test_qltool.py`; rootfs samples
 are required for argument, JSON, filter and coverage cases.
 
-Rebuild evidence: sdist plus wheel-from-sdist build passed, artifact metadata
-checks and `poetry check --lock` passed, 8 selected CLI tests passed, and 3 installed-wheel cases
-passed in a second fresh environment. See [root verification](../../ARCHITECTURE.md#verification)
-for common setup and Linux aggregate. No configured lint/type-check command exists.
+Latest refresh evidence: sdist plus wheel-from-sdist build, `twine check
+--strict` and `poetry check --lock` passed; 5 checkout CLI cases and 3
+installed-wheel cases passed in a second fresh environment; the wheel
+contains `qltui.py`, the 7 profiles and 43 GDB XML files. See
+[root verification](../../ARCHITECTURE.md#verification) for common setup
+and Linux aggregate. No configured lint/type-check command exists.
 
 ## Known Gaps
 

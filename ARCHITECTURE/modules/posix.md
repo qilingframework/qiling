@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # POSIX Personalities and Syscalls
@@ -53,6 +53,15 @@ Fixture Makefiles specify cross-compilers locally; no common C standard is decla
 - Linux `/proc/self` mappings are installed only when not overridden.
   Profile identity and network keys affect observable guest behavior.
   macOS kernel and QNX message interfaces retain their own state/layouts.
+- Linux registers `hook_intno` traps per architecture: the syscall
+  interrupt (via `EXCP` enums on ARM/ARM64/MIPS, literals elsewhere) plus
+  ARM/ARM64 `UDEF` and MIPS `RI` CPU exceptions.
+  `hook_cpu_exception` logs the SIGILL equivalent and calls `ql.stop()`,
+  so falling into non-code bytes ends emulation cleanly instead of raising
+  `QlErrorCoreHook`; no guest signal handler runs (`linux/linux.py`).
+- Syscall result structs follow `ql.arch.endian`: `statx` selects the
+  `*EB` big-endian ctypes variants for EB guests (`syscall/stat.py`).
+  Check endian handling in any handler that writes ctypes layouts.
 
 ## Dependencies and Boundaries
 
@@ -68,14 +77,17 @@ own dispatch. Filesystem/socket/fork operations expose host resources.
 | --- | --- | --- |
 | New/fixed syscall | Mapping table, ABI, OS override/common handler | Update this contract; matching `test_posix`/ELF test and affected OS |
 | Thread/futex/signal | Thread contexts, yielding, futex waiters | `test_elf_multithread.py`; mark unsupported semantics explicitly |
+| CPU exception/trap | `hook_intno` registrations, `hook_cpu_exception`, `EXCP` enums | Shellcode illegal-instruction cases; read arch for new exception codes |
 | FD/path/socket | Host object lifetime, errno, guest structure layouts | OS-base checks and syscall regression; proxy checks if shared operations change |
 | macOS/QNX/kernel API | Local maps/structs, loader imports | Platform-specific test and loader owner |
 
 ## Verification
 
 From `tests/`: `python -m unittest test_elf.ELFTest.test_elf_linux_x8664 test_riscv test_qnx`
-passed during rebuild. It checks sample Linux/RISC-V/QNX flows, not every
-handler. For POSIX changes run `python test_posix.py` (also imports ELF,
+and `python -m unittest test_shellcode.TestShellcode.test_linux_arm64_illegal_instruction test_shellcode.TestShellcode.test_linux_mips32_illegal_instruction test_elf.ELFTest.test_linux_statx_bigendian`
+passed during the latest refresh. They check sample Linux/RISC-V/QNX flows,
+SIGILL-style termination and big-endian `statx`, not every handler.
+For POSIX changes run `python test_posix.py` (also imports ELF,
 RISC-V and CLI suites), and the relevant thread/kernel/network/platform
 script. Follow [shared test-resource rules](cli-build.md#verification) when
 running these suites. Root Linux aggregate is the broader CI gate; its fixtures, extracted
@@ -84,7 +96,9 @@ kernel sample and network/host requirements apply. Full aggregate was not run.
 ## Known Gaps
 
 macOS CI is commented out. Some thread classes are unset for RISC-V/PPC;
-signal syscall state is not proof of full delivery. Existing kernel-module
+signal syscall state is not proof of full delivery. CPU-exception hooks
+exist only for ARM/ARM64/MIPS; x86, RISC-V and PPC undefined instructions
+still surface as `QlErrorCoreHook`. Existing kernel-module
 archives need fixture preparation. `TODO.md` hybrid phases are plans; proxy
 Phase 0 implementation is documented separately. Current representative
 checks do not establish kernel fidelity or host isolation.

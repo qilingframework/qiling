@@ -1,5 +1,5 @@
 ---
-eatmycode_version: "2.0.0"
+eatmycode_version: "2.1.0"
 ---
 
 # Linux Kernel Proxy
@@ -12,7 +12,8 @@ Read when: changing qiling/os/posix/kernel_proxy/, forwarded syscalls, proxy des
 
 Owns opt-in forwarding of selected Linux syscalls through a helper process,
 argument/buffer transport and proxy-owned descriptors. **In progress:**
-Phase 0 code exists and 21 tests passed, but actual guest dispatch and
+Phase 0 code exists; 20 of 21 tests pass and the pipe2 write-back case
+errors on descriptor cleanup (Known Gaps). Actual guest dispatch and
 cross-ABI buffer semantics have unresolved gaps. Later phases in
 [TODO.md](../../TODO.md) remain designs, not implemented capability.
 
@@ -74,8 +75,10 @@ No additional runtime package is required beyond the existing manifest.
 
 ## Verification
 
-From `tests/`: `python -m unittest test_kernel_proxy` passed 21 tests on
-Linux x86_64/Python 3.13 with current hello fixtures. Helpers invoke real
+From `tests/`: `python -m unittest test_kernel_proxy` ran 21 tests on
+Linux x86_64 (WSL2)/Python 3.13 with current hello fixtures during the
+latest refresh: 20 passed and `test_ptr_out_writes_back_to_guest_memory`
+errored with `EBADF` after its assertions passed. Helpers invoke real
 Linux syscalls. These tests exercise IPC and direct hook invocation; they
 do not establish complete guest-trap integration or cross-architecture
 struct conversion. Run an actual emulated syscall case for dispatch changes.
@@ -85,8 +88,10 @@ struct conversion. Run an actual emulated syscall case for dispatch changes.
 `KernelProxy._make_forwarder` returns `(ql, *args)`, while POSIX dispatch
 counts only ordinary positional parameters; tests calling the hook directly
 can miss missing guest arguments. `test_ptr_out_writes_back_to_guest_memory`
-closes helper-owned fd numbers with parent `os.close`; its passing result
-can depend on coincident parent fd allocation and does not prove cleanup.
+closes helper-owned fd numbers with parent `os.close`; depending on parent
+fd allocation this fails with `EBADF` or closes an unrelated parent
+descriptor. Its marshalling assertions pass; fix cleanup to go through the
+proxy fd wrapper or the helper before treating the suite as green.
 Buffer quotas, ABI translation and concurrent IPC access need evidence;
 none should be implied by Phase 0 passing tests. Preserve scope and record
 required fixes before claiming later TODO milestones.
