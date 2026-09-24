@@ -246,7 +246,11 @@ def run():
     ql_args = {}
 
     if options.subcommand == 'qltui':
-        import qltui
+        try:
+            import qltui
+        except ImportError:
+            parser.error('the qltui subcommand requires the "tui" extra; install it with: pip install qiling[tui]')
+
         options = qltui.get_data()
         qltui_enabled = True
 
