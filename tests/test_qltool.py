@@ -83,7 +83,8 @@ class InstalledQltool_Test(unittest.TestCase):
 
     def test_qltui_import(self):
         result = subprocess.run(
-            [sys.executable, '-I', '-c', 'import qltui; assert callable(qltui.get_data)'],
+            [sys.executable, '-I', '-c',
+             'import sys, qltui; assert callable(qltui.get_data); assert "pyfx" not in sys.modules'],
             cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, timeout=30
         )

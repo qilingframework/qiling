@@ -30,7 +30,7 @@ paths are explicitly owned by hardware/bare-metal modules.
 ## Local Conventions
 
 Use [root conventions](../../ARCHITECTURE.md#code-conventions); optional
-packages use manifest extras `fuzz` and `RE`. Format classes expose
+packages use manifest extras `fuzz` and `RE` (the TUI report viewer uses `tui`). Format classes expose
 `FORMAT_NAME` and activate/deactivate/dump methods; imports register subclasses
 with factories. No common C standard is declared for fuzz harnesses; inspect
 the local `fuzz.c`/build instructions. Generated SDK stubs require review;

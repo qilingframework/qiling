@@ -45,7 +45,6 @@ gevent = ">=24.10"
 multiprocess = ">=0.70.12.2"
 windows-curses = { version = "^2.1.0", markers = "platform_system == 'Windows'" }
 pyyaml = "^6.0.1"
-python-fx = "*"
 questionary = "*"
 termcolor = "*"
 
@@ -54,9 +53,12 @@ fuzzercorn = { version = "^0.0.1", markers = "platform_system == 'Linux'", optio
 
 r2libr = { version = "^5.7.4", optional = true }
 
+python-fx = { version = "*", optional = true }
+
 [tool.poetry.extras]
 fuzz = ["unicornafl", "fuzzercorn"]
 RE = ["r2libr"]
+tui = ["python-fx"]
 
 [build-system]
 requires = ["poetry-core>=2.0,<3.0"]

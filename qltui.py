@@ -5,7 +5,6 @@ import re
 import argparse
 import json
 
-from pyfx import PyfxApp
 from pprint import pprint
 from datetime import datetime
 
@@ -473,7 +472,12 @@ def show_report(ql: Qiling, report, hook_dictionary):
         if command == 'report':
             pprint(report)
         elif command == 'interactive report':
-            PyfxApp(data=report).run()
+            try:
+                from pyfx import PyfxApp
+            except ImportError:
+                print('the interactive report viewer is not installed; get it with: pip install qiling[tui]')
+            else:
+                PyfxApp(data=report).run()
         elif command == 'save to json':
             time = datetime.now().strftime("%Y_%m_%d_%H-%M-%S")
             report_name = f"report_{ql.targetname.replace('.', '_')}_{os_name}_{arch_name}_{time}.json"
