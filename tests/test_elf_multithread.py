@@ -31,6 +31,7 @@ ARMEB_LINUX_ROOTFS = fr'{BASE_ROOTFS}/armeb_linux'
 ARM64_LINUX_ROOTFS = fr'{BASE_ROOTFS}/arm64_linux'
 MIPSEB_LINUX_ROOTFS = fr'{BASE_ROOTFS}/mips32_linux'
 MIPSEL_LINUX_ROOTFS = fr'{BASE_ROOTFS}/mips32el_linux'
+MIPS64EB_LINUX_ROOTFS = fr'{BASE_ROOTFS}/mips64_linux'
 
 
 class ELFTest(unittest.TestCase):
@@ -154,6 +155,25 @@ class ELFTest(unittest.TestCase):
                 logged.extend(content.decode().splitlines())
 
         ql = Qiling([fr'{MIPSEL_LINUX_ROOTFS}/bin/mips32el_multithreading'], MIPSEL_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
+
+        ql.os.stats = QlOsNullStats()
+        ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertGreaterEqual(len(logged), 2)
+        self.assertTrue(logged[-2].startswith('thread 1 ret val is'))
+        self.assertTrue(logged[-1].startswith('thread 2 ret val is'))
+
+    def test_multithread_elf_linux_mips64eb(self):
+        logged: List[str] = []
+
+        def check_write(ql: Qiling, fd: int, write_buf, count: int):
+            if fd == 1:
+                content = ql.mem.read(write_buf, count)
+
+                logged.extend(content.decode().splitlines())
+
+        ql = Qiling([fr'{MIPS64EB_LINUX_ROOTFS}/bin/mips64_multithreading'], MIPS64EB_LINUX_ROOTFS, multithread=True, verbose=QL_VERBOSE.DEBUG)
 
         ql.os.stats = QlOsNullStats()
         ql.os.set_syscall("write", check_write, QL_INTERCEPT.ENTER)

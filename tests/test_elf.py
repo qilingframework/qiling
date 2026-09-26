@@ -19,7 +19,7 @@ sys.path.append("..")
 from typing import Any, Sequence
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_STOP, QL_VERBOSE, QL_ENDIAN
 from qiling.exception import *
 from qiling.extensions import pipe
 from qiling.os.const import STRING
@@ -458,6 +458,136 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_mips32eb_static(self):
         ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static"], "../examples/rootfs/mips32_linux")
         ql.run()
+        del ql
+
+    # statically-linked MIPS64 hello binaries. they link at the standard MIPS64
+    # base 0x120000000 (>4GB), which only loads and runs thanks to QlArchMIPS64's
+    # virtual-TLB identity mapping, and they execute a movz instruction, which only
+    # decodes on a MIPS64R2-class core (unicorn's default MIPS64 core is an old
+    # MIPS III that lacks it) - so this also guards the default MIPS64 CPU model.
+    def test_elf_linux_mips64eb_static(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux/bin/mips64_hello_static"], "../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'Hello, MIPS64 from Qiling!\n')
+
+        del ql
+
+    def test_elf_linux_mips64el_static(self):
+        ql = Qiling(["../examples/rootfs/mips64el_linux/bin/mips64el_hello_static"], "../examples/rootfs/mips64el_linux", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'Hello, MIPS64 from Qiling!\n')
+
+        del ql
+
+    # Dynamically-linked MIPS64 BE. Unlike the *_static binaries above, this one
+    # is a non-PIE ET_EXEC that must be brought up by the dynamic loader and have
+    # libc.so.6 mapped and relocated before main() runs. It lives in its own
+    # rootfs (mips64_linux_buildroot) carrying the matching Buildroot ld.so.1 +
+    # glibc it was built against: both dynamic binaries hard-code the interpreter
+    # path /lib64/ld.so.1, so the Buildroot and default-mips64_linux glibc
+    # environments cannot share a single tree.
+    def test_elf_linux_mips64eb_buildroot_dynamic(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux_buildroot/bin/mips64_hello_buildroot"],
+                    "../examples/rootfs/mips64_linux_buildroot", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'hello from mips64 n64\n')
+
+        del ql
+
+    # Regression for statx() byte order on big-endian guests: statx must report
+    # the S_IFDIR bit for a directory. The statx struct used to be emitted
+    # little-endian regardless of guest endianness, so stx_mode was byte-swapped
+    # on MIPS64 EB and a directory looked like a plain file (src: statx.c).
+    def test_elf_linux_mips64eb_statx(self):
+        ql = Qiling(["../examples/rootfs/mips64_linux/bin/mips64_statx", "/"], "../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+        ql.os.stdout = pipe.SimpleOutStream(1)
+        ql.run()
+
+        self.assertEqual(ql.os.stdout.read(), b'DIR\n')
+
+        del ql
+
+    def test_elf_linux_mips64eb_stat64(self):
+        # the stat-family handlers route through pack_stat64_struct, whose
+        # get_stat64_struct lacked a MIPS64 branch and fell back to the
+        # little-endian x86 stat64 struct, byte-swapping/misplacing every field
+        # on a big-endian 64-bit guest. exercise the handler directly and check
+        # that the directory mode reads back correctly under the MIPS64 BE struct.
+        import stat as _stat
+        from qiling.os.posix.syscall.stat import ql_syscall_stat64, ql_syscall_lstat, LinuxMips64EBStat
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS64, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x4000)
+        buf = base + 0x100
+        mode_off = LinuxMips64EBStat.st_mode.offset
+
+        # both stat64 and the plain lstat handler (which busybox `ls -la` uses)
+        # share get_stat64_struct
+        for handler in (ql_syscall_stat64, ql_syscall_lstat):
+            ql.mem.write(base, b"/\x00")
+            ql.mem.write(buf, b"\x00" * 0x100)
+            self.assertEqual(handler(ql, base, buf), 0)
+
+            mode = int.from_bytes(ql.mem.read(buf + mode_off, 4), 'big')
+            self.assertTrue(_stat.S_ISDIR(mode), f'{handler.__name__}: mode 0o{mode:o} is not a directory')
+
+        del ql
+
+    def test_elf_linux_mips64eb_getdents(self):
+        # legacy getdents (used by older glibc, e.g. the Octeon SDK) packed each
+        # linux_dirent record with a word-sized d_ino but did not align the
+        # record, so on n64 (8-byte d_ino) the next record's d_ino landed
+        # unaligned and a strict-alignment guest faulted while walking the
+        # buffer. records must be padded to the d_ino alignment, with d_type
+        # kept in the record's last byte (offset d_reclen-1).
+        from qiling.os.posix.syscall.fcntl import ql_syscall_open
+        from qiling.os.posix.syscall.unistd import ql_syscall_getdents
+
+        ql = Qiling(code=b"\x00\x00\x00\x00", archtype=QL_ARCH.MIPS64, ostype=QL_OS.LINUX,
+                    endian=QL_ENDIAN.EB, rootfs="../examples/rootfs/mips64_linux", verbose=QL_VERBOSE.OFF)
+
+        base = 0x100000
+        ql.mem.map(base, 0x8000)
+        ql.mem.write(base, b"/\x00")
+        buf = base + 0x1000
+
+        fd = ql_syscall_open(ql, base, 0, 0)
+        n = ql_syscall_getdents(ql, fd, buf, 0x2000)
+        self.assertGreater(n, 0)
+
+        data = bytes(ql.mem.read(buf, n))
+        seen = []
+        off = 0
+        while off < n:
+            # each record must start 8-byte aligned (n64 d_ino alignment)
+            self.assertEqual(off % 8, 0, f'record at {off} is not 8-byte aligned')
+
+            d_reclen = int.from_bytes(data[off + 16:off + 18], 'big')  # d_reclen @ 2*8
+            self.assertGreater(d_reclen, 0)
+
+            name = data[off + 18:data.index(b'\x00', off + 18)].decode()
+            seen.append(name)
+
+            # legacy getdents stores d_type in the record's last byte; '.' and
+            # '..' must report DT_DIR (4)
+            if name in ('.', '..'):
+                self.assertEqual(data[off + d_reclen - 1], 4, f'{name}: d_type not DT_DIR')
+
+            off += d_reclen
+
+        self.assertEqual(off, n)            # records tile the buffer exactly
+        self.assertIn('.', seen)
+        self.assertIn('..', seen)
+
         del ql
 
     @staticmethod

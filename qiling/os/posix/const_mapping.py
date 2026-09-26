@@ -45,6 +45,7 @@ def get_open_flags_class(archtype: QL_ARCH, ostype: QL_OS) -> Union[Type[Flag], 
             QL_ARCH.ARM:     linux_arm_open_flags,
             QL_ARCH.ARM64:   linux_arm_open_flags,
             QL_ARCH.MIPS:    linux_mips_open_flags,
+            QL_ARCH.MIPS64:  linux_mips_open_flags,
             QL_ARCH.RISCV:   linux_riscv_open_flags,
             QL_ARCH.RISCV64: linux_riscv_open_flags,
             QL_ARCH.PPC:     linux_ppc_open_flags
@@ -135,7 +136,8 @@ def socket_type_mapping(value: int, archtype: QL_ARCH) -> str:
         QL_ARCH.X8664: linux_x86_socket_types,
         QL_ARCH.ARM:   linux_arm_socket_types,
         QL_ARCH.ARM64: linux_arm_socket_types,
-        QL_ARCH.MIPS:  linux_mips_socket_types
+        QL_ARCH.MIPS:  linux_mips_socket_types,
+        QL_ARCH.MIPS64: linux_mips_socket_types
     }[archtype]
 
     # https://code.woboq.org/linux/linux/net/socket.c.html#1363
@@ -148,7 +150,8 @@ def socket_domain_mapping(value: int, archtype: QL_ARCH, ostype: QL_OS) -> str:
         QL_ARCH.X8664: macos_x86_socket_domain if ostype is QL_OS.MACOS else linux_x86_socket_domain,
         QL_ARCH.ARM:   linux_arm_socket_domain,
         QL_ARCH.ARM64: linux_arm_socket_domain,
-        QL_ARCH.MIPS:  linux_mips_socket_domain
+        QL_ARCH.MIPS:  linux_mips_socket_domain,
+        QL_ARCH.MIPS64: linux_mips_socket_domain
     }[archtype]
 
     return socket_domain(value).name
@@ -161,6 +164,7 @@ def socket_tcp_option_mapping(value: int, archtype: QL_ARCH) -> str:
         QL_ARCH.ARM:   linux_socket_tcp_options,
         QL_ARCH.ARM64: linux_socket_tcp_options,
         QL_ARCH.MIPS:  linux_socket_tcp_options,
+        QL_ARCH.MIPS64: linux_socket_tcp_options,
     }[archtype]
 
     return socket_option(value).name
@@ -172,7 +176,8 @@ def socket_level_mapping(value: int, archtype: QL_ARCH) -> str:
         QL_ARCH.X8664: linux_x86_socket_level,
         QL_ARCH.ARM:   linux_arm_socket_level,
         QL_ARCH.ARM64: linux_arm_socket_level,
-        QL_ARCH.MIPS:  linux_mips_socket_level
+        QL_ARCH.MIPS:  linux_mips_socket_level,
+        QL_ARCH.MIPS64: linux_mips_socket_level
     }[archtype]
 
     return socket_level(value).name
@@ -184,7 +189,8 @@ def socket_ip_option_mapping(value: int, archtype: QL_ARCH, ostype: QL_OS) -> st
         QL_ARCH.X8664: macos_socket_ip_options if ostype is QL_OS.MACOS else linux_socket_ip_options,
         QL_ARCH.ARM:   linux_socket_ip_options,
         QL_ARCH.ARM64: macos_socket_ip_options if ostype is QL_OS.MACOS else linux_socket_ip_options,
-        QL_ARCH.MIPS:  linux_mips_socket_ip_options
+        QL_ARCH.MIPS:  linux_mips_socket_ip_options,
+        QL_ARCH.MIPS64: linux_mips_socket_ip_options
     }[archtype]
 
     return socket_ip_option(value).name
@@ -196,7 +202,8 @@ def socket_option_mapping(value: int, archtype: QL_ARCH) -> str:
         QL_ARCH.X8664: linux_x86_socket_options,
         QL_ARCH.ARM:   linux_arm_socket_options,
         QL_ARCH.ARM64: linux_arm_socket_options,
-        QL_ARCH.MIPS:  linux_mips_socket_options
+        QL_ARCH.MIPS:  linux_mips_socket_options,
+        QL_ARCH.MIPS64: linux_mips_socket_options
     }[archtype]
 
     return socket_option(value).name

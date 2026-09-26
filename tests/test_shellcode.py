@@ -9,7 +9,7 @@ import sys
 sys.path.append("..")
 
 from qiling import Qiling
-from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_INTERCEPT, QL_VERBOSE, QL_ENDIAN
 
 
 # test = bytes.fromhex('cccc')
@@ -20,6 +20,22 @@ X8664_LIN = bytes.fromhex('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f0
 MIPS32EL_LIN = bytes.fromhex('''
     ffff0628ffffd004ffff05280110e4270ff08424ab0f02240c0101012f62696e
     2f7368
+''')
+
+# MIPS64 n64 shellcode: write(1, "MIPS64 hello\n", 13) then exit_group(0).
+# uses the n64 syscall numbers (write=5001, exit_group=5205) and computes the
+# message address with a bal/daddiu pc-relative trick. assembled with binutils
+# mips64-linux-gnuabi64-as.
+MIPS64EB_LIN = bytes.fromhex('''
+    2402138924040001041100010000000067e500182406000d0000000c24021455
+    240400000000000c4d49505336342068656c6c6f0a
+''')
+
+# little-endian counterpart of MIPS64EB_LIN: instruction words byte-swapped,
+# the trailing string left as-is
+MIPS64EL_LIN = bytes.fromhex('''
+    891302240100042401001104000000001800e5670d0006240c00000055140224
+    000004240c0000004d49505336342068656c6c6f0a
 ''')
 
 X86_WIN = bytes.fromhex('''
@@ -103,6 +119,16 @@ class TestShellcode(unittest.TestCase):
         ql = Qiling(code=MIPS32EL_LIN, archtype=QL_ARCH.MIPS, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
 
         ql.os.set_syscall('execve', graceful_execve, QL_INTERCEPT.EXIT)
+        ql.run()
+
+    def test_linux_mips64eb(self):
+        print("Linux MIPS 64bit EB Shellcode")
+        ql = Qiling(code=MIPS64EB_LIN, archtype=QL_ARCH.MIPS64, ostype=QL_OS.LINUX, endian=QL_ENDIAN.EB, verbose=QL_VERBOSE.OFF)
+        ql.run()
+
+    def test_linux_mips64el(self):
+        print("Linux MIPS 64bit EL Shellcode")
+        ql = Qiling(code=MIPS64EL_LIN, archtype=QL_ARCH.MIPS64, ostype=QL_OS.LINUX, endian=QL_ENDIAN.EL, verbose=QL_VERBOSE.OFF)
         ql.run()
 
     # This shellcode needs to be changed to something non-blocking

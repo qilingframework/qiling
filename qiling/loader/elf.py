@@ -374,7 +374,7 @@ class QlLoaderELF(QlLoader):
         sp_align = self.ql.arch.pointersize
 
         # mips requires doubleword alignment
-        if self.ql.arch.type is QL_ARCH.MIPS:
+        if self.ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
             sp_align *= 2
 
         new_stack = self.ql.mem.align(new_stack - len(elf_table), sp_align)

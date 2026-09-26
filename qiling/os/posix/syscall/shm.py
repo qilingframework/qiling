@@ -88,6 +88,7 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
         # select the appropriate SHMLBA value, based on the platform
         shmlba = {
             QL_ARCH.MIPS:  0x40000,
+            QL_ARCH.MIPS64: 0x40000,
             QL_ARCH.ARM:   ql.mem.pagesize * 4,
             QL_ARCH.ARM64: ql.mem.pagesize * 4,
             QL_ARCH.X86:   ql.mem.pagesize,

@@ -751,7 +751,7 @@ def ql_syscall_pipe(ql: Qiling, pipefd: int):
     ql.os.fd[idx1] = rd
     ql.os.fd[idx2] = wd
 
-    if ql.arch.type == QL_ARCH.MIPS:
+    if ql.arch.type in (QL_ARCH.MIPS, QL_ARCH.MIPS64):
         ql.arch.regs.v1 = idx2
         regreturn = idx1
     else:

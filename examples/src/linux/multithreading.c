@@ -28,6 +28,9 @@ void thread_2(void) {
 int main(void) {
     pthread_t id_1, id_2;
     int ret;
+    /* pthread_join writes a void* (8 bytes on 64-bit); using an int* here makes
+       the store unaligned on strict-alignment 64-bit targets (e.g. MIPS64) */
+    void *retval;
 
     /*Create pthread 1*/
     ret=pthread_create(&id_1, NULL, (void  *) thread_1, NULL);
@@ -44,9 +47,9 @@ int main(void) {
     }
 
     /*wait thread ending*/
-    pthread_join(id_1, &ret);
-    printf("thread 1 ret val is : %d\n", ret);
-    pthread_join(id_2, &ret);
-    printf("thread 2 ret val is : %d\n", ret);
+    pthread_join(id_1, &retval);
+    printf("thread 1 ret val is : %d\n", (int)(long)retval);
+    pthread_join(id_2, &retval);
+    printf("thread 2 ret val is : %d\n", (int)(long)retval);
     return 0;
 }

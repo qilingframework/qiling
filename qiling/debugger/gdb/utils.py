@@ -35,6 +35,14 @@ class QlGdbUtils:
         self.interrupted = False
         self._poll_counter = 0
 
+        # async-interrupt support: `check_interrupt` is a callable installed by the
+        # gdb stub that returns True when the client sent a break (ctrl-c / \x03)
+        # while the target was running. `interrupted` records that the last resume
+        # stopped for that reason (rather than a breakpoint or normal exit).
+        self.check_interrupt = None
+        self.interrupted = False
+        self._poll_counter = 0
+
         def __entry_point_hook(ql: Qiling):
             ql.hook_del(ep_hret)
             ql.hook_code(self.dbg_hook)
