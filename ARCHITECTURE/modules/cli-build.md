@@ -34,7 +34,9 @@ Use the [root baseline](../../ARCHITECTURE.md#code-conventions).
 arguments. Preserve option names and exit status. TUI uses questionary/fx/
 termcolor; testing its import is not testing its prompts. Keep build metadata
 in the manifest, resolve its lock with Poetry, and retain package license
-and resource attribution. Documentation here contains coding context only.
+and resource attribution. Test-only dependencies belong in the `test`
+extra, which the Windows CI job installs; runtime dependants must not
+receive them. Documentation here contains coding context only.
 
 ## Contracts and Invariants
 
