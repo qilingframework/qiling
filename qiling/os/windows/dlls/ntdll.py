@@ -19,6 +19,10 @@ from qiling.os.windows import utils
 
 from unicorn.x86_const import *
 
+
+def _runtime_function_entry_size(ql: Qiling, image_base: int) -> int:
+    return ql.loader.function_table_entry_size.get(image_base, 12)
+
 # void *memcpy(
 #    void *dest,
 #    const void *src,
@@ -561,7 +565,7 @@ def hook_RtlLookupFunctionEntry(ql: Qiling, address: int, params):
     # If a suitable function entry was found,
     # compute its address and return.
     if runtime_function:
-        return function_table_addr + runtime_function_idx * 12    # sizeof(RUNTIME_FUNCTION)
+        return function_table_addr + runtime_function_idx * _runtime_function_entry_size(ql, base_addr)
     
     return 0
 
@@ -602,7 +606,7 @@ def hook_RtlLookupFunctionTable(ql: Qiling, address: int, params):
         function_table = ql.loader.function_tables[base_addr]
 
         # compute the total size of the table
-        size_of_table = len(function_table) * 12    # sizeof(RUNTIME_FUNCTION)
+        size_of_table = len(function_table) * _runtime_function_entry_size(ql, base_addr)
 
         # Write the size to memory at the provided pointer.
         ql.mem.write_ptr(size_of_table_ptr, size_of_table, 4)

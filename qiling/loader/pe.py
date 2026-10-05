@@ -5,13 +5,12 @@
 
 from __future__ import annotations
 
+import ntpath
 import os
-import pefile
 import pickle
 import secrets
-import ntpath
-from collections import namedtuple
-from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, NamedTuple, Optional, Mapping, Sequence, Tuple, Union
+from lief import PE
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, MutableMapping, NamedTuple, Optional, Sequence, Set, Tuple, Union
 
 from unicorn import UcError
 from unicorn.x86_const import UC_X86_REG_CR4, UC_X86_REG_CR8
@@ -27,15 +26,104 @@ from qiling.os.windows.structs import *
 from .loader import QlLoader, Image
 
 if TYPE_CHECKING:
-    from logging import Logger
     from qiling import Qiling
+
 
 class ForwardedExport(NamedTuple):
     source_dll: str
-    source_ordinal: str
-    source_symbol: str
+    source_ordinal: int
+    source_symbol: Optional[bytes]
     target_dll: str
-    target_symbol: str
+    target_symbol: bytes
+
+
+def _pe_build_mapped_image(binary: PE.Binary, raw_bytes: bytes) -> bytearray:
+    """Build a flat virtual-address-mapped PE image."""
+    oh = binary.optional_header
+    data = bytearray(oh.sizeof_image)
+    data[:oh.sizeof_headers] = raw_bytes[:oh.sizeof_headers]
+    for sec in binary.sections:
+        va = sec.virtual_address
+        content = bytes(sec.content)
+        end = min(va + len(content), oh.sizeof_image)
+        if end > va:
+            data[va:end] = content[:end - va]
+    return data
+
+
+def _pe_apply_relocations(data: bytearray, binary: PE.Binary, new_base: int) -> None:
+    """Apply base-relocation delta in-place."""
+    delta = new_base - binary.optional_header.imagebase
+    if delta == 0:
+        return
+    BT = PE.RelocationEntry.BASE_TYPES
+    for block in binary.relocations:
+        for entry in block.entries:
+            rva = block.virtual_address + entry.position
+            if entry.type == BT.HIGHLOW:
+                val = int.from_bytes(data[rva:rva + 4], 'little')
+                data[rva:rva + 4] = ((val + delta) & 0xFFFFFFFF).to_bytes(4, 'little')
+            elif entry.type == BT.DIR64:
+                val = int.from_bytes(data[rva:rva + 8], 'little')
+                data[rva:rva + 8] = ((val + delta) & 0xFFFFFFFFFFFFFFFF).to_bytes(8, 'little')
+
+
+def _pe_map_image(ql: Qiling, binary: PE.Binary, image_base: int, image_size: int, image_name: str, data: bytearray, *, skip_discardable: bool = False) -> None:
+    """Map a PE image, using per-section permissions when possible."""
+
+    sec_alignment = binary.optional_header.section_alignment
+    headers_size = min(len(data), binary.optional_header.sizeof_headers)
+
+    def __map_sections() -> None:
+        hdr_size = ql.mem.align_up(headers_size, sec_alignment)
+
+        if hdr_size:
+            ql.mem.map(image_base, hdr_size, info=image_name)
+            ql.mem.write(image_base, bytes(data[:headers_size]))
+
+        SC = PE.Section.CHARACTERISTICS
+
+        for section in binary.sections:
+            chars = int(section.characteristics)
+
+            if skip_discardable and (chars & int(SC.MEM_DISCARDABLE)):
+                continue
+
+            sec_base = image_base + section.virtual_address
+            sec_vsize = max(section.virtual_size, len(bytes(section.content)))
+            sec_size = ql.mem.align_up(sec_vsize, sec_alignment)
+
+            if sec_size == 0:
+                continue
+
+            sec_perm = 0
+
+            if chars & int(SC.MEM_READ):
+                sec_perm |= 1
+            if chars & int(SC.MEM_WRITE):
+                sec_perm |= 2
+            if chars & int(SC.MEM_EXECUTE):
+                sec_perm |= 4
+            if sec_perm == 0:
+                sec_perm = 1
+
+            sec_name = section.name.rstrip('\x00') or 'section'
+            ql.mem.map(sec_base, sec_size, sec_perm, f'{image_name} ({sec_name})')
+
+            start = section.virtual_address
+            stop = start + min(sec_vsize, len(data) - start)
+
+            if stop > start:
+                ql.mem.write(sec_base, bytes(data[start:stop]))
+
+    def __map_all() -> None:
+        ql.mem.map(image_base, image_size, info=image_name)
+        ql.mem.write(image_base, bytes(data))
+
+    if sec_alignment and (sec_alignment % ql.mem.pagesize) == 0:
+        __map_sections()
+    else:
+        __map_all()
 
 
 class QlPeCacheEntry(NamedTuple):
@@ -92,10 +180,12 @@ class Process:
 
     # maps image base to its list of function table entries
     function_tables: MutableMapping[int, List]
+    function_table_entry_size: Dict[int, int]
 
     # List of exports which have been forwarded from
     # one DLL to another.
     forwarded_exports: List[ForwardedExport]
+    resolved_forwarded_exports: Set[ForwardedExport]
 
     def __init__(self, ql: Qiling):
         self.ql = ql
@@ -124,35 +214,33 @@ class Process:
 
         return self.ql.os.path.virtual_to_host_path(vpath), basename.casefold()
     
-    def init_function_tables(self, pe: pefile.PE, image_base: int):
+    def init_function_tables(self, pe: PE.Binary, image_base: int):
         """Parse function table data for the given PE file.
-        Only really relevant for non-x86 images.
+        Only relevant for non-x86 images.
 
         Args:
             pe: the PE image whose function data should be parsed
             image_base: the absolute address at which the image was loaded
         """
-        if self.ql.arch.type is not QL_ARCH.X86:
+        if self.ql.arch.type is QL_ARCH.X86:
+            return
 
-            # Check if the PE file has an exception directory
-            if hasattr(pe, 'DIRECTORY_ENTRY_EXCEPTION'):
-                exception_dir = pe.OPTIONAL_HEADER.DATA_DIRECTORY[
-                    pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXCEPTION']
-                ]
-                
-                self.function_table_lookup[image_base] = exception_dir.VirtualAddress
+        exc_dir = pe.data_directory(PE.DataDirectory.TYPES.EXCEPTION_TABLE)
 
-                runtime_function_list = list(pe.DIRECTORY_ENTRY_EXCEPTION)
+        if exc_dir is None or exc_dir.rva == 0:
+            self.ql.log.debug('Image has no exception directory; skipping exception data')
+            return
 
-                if image_base not in self.function_tables:
-                    self.function_tables[image_base] = []
+        self.function_table_lookup[image_base] = exc_dir.rva
+        self.function_table_entry_size[image_base] = 12 if self.ql.arch.type is QL_ARCH.X8664 else 8
 
-                self.function_tables[image_base].extend(runtime_function_list)
+        if image_base not in self.function_tables:
+            self.function_tables[image_base] = []
 
-                self.ql.log.debug(f'Parsed {len(runtime_function_list)} exception directory entries')
+        runtime_functions = list(pe.exception_functions) if hasattr(pe, 'exception_functions') else []
+        self.function_tables[image_base].extend(runtime_functions)
 
-            else:
-                self.ql.log.debug(f'Image has no exception directory; skipping exception data')
+        self.ql.log.debug(f'Parsed {len(runtime_functions)} exception directory entries')
 
     def lookup_function_entry(self, base_addr: int, control_pc: int):
         """Look up a RUNTIME_FUNCTION entry and its index in a module's
@@ -170,13 +258,20 @@ class Process:
 
         # Initiate a search of the function table for a RUNTIME_FUNCTION
         # entry such that the provided PC falls within its start and end range.
-        return next(((i, rtfunc) for i, rtfunc in enumerate(function_table)
-                     if rtfunc.struct.BeginAddress <= control_pc - base_addr < rtfunc.struct.EndAddress),
-                     (None, None))
+        return next(
+            ((i, rtfunc) for i, rtfunc in enumerate(function_table)
+             if rtfunc.rva_start <= control_pc - base_addr < rtfunc.rva_end),
+            (None, None)
+        )
     
     def resolve_forwarded_exports(self):
+        pending_forwarded_exports = []
+
         while self.forwarded_exports:
             forwarded_export = self.forwarded_exports.pop()
+
+            if forwarded_export in self.resolved_forwarded_exports:
+                continue
 
             source_dll = forwarded_export.source_dll
             source_ordinal = forwarded_export.source_ordinal
@@ -194,7 +289,7 @@ class Process:
             target_iat = self.import_address_table.get(target_dll)
 
             if not target_iat:
-                # If IAT was not found, it is probably a virtual library.
+                pending_forwarded_exports.append(forwarded_export)
                 continue
 
             # If we have an existing entry in the process IAT for the code
@@ -203,7 +298,7 @@ class Process:
             forward_ea = target_iat.get(target_symbol)
 
             if not forward_ea:
-                self.ql.log.warning(f"Forwarding symbol {source_dll}.{source_symbol} to {target_dll}.{target_symbol}: Failed to resolve address")
+                pending_forwarded_exports.append(forwarded_export)
                 continue
 
             self.import_address_table[source_dll][source_symbol] = forward_ea
@@ -224,7 +319,29 @@ class Process:
             # The most correct way to resolve this would be to add
             # support for addresses to be associated with multiple symbols.
 
+            self.resolved_forwarded_exports.add(forwarded_export)
             self.ql.log.debug(f"Forwarding symbol {source_dll}.{source_symbol} to {target_dll}.{target_symbol}: Resolved symbol to ({forward_ea:#x})")
+
+        self.forwarded_exports = pending_forwarded_exports
+
+    def queue_forwarded_exports(self, dll: PE.Binary, dll_name: str) -> None:
+        if not dll.has_exports:
+            return
+
+        dll_export = dll.get_export()
+
+        for sym in (dll_export.entries if dll_export else []):
+            if not sym.is_forwarded:
+                continue
+
+            fi = sym.forward_information
+            self.forwarded_exports.append(ForwardedExport(
+                source_dll=dll_name,
+                source_ordinal=sym.ordinal,
+                source_symbol=sym.name.encode() if sym.name else None,
+                target_dll=(fi.library.lower() + '.dll').casefold(),
+                target_symbol=fi.function.encode()
+            ))
 
     def load_dll(self, name: str, is_driver: bool = False) -> int:
         dll_path, dll_name = self.__get_path_elements(name)
@@ -260,6 +377,7 @@ class Process:
 
         cached = None
         loaded = False
+        dll = None
 
         if self.libcache:
             cached = self.libcache.restore(dll_path)
@@ -280,23 +398,29 @@ class Process:
                 for entry in cached.cmdlines:
                     self.set_cmdline(entry['name'], entry['address'], data)
 
-                self.ql.log.info(f'Loaded {dll_name} from cache')
-                loaded = True
+                dll = PE.parse(dll_path)
+
+                if dll is None:
+                    self.ql.log.warning(f'Failed to re-parse cached DLL metadata: {dll_path}')
+                else:
+                    self.init_function_tables(dll, image_base)
+                    self.queue_forwarded_exports(dll, dll_name)
+                    self.ql.log.info(f'Loaded {dll_name} from cache')
+                    loaded = True
 
         # either file was not cached, or could not be loaded to the same location in memory
         if not cached or not loaded:
-            dll = pefile.PE(dll_path, fast_load=True)
-            dll.parse_data_directories()
-            warnings = dll.get_warnings()
+            with open(dll_path, 'rb') as f:
+                dll_raw = f.read()
 
-            if warnings:
-                self.ql.log.debug(f'Warnings while loading {dll_name}:')
+            dll = PE.parse(dll_path)
 
-                for warning in warnings:
-                    self.ql.log.debug(f' - {warning}')
+            if dll is None:
+                self.ql.log.error(f'Failed to parse PE: {dll_path}')
+                return 0
 
-            image_base = dll.OPTIONAL_HEADER.ImageBase or self.dll_last_address
-            image_size = self.ql.mem.align_up(dll.OPTIONAL_HEADER.SizeOfImage)
+            image_base = dll.optional_header.imagebase or self.dll_last_address
+            image_size = self.ql.mem.align_up(dll.optional_header.sizeof_image)
             relocate = False
 
             self.ql.log.debug(f'DLL preferred base address: {image_base:#x}')
@@ -311,60 +435,41 @@ class Process:
                 self.ql.log.debug(f'DLL preferred base address is taken, loading to: {image_base:#x}')
                 relocate = True
 
+            data = _pe_build_mapped_image(dll, dll_raw)
+
             if relocate:
                 with ShowProgress(self.ql.log, 0.1337):
-                    dll.relocate_image(image_base)
+                    _pe_apply_relocations(data, dll, image_base)
 
             # initialize the function tables only after possible relocation
             self.init_function_tables(dll, image_base)
 
-            data = bytearray(dll.get_memory_mapped_image())
             assert image_size >= len(data)
 
             cmdlines = []
 
-            for sym in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                ea = image_base + sym.address
+            if dll.has_exports:
+                self.queue_forwarded_exports(dll, dll_name)
+                dll_export = dll.get_export()
 
-                if sym.forwarder:
-                    # Some exports are forwarders, meaning they
-                    # actually refer to code in other libraries.
-                    # 
-                    # For example, calls to
-                    # kernel32.InterlockedPushEntrySList
-                    #   should be forwarded to
-                    # ntdll.RtlInterlockedPushEntrySList
-                    #
-                    # If we do not properly account for forwarders then
-                    # calls to these symbols will land in the exporter's
-                    # data section and cause a lot of problems.
-                    forward_str = sym.forwarder
+                for sym in (dll_export.entries if dll_export else []):
+                    sym_name = sym.name.encode() if sym.name else None
+                    ea = image_base + sym.address
 
-                    if b'.' in forward_str:
-                        target_dll_name, target_symbol_name = forward_str.split(b'.', 1)
+                    import_symbols[ea] = {
+                        'name'    : sym_name,
+                        'ordinal' : sym.ordinal,
+                        'dll'     : dll_name.split('.')[0]
+                    }
 
-                        target_dll_filename = (target_dll_name.lower() + b'.dll').decode()
+                    if sym_name:
+                        import_table[sym_name] = ea
 
-                        # Remember the forwarded export for later.
-                        forwarded_export = ForwardedExport(dll_name, sym.ordinal, sym.name,
-                                                           target_dll_filename, target_symbol_name)
+                    import_table[sym.ordinal] = ea
+                    cmdline_entry = self.set_cmdline(sym_name, sym.address, data)
 
-                        self.forwarded_exports.append(forwarded_export)
-
-                import_symbols[ea] = {
-                    'name'    : sym.name,
-                    'ordinal' : sym.ordinal,
-                    'dll'     : dll_name.split('.')[0]
-                }
-
-                if sym.name:
-                    import_table[sym.name] = ea
-
-                import_table[sym.ordinal] = ea
-                cmdline_entry = self.set_cmdline(sym.name, sym.address, data)
-
-                if cmdline_entry:
-                    cmdlines.append(cmdline_entry)
+                    if cmdline_entry:
+                        cmdlines.append(cmdline_entry)
 
             if self.libcache:
                 cached = QlPeCacheEntry(image_base, data, cmdlines, import_symbols, import_table)
@@ -381,8 +486,8 @@ class Process:
         dll_len = image_size
 
         self.dll_size += dll_len
-        self.ql.mem.map(dll_base, dll_len, info=dll_name)
-        self.ql.mem.write(dll_base, bytes(data))
+        assert dll is not None
+        _pe_map_image(self.ql, dll, dll_base, dll_len, dll_name, data)
 
         if dll_base == self.dll_last_address:
             self.dll_last_address = self.ql.mem.align_up(self.dll_last_address + dll_len, 0x10000)
@@ -397,7 +502,7 @@ class Process:
         if not cached or not loaded:
             # parse directory entry import
             self.ql.log.debug(f'Init imports for {dll_name}')
-            self.init_imports(dll, is_driver)
+            self.init_imports(dll, is_driver, image_base)
 
             # calling DllMain is essential for dlls to initialize properly. however
             # DllMain of system libraries may fail due to incomplete or inaccurate
@@ -414,10 +519,10 @@ class Process:
 
         return dll_base
 
-    def call_dll_entrypoint(self, dll: pefile.PE, dll_base: int, dll_len: int, dll_name: str):
-        entry_address = dll.OPTIONAL_HEADER.AddressOfEntryPoint
+    def call_dll_entrypoint(self, dll: PE.Binary, dll_base: int, dll_len: int, dll_name: str):
+        entry_address = dll.optional_header.addressof_entrypoint
 
-        if dll.get_section_by_rva(entry_address) is None:
+        if dll.section_from_rva(entry_address) is None:
             return
 
         if dll_name in ('kernelbase.dll', 'kernel32.dll'):
@@ -612,19 +717,21 @@ class Process:
         self.ldr_list.append(entry_addr)
 
     @staticmethod
-    def directory_exists(pe: pefile.PE, entry: str) -> bool:
-        ent = pefile.DIRECTORY_ENTRY[entry]
+    def directory_exists(pe: PE.Binary, entry: str) -> bool:
+        if entry == 'IMAGE_DIRECTORY_ENTRY_IMPORT':
+            return pe.has_imports
+        elif entry == 'IMAGE_DIRECTORY_ENTRY_EXPORT':
+            return pe.has_exports
+        elif entry == 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG':
+            return pe.load_configuration is not None
+        return False
 
-        return pe.OPTIONAL_HEADER.DATA_DIRECTORY[ent].VirtualAddress != 0
-
-    def init_imports(self, pe: pefile.PE, is_driver: bool):
+    def init_imports(self, pe: PE.Binary, is_driver: bool, image_base: int = 0):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_IMPORT'):
             return
 
-        pe.full_load()
-
-        for entry in pe.DIRECTORY_ENTRY_IMPORT:
-            dll_name = entry.dll.decode().casefold()
+        for entry in pe.imports:
+            dll_name = entry.name.casefold()
             self.ql.log.debug(f'Requesting imports from {dll_name}')
 
             orig_dll_name = dll_name
@@ -651,17 +758,21 @@ class Process:
                     'kernel32.dll',
                     'ntdll.dll',
                     'kernelbase.dll',
-                    'ucrtbase.dll'
+                    'ucrtbase.dll',
+                    'user32.dll',
+                    'gdi32.dll',
+                    'win32u.dll'
                 )
 
-                imports = iter(entry.imports)
+                imports = iter(entry.entries)
                 failed = False
                 fallback = None
 
                 while not redirected and not failed:
                     # find all possible redirection options by scanning key dlls for the current imported symbol
                     imp = next(imports, None)
-                    redirection_options = [fallback] if imp is None else [filename for filename in key_dlls if filename in self.import_address_table and imp.name in self.import_address_table[filename]]
+                    imp_name_bytes = (imp.name.encode() if isinstance(imp.name, str) else imp.name) if imp and imp.name else None
+                    redirection_options = [fallback] if imp is None else [filename for filename in key_dlls if filename in self.import_address_table and imp_name_bytes in self.import_address_table[filename]]
 
                     # no redirection options: failed to redirect dll
                     if not redirection_options:
@@ -683,54 +794,51 @@ class Process:
                 self.ql.log.debug(f'Redirecting {dll_name} to {key_dll}')
                 dll_name = key_dll
 
-            unbound_imports = [imp for imp in entry.imports if not imp.bound]
+            all_imports = list(entry.entries)
+            lookup_dll_name = dll_name
 
-            if unbound_imports:
-                # Only load dll if encountered unbound symbol
+            if all_imports:
+                # Only load dll if there are imports to resolve
                 if not redirected:
-                    dll_base = self.load_dll(entry.dll.decode(), is_driver)
+                    dll_base = self.load_dll(lookup_dll_name, is_driver)
 
                     if not dll_base:
                         continue
 
-                for imp in unbound_imports:
-                    iat = self.import_address_table[dll_name]
+                for imp in all_imports:
+                    iat = self.import_address_table[lookup_dll_name]
+                    imp_name_bytes = (imp.name.encode() if isinstance(imp.name, str) else imp.name) if imp.name else None
 
-                    if imp.name:
-                        if imp.name not in iat:
-                            self.ql.log.debug(f'Error in loading function {imp.name.decode()} ({orig_dll_name}){", probably misdirected" if redirected else ""}')
+                    if imp_name_bytes:
+                        if imp_name_bytes not in iat:
+                            self.ql.log.debug(f'Error in loading function {imp.name} ({orig_dll_name}){", probably misdirected" if redirected else ""}')
                             continue
 
-                        addr = iat[imp.name]
+                        addr = iat[imp_name_bytes]
                     else:
                         addr = iat[imp.ordinal]
 
-                    self.ql.mem.write_ptr(imp.address, addr)
+                    self.ql.mem.write_ptr(image_base + imp.iat_address, addr)
 
-    def init_exports(self, pe: pefile.PE):
+    def init_exports(self, pe: PE.Binary):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_EXPORT'):
             return
 
-        # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
-        pe.full_load()
-        
-        # address corner case for malformed export tables where IMAGE_DIRECTORY_ENTRY_EXPORT exists, but DIRECTORY_ENTRY_EXPORT does not
-        if not hasattr(pe, 'DIRECTORY_ENTRY_EXPORT'): 
-            return
 
         iat = {}
+        pe_export = pe.get_export()
 
-        # parse directory entry export
-        for entry in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+        for entry in (pe_export.entries if pe_export else []):
             ea = self.pe_image_address + entry.address
+            entry_name = entry.name.encode() if entry.name else None
 
             self.export_symbols[ea] = {
-                'name'    : entry.name,
+                'name'    : entry_name,
                 'ordinal' : entry.ordinal
             }
 
-            if entry.name:
-                iat[entry.name] = ea
+            if entry_name:
+                iat[entry_name] = ea
 
             iat[entry.ordinal] = ea
 
@@ -804,11 +912,11 @@ class Process:
 
         self.ql.os.KUSER_SHARED_DATA = kusd_obj
 
-    def init_security_cookie(self, pe: pefile.PE, image_base: int):
+    def init_security_cookie(self, pe: PE.Binary, image_base: int):
         if not Process.directory_exists(pe, 'IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG'):
             return
 
-        cookie_rva = pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SecurityCookie - pe.OPTIONAL_HEADER.ImageBase
+        cookie_rva = pe.load_configuration.security_cookie - pe.optional_header.imagebase
 
         # get a random cookie value but keep the two most significant bytes zeroes
         #
@@ -844,10 +952,17 @@ class QlLoaderPE(QlLoader, Process):
 
         if self.ql.code:
             pe = None
+            pe_raw = None
             self.is_driver = False
         else:
-            pe = pefile.PE(self.path, fast_load=True)
-            self.is_driver = pe.is_driver()
+            with open(self.path, 'rb') as f:
+                pe_raw = f.read()
+            pe = PE.parse(self.path)
+            if pe is None:
+                raise QlErrorArch(f'Failed to parse PE: {self.path}')
+            C = PE.Header.CHARACTERISTICS
+            self.is_driver = bool(pe.header.characteristics & int(C.SYSTEM)) or \
+                             pe.optional_header.subsystem == PE.OptionalHeader.SUBSYSTEM.NATIVE
 
         ossection = f'OS{self.ql.arch.bits}'
 
@@ -868,7 +983,9 @@ class QlLoaderPE(QlLoader, Process):
         self.ldr_list = []
         self.function_tables = {}
         self.function_table_lookup = {}
+        self.function_table_entry_size = {}
         self.forwarded_exports = []
+        self.resolved_forwarded_exports = set()
         self.pe_image_address = 0
         self.pe_image_size = 0
         self.dll_size = 0
@@ -882,32 +999,35 @@ class QlLoaderPE(QlLoader, Process):
 
         self.cmdline = bytes(f'{cmdline} {cmdargs}\x00', "utf-8")
 
-        self.load(pe)
+        self.load(pe, pe_raw)
 
-    def load(self, pe: Optional[pefile.PE]):
+    def load(self, pe: Optional[PE.Binary], pe_raw: Optional[bytes] = None):
         # set stack pointer
         self.ql.log.info("Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
         if pe is not None:
+            assert pe_raw is not None
             image_name = os.path.basename(self.path)
-            image_base = pe.OPTIONAL_HEADER.ImageBase
-            image_size = self.ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
+            image_base = pe.optional_header.imagebase
+            image_size = self.ql.mem.align_up(pe.optional_header.sizeof_image)
+
+            pe_data = _pe_build_mapped_image(pe, pe_raw)
 
             # if default base address is taken, use the one specified in profile
             if not self.ql.mem.is_available(image_base, image_size):
                 image_base = self.image_address
-                pe.relocate_image(image_base)
+                _pe_apply_relocations(pe_data, pe, image_base)
 
-            self.entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+            self.entry_point = image_base + pe.optional_header.addressof_entrypoint
             self.pe_image_address = image_base
             self.pe_image_size = image_size
 
             self.ql.log.info(f'Loading {self.path} to {image_base:#x}')
             self.ql.log.info(f'PE entry point at {self.entry_point:#x}')
 
-            self.ql.mem.map(image_base, image_size, info=f'{image_name}')
-            self.images.append(Image(image_base, image_base + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, os.path.abspath(self.path)))
+            _pe_map_image(self.ql, pe, image_base, image_size, image_name, pe_data)
+            self.images.append(Image(image_base, image_base + pe.optional_header.sizeof_image, os.path.abspath(self.path)))
 
             if self.is_driver:
                 self.init_driver_object()
@@ -933,14 +1053,12 @@ class QlLoaderPE(QlLoader, Process):
 
             self.init_ki_user_shared_data()
 
-            pe.parse_data_directories()
-
-            # done manipulating pe file; write its contents into memory
-            self.ql.mem.write(image_base, bytes(pe.get_memory_mapped_image()))
-
             if self.is_driver:
                 # security cookie can be written only after image has been loaded to memory
                 self.init_security_cookie(pe, image_base)
+
+            # Initialize unwind metadata before any entrypoint code runs.
+            super().init_function_tables(pe, image_base)
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
             top_of_stack = self.stack_address + self.stack_size - 0x1000
@@ -965,11 +1083,12 @@ class QlLoaderPE(QlLoader, Process):
 
             # parse directory entry import
             self.ql.log.debug(f'Init imports for {self.path}')
-            super().init_imports(pe, self.is_driver)
+            super().init_imports(pe, self.is_driver, image_base)
 
             self.ql.log.debug(f'Done loading {self.path}')
 
-            if pe.is_driver():
+            C = PE.Header.CHARACTERISTICS
+            if self.is_driver:
                 args = (
                     (POINTER, self.driver_object_address),
                     (POINTER, self.regitry_path_address)
@@ -979,14 +1098,10 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.log.debug(f'  PDRIVER_OBJECT   DriverObject : {args[0][1]:#010x}')
                 self.ql.log.debug(f'  PUNICODE_STRING  RegistryPath : {args[1][1]:#010x}')
 
-                # We know that a driver will return, so if the user did not configure stop
-                # options, write a sentinel return value
                 ret = None if self.ql.stop_options else self.ql.stack_write(0, 0xdeadc0de)
-
-                # set up call frame for DriverEntry
                 self.ql.os.fcall.call_native(self.entry_point, args, ret)
 
-            elif pe.is_dll():
+            elif bool(pe.header.characteristics & int(C.DLL)):
                 args = (
                     (POINTER, image_base),
                     (DWORD, 1),    # DLL_PROCESS_ATTACH
@@ -998,12 +1113,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.ql.log.debug(f'  DWORD     fdwReason  : {args[1][1]:#010x}')
                 self.ql.log.debug(f'  LPVOID    lpReserved : {args[2][1]:#010x}')
 
-                # set up call frame for DllMain
                 self.ql.os.fcall.call_native(self.entry_point, args, None)
-
-            # Initialize the function tables
-            super().init_function_tables(pe, image_base)
-
         elif pe is None:
             self.ql.mem.map(self.entry_point, self.ql.os.code_ram_size, info="[shellcode]")
 
@@ -1054,7 +1164,7 @@ class ShowProgress:
     # animation marker: this is used to tell animation log records from the rest.
     _marker_ = r'$__ql_anim__'
 
-    def __init__(self, logger: Logger, interval: float) -> None:
+    def __init__(self, logger, interval: float) -> None:
         from typing import List, Callable
         from threading import Thread, Event
 

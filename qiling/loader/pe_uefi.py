@@ -4,15 +4,15 @@
 #
 
 import os
-from typing import Any, Mapping, Optional, Sequence
-from pefile import PE
+from lief import PE
 
-from unicorn.unicorn_const import UC_PROT_READ, UC_PROT_WRITE, UC_PROT_EXEC
+from typing import Any, Mapping, Optional, Sequence
 
 from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlErrorArch, QlMemoryMappedError
 from qiling.loader.loader import QlLoader, Image
+from qiling.loader.pe import _pe_apply_relocations, _pe_build_mapped_image, _pe_map_image
 from qiling.os.const import PARAM_INTN, POINTER
 
 from qiling.os.uefi import st, smst, utils
@@ -94,72 +94,33 @@ class QlLoaderPE_UEFI(QlLoader):
         """
 
         ql = self.ql
-        pe = PE(path, fast_load=True)
+
+        with open(path, 'rb') as f:
+            pe_raw = f.read()
+
+        pe = PE.parse(path)
+
+        if pe is None:
+            raise QlMemoryMappedError(f'Failed to parse UEFI module: {path}')
 
         # use image base only if it does not point to NULL
-        image_base = pe.OPTIONAL_HEADER.ImageBase or context.next_image_base
-        image_size = ql.mem.align_up(pe.OPTIONAL_HEADER.SizeOfImage)
+        image_base = pe.optional_header.imagebase or context.next_image_base
+        image_size = ql.mem.align_up(pe.optional_header.sizeof_image)
         image_name = os.path.basename(path)
 
         assert (image_base % ql.mem.pagesize) == 0, 'image base is expected to be page-aligned'
 
-        if image_base != pe.OPTIONAL_HEADER.ImageBase:
-            pe.relocate_image(image_base)
+        pe_data = _pe_build_mapped_image(pe, pe_raw)
 
-        # pe.parse_data_directories()
+        # apply relocations once to the flat image, before either mapping strategy uses it
+        if image_base != pe.optional_header.imagebase:
+            _pe_apply_relocations(pe_data, pe, image_base)
 
-        sec_alignment = pe.OPTIONAL_HEADER.SectionAlignment
-
-        def __map_sections():
-            """Load file sections to memory, each in its own memory region protected by
-            its defined permissions. That allows separation of code and data, which makes
-            it easier to detect abnomal behavior or memory corruptions.
-            """
-
-            # load the header
-            hdr_data = bytes(pe.header)
-            hdr_base = image_base
-            hdr_size = ql.mem.align_up(len(hdr_data), sec_alignment)
-            hdr_perm = UC_PROT_READ
-
-            ql.mem.map(hdr_base, hdr_size, hdr_perm, image_name)
-            ql.mem.write(hdr_base, hdr_data)
-
-            # load sections
-            for section in pe.sections:
-                if not section.IMAGE_SCN_MEM_DISCARDABLE:
-                    sec_name = section.Name.rstrip(b'\x00').decode()
-                    sec_data = bytes(section.get_data(ignore_padding=True))
-                    sec_base = image_base + section.get_VirtualAddress_adj()
-                    sec_size = ql.mem.align_up(len(sec_data), sec_alignment)
-
-                    sec_perm = sum((
-                        section.IMAGE_SCN_MEM_READ * UC_PROT_READ,
-                        section.IMAGE_SCN_MEM_WRITE * UC_PROT_WRITE,
-                        section.IMAGE_SCN_MEM_EXECUTE * UC_PROT_EXEC
-                    ))
-
-                    ql.mem.map(sec_base, sec_size, sec_perm, f'{image_name} ({sec_name})')
-                    ql.mem.write(sec_base, sec_data)
-
-        def __map_all():
-            """Load the entire file to memory as a single memory region.
-            """
-
-            data = bytes(pe.get_memory_mapped_image())
-
-            ql.mem.map(image_base, image_size, info=image_name)
-            ql.mem.write(image_base, data)
-
-        # if sections are aligned to page, we can map them separately
-        if (sec_alignment % ql.mem.pagesize) == 0:
-            __map_sections()
-        else:
-            __map_all()
+        _pe_map_image(ql, pe, image_base, image_size, image_name, pe_data, skip_discardable=True)
 
         ql.log.info(f'Module {path} loaded to {image_base:#x}')
 
-        entry_point = image_base + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+        entry_point = image_base + pe.optional_header.addressof_entrypoint
         ql.log.info(f'Module entry point at {entry_point:#x}')
 
         # the 'entry_point' member is used by the debugger. if not set, set it

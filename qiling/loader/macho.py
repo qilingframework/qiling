@@ -5,17 +5,14 @@
 
 import os, plistlib, struct
 
+from lief import MachO
+
 from .loader import QlLoader
 
 from qiling.exception import *
 from qiling.const import *
-
-from .macho_parser.parser import *
-from .macho_parser.const import *
-from .macho_parser.utils import *
 from qiling.os.macos.kernel_api.hook import *
 from qiling.os.memory import QlMemoryHeap
-
 from qiling.os.macos.const import *
 from qiling.os.macos.task import MachoTask
 from qiling.os.macos.kernel_func import FileSystem, map_commpage
@@ -23,6 +20,40 @@ from qiling.os.macos.mach_port import MachPort, MachPortManager
 from qiling.os.macos.subsystems import MachHostServer, MachTaskServer
 from qiling.os.macos.utils import env_dict_to_array, page_align_end
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
+
+
+def _lief_macho_parse(path: str, arch_type) -> 'MachO.Binary':
+    """Parse a Mach-O file with LIEF, selecting the correct arch slice from a FAT binary."""
+    cpu_map = {
+        QL_ARCH.X8664: MachO.Header.CPU_TYPE.X86_64,
+        QL_ARCH.ARM64: MachO.Header.CPU_TYPE.ARM64,
+    }
+    target_cpu = cpu_map.get(arch_type)
+    parsed = MachO.parse(path)   # always FatBinary, or None on failure
+    if parsed is None:
+        raise QlErrorMACHOFormat(f'Failed to parse Mach-O: {path}')
+    return next(
+        (b for b in parsed if target_cpu is None or b.header.cpu_type == target_cpu),
+        parsed[0]
+    )
+
+
+def _parse_macho_dysymtab_relocs(raw: bytes, offset: int, count: int) -> list:
+    """Parse Mach-O scatter relocation entries from raw binary bytes."""
+    relocs = []
+    for i in range(count):
+        entry = raw[offset + i*8 : offset + (i+1)*8]
+        r_address = struct.unpack_from('<i', entry, 0)[0]   # signed
+        r_info    = struct.unpack_from('<I', entry, 4)[0]
+        relocs.append({
+            'address'   : r_address,
+            'symbolnum' : r_info & 0xFFFFFF,
+            'pcrel'     : (r_info >> 24) & 1,
+            'length'    : (r_info >> 25) & 3,   # 0=1B, 1=2B, 2=4B, 3=8B
+            'extern'    : (r_info >> 27) & 1,
+            'rtype'     : (r_info >> 28) & 0xF,
+        })
+    return relocs
 
 
 # commpage is a shared mem space which is in a static address
@@ -128,9 +159,13 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.thread_management.cur_thread = self.ql.os.macho_thread
         self.ql.os.macho_vmmap_end = vmmap_trap_address
         self.stack_sp = stack_address + stack_size
-        self.macho_file     = MachoParser(self.ql, self.ql.path)
-        self.is_driver      = (self.macho_file.header.file_type == 0xb)
-        self.loading_file   = self.macho_file
+        self.macho_file     = _lief_macho_parse(self.ql.path, self.ql.arch.type)
+        self._page_zero_size = next(
+            (seg.virtual_size for seg in self.macho_file.segments
+             if seg.virtual_address == 0 and seg.file_size == 0),
+            0
+        )
+        self.is_driver      = (self.macho_file.header.file_type == MachO.Header.FILE_TYPE.KEXT_BUNDLE)
         self.slide          = int(self.profile.get("LOADER", "slide"), 16)
         self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
         self.string_align   = 8
@@ -159,16 +194,15 @@ class QlLoaderMACHO(QlLoader):
             loadbase = 0xffffff7000000000
         self.slide = loadbase
         self.load_address = loadbase
-        cmds = self.macho_file.commands
-        for cmd in cmds:
-            if cmd.cmd_id == LC_SEGMENT_64:
-                self.loadSegment64(cmd, False)
+        for seg in self.macho_file.segments:
+            self.loadSegment64(seg, False)
 
         self.kext_size = self.vm_end_addr - loadbase
 
         kernel_path = os.path.join(self.ql.rootfs, "System/Library/Kernels/kernel.development")
         self.ql.log.info("Parsing kernel:")
-        self.kernel = MachoParser(self.ql, kernel_path)
+        self.kernel = _lief_macho_parse(kernel_path, self.ql.arch.type)
+        self._kernel_raw = open(kernel_path, 'rb').read()
 
         # Create memory for external static symbol jmp code
         self.static_addr = self.vm_end_addr
@@ -180,43 +214,56 @@ class QlLoaderMACHO(QlLoader):
 
         # Load kernel
         self.slide = 0
-        self.loading_file = self.kernel
-        kern_cmds = self.kernel.commands
         self.kernel_base = None
-        for cmd in kern_cmds:
-            if cmd.cmd_id == LC_SEGMENT_64:
-                if self.kernel_base is None:
-                    self.kernel_base = cmd.vm_address
-                self.loadSegment64(cmd, False)
+        for seg in self.kernel.segments:
+            if self.kernel_base is None:
+                self.kernel_base = seg.virtual_address
+            self.loadSegment64(seg, False)
 
         self.ql.log.info("Kernel loaded at 0x%x" % self.kernel_base)
 
         # Resolve local relocation
-        for relocation in self.macho_file.dysymbol_table.locreloc:
+        with open(self.ql.path, 'rb') as _f:
+            self._macho_raw = _f.read()
+        dsc = self.macho_file.dynamic_symbol_command
+        all_secs = list(self.macho_file.sections)
+        locrelocs = _parse_macho_dysymtab_relocs(
+            self._macho_raw,
+            dsc.local_relocation_offset,
+            dsc.nb_local_relocations
+        )
+        for relocation in locrelocs:
+            # symbolnum is a 1-indexed section number for local relocations
+            sec_idx = relocation['symbolnum'] - 1
             seg = None
-            for segment in self.macho_file.segments:
-                if relocation.symbolnum in segment.sections_index:
-                    seg = segment
-                    break
-            current_value, = struct.unpack("<Q", self.ql.mem.read(loadbase + relocation.address, 8))
-            self.ql.log.debug("Patching relocation (0x%x): from 0x%x, update to segment %s at 0x%x" % (loadbase + relocation.address, current_value, seg.name, loadbase + seg.vm_address))
-            self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", current_value + loadbase ))
+            if 0 <= sec_idx < len(all_secs):
+                sec = all_secs[sec_idx]
+                seg = next(
+                    (s for s in self.macho_file.segments
+                     if s.virtual_address <= sec.virtual_address < s.virtual_address + max(s.virtual_size, 1)),
+                    None
+                )
+            current_value, = struct.unpack("<Q", self.ql.mem.read(loadbase + relocation['address'], 8))
+            seg_info = (seg.name, loadbase + seg.virtual_address) if seg else ('?', 0)
+            self.ql.log.debug("Patching relocation (0x%x): from 0x%x, update to segment %s at 0x%x" % (loadbase + relocation['address'], current_value, seg_info[0], seg_info[1]))
+            self.ql.mem.write(loadbase + relocation['address'], struct.pack("<Q", current_value + loadbase))
 
         # Resolve dynamic symbols
-        kernel_local_symbols_index = self.kernel.dysymbol_table.locsymbol_index
-        kernel_local_symbols_num = self.kernel.dysymbol_table.locsymbol_num
-        self.kernel_local_symbols_detail = self.kernel.symbol_table.details(kernel_local_symbols_index, kernel_local_symbols_num, self.kernel.string_table)
+        self.kernel_local_symbols_detail = {
+            sym.name.encode(): {'n_value': sym.value}
+            for sym in self.kernel.symbols
+            if not sym.is_external and sym.value != 0
+        }
+        self.kernel_extrn_symbols_detail = {
+            sym.name.encode(): {'n_value': sym.value}
+            for sym in self.kernel.symbols
+            if sym.is_external and sym.value != 0
+        }
 
-        for key in self.kernel_local_symbols_detail:
-            value = self.kernel_local_symbols_detail[key]
+        for key, value in self.kernel_local_symbols_detail.items():
             self.import_symbols[value["n_value"]] = key.decode('ascii')
 
-        kernel_extrn_symbols_index = self.kernel.dysymbol_table.defext_index
-        kernel_extrn_symbols_num = self.kernel.dysymbol_table.defext_num
-        self.kernel_extrn_symbols_detail = self.kernel.symbol_table.details(kernel_extrn_symbols_index, kernel_extrn_symbols_num, self.kernel.string_table)
-
-        for key in self.kernel_extrn_symbols_detail:
-            value = self.kernel_extrn_symbols_detail[key]
+        for key, value in self.kernel_extrn_symbols_detail.items():
             self.import_symbols[value["n_value"]] = key.decode('ascii')
 
         offset = 0
@@ -228,10 +275,18 @@ class QlLoaderMACHO(QlLoader):
         13: c3                      ret
         """
 
-        for relocation in self.macho_file.dysymbol_table.extreloc:
-            symbol = self.macho_file.symbol_table.symbols[relocation.symbolnum]
-            symname = self.macho_file.string_table[symbol.n_strx]
-            if relocation.length == 2 and relocation.rtype == 2:
+        extrelocs = _parse_macho_dysymtab_relocs(
+            self._macho_raw,
+            dsc.external_relocation_offset,
+            dsc.nb_external_relocations
+        )
+        all_syms = list(self.macho_file.symbols)
+        for relocation in extrelocs:
+            sym_idx = relocation['symbolnum']
+            if sym_idx >= len(all_syms):
+                continue
+            symname = all_syms[sym_idx].name.encode()
+            if relocation['length'] == 2 and relocation['rtype'] == 2:
                 if symname not in self.static_symbols:
                     if symname in self.kernel_local_symbols_detail:
                         real_addr = self.kernel_local_symbols_detail[symname]["n_value"]
@@ -250,44 +305,48 @@ class QlLoaderMACHO(QlLoader):
 
                     self.ql.mem.write(self.static_addr + offset, jmpcode)
 
-                    self.ql.mem.write(loadbase + relocation.address, struct.pack("<I", self.static_addr + offset - (loadbase + relocation.address + 4)))
+                    self.ql.mem.write(loadbase + relocation['address'], struct.pack("<I", self.static_addr + offset - (loadbase + relocation['address'] + 4)))
                     self.static_symbols[symname] = self.static_addr + offset
                     offset += len(jmpcode)
                 else:
-                    self.ql.mem.write(loadbase + relocation.address, struct.pack("<I", self.static_symbols[symname] - (loadbase + relocation.address + 4)))
+                    self.ql.mem.write(loadbase + relocation['address'], struct.pack("<I", self.static_symbols[symname] - (loadbase + relocation['address'] + 4)))
 
-#                 ql.log.info("Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.static_symbols[symname]))
                 continue
-            if relocation.extern == 0 or relocation.length != 3:
+            if relocation['extern'] == 0 or relocation['length'] != 3:
                 continue
 
             if symname in self.kernel_local_symbols_detail:
-                # ql.log.debug("Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_local_symbols_detail[symname]["n_value"]))
-                self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", self.kernel_local_symbols_detail[symname]["n_value"]))
+                self.ql.mem.write(loadbase + relocation['address'], struct.pack("<Q", self.kernel_local_symbols_detail[symname]["n_value"]))
             elif symname in self.kernel_extrn_symbols_detail:
-                # ql.log.debug("Patching relocation (0x%x): %s at 0x%x" % (loadbase + relocation.address, symname, self.kernel_extrn_symbols_detail[symname]["n_value"]))
-                self.ql.mem.write(loadbase + relocation.address, struct.pack("<Q", self.kernel_extrn_symbols_detail[symname]["n_value"]))
+                self.ql.mem.write(loadbase + relocation['address'], struct.pack("<Q", self.kernel_extrn_symbols_detail[symname]["n_value"]))
             else:
                 self.ql.log.info("Symbol %s not found!" % symname)
 
         # Update resolved symbols in table
         self.loadbase = loadbase
-        index = self.macho_file.dysymbol_table.locsymbol_index
-        num = self.macho_file.dysymbol_table.locsymbol_num
-        self.kext_local_symbols = self.macho_file.symbol_table.details(index, num, self.macho_file.string_table)
-
-        index = self.macho_file.dysymbol_table.defext_index
-        num = self.macho_file.dysymbol_table.defext_num
-        self.kext_extern_symbols = self.macho_file.symbol_table.details(index, num, self.macho_file.string_table)
+        self.kext_local_symbols = {
+            sym.name.encode(): {'n_value': sym.value}
+            for sym in self.macho_file.symbols
+            if not sym.is_external and sym.value != 0
+        }
+        self.kext_extern_symbols = {
+            sym.name.encode(): {'n_value': sym.value}
+            for sym in self.macho_file.symbols
+            if sym.is_external and sym.value != 0
+        }
 
         if self.IOKit is True:
             # Get exported vtables
             self.vtables = {}
-            for symbol in self.macho_file.symbol_table.symbols:
-                if symbol.n_type == 0xf and "__const".ljust(16, "\x00") == self.macho_file.sections[symbol.n_sect].name:
-                    symname = self.macho_file.string_table[symbol.n_strx]
-                    self.ql.log.info("Found vtable of %s at 0x%x" % (symname, loadbase + symbol.n_value))
-                    self.vtables[symname] = loadbase + symbol.n_value
+            all_secs_kext = list(self.macho_file.sections)
+            for sym in self.macho_file.symbols:
+                if sym.type == 0xf and sym.numberof_sections > 0:
+                    n_sect = sym.numberof_sections  # 1-indexed
+                    sec = all_secs_kext[n_sect - 1] if n_sect <= len(all_secs_kext) else None
+                    if sec and sec.name.rstrip('\x00') == '__const':
+                        symname = sym.name.encode()
+                        self.ql.log.info("Found vtable of %s at 0x%x" % (symname, loadbase + sym.value))
+                        self.vtables[symname] = loadbase + sym.value
      
             kext = self.plist["IOKitPersonalities"][self.kext_name]["IOClass"]
             user = self.plist["IOKitPersonalities"][self.kext_name]["IOUserClientClass"]
@@ -305,12 +364,13 @@ class QlLoaderMACHO(QlLoader):
             self.user_attach = None
             self.user_start = None
 
-            for relocation in self.macho_file.dysymbol_table.extreloc:
-                symbol = self.macho_file.symbol_table.symbols[relocation.symbolnum]
-                symname = self.macho_file.string_table[symbol.n_strx]
-                if b"externalMethod" in symname:
-                    current_value, = struct.unpack("<Q", self.ql.mem.read(loadbase + relocation.address, 8))
-                    print(symname, hex(relocation.address), hex(current_value))
+            for relocation in extrelocs:
+                sym_idx2 = relocation['symbolnum']
+                if sym_idx2 < len(all_syms):
+                    symname2 = all_syms[sym_idx2].name.encode()
+                    if b"externalMethod" in symname2:
+                        current_value, = struct.unpack("<Q", self.ql.mem.read(loadbase + relocation['address'], 8))
+                        print(symname2, hex(relocation['address']), hex(current_value))
 
             for symname in self.vtables:
                 # TODO: Use IDA Pro to dump offset of methods of IOService and IOUserClient objects
@@ -359,51 +419,31 @@ class QlLoaderMACHO(QlLoader):
         if depth > 5:
             return
 
-        # three pass 
-        # 1: unixthread, uuid, code signature
-        # 2: segment
-        # 3: dyld
-        for pass_count in range(1, 4):
+        binary = self.dyld_file if isdyld else self.macho_file
 
-            if isdyld:
-                cmds = self.dyld_file.commands
-            else:
-                cmds = self.macho_file.commands
+        # Pass 1: thread/main/uuid/code signature
+        if binary.thread_command is not None:
+            self.loadUnixThread(binary.thread_command, isdyld)
+        elif binary.main_command is not None:
+            self.loadMain(binary.main_command)
+        self.loadUuid()
+        self.loadCodeSignature()
 
-            for cmd in cmds:
-                if pass_count == 1:
-                    if cmd.cmd_id == LC_UNIXTHREAD:
-                        self.loadUnixThread(cmd, isdyld)
+        # Pass 2: segments
+        for seg in binary.segments:
+            self.loadSegment64(seg, isdyld)
 
-                    if cmd.cmd_id == LC_UUID:
-                        self.loadUuid()
-
-                    if cmd.cmd_id == LC_CODE_SIGNATURE:
-                        self.loadCodeSignature()
-
-                    if cmd.cmd_id == LC_MAIN:
-                        self.loadMain(cmd)
-
-                if pass_count == 2:
-                    if cmd.cmd_id == LC_SEGMENT:
-                        pass
-
-                    if cmd.cmd_id == LC_SEGMENT_64:
-                        self.loadSegment64(cmd, isdyld)
-
-                if pass_count == 3:
-                    if cmd.cmd_id == LC_LOAD_DYLINKER:
-                        self.loadDylinker(cmd)
-                        self.using_dyld = True
-                        if not isdyld:
-                            if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
-                            self.dyld_path =  os.path.join(self.ql.rootfs + self.dyld_path)
-                            self.dyld_file = MachoParser(self.ql, self.dyld_path)
-                            self.loading_file = self.dyld_file
-                            self.proc_entry = self.loadMacho(depth + 1, True)
-                            self.loading_file = self.macho_file
-                            self.using_dyld = True
+        # Pass 3: dylinker
+        if binary.dylinker is not None:
+            self.loadDylinker(binary.dylinker)
+            self.using_dyld = True
+            if not isdyld:
+                if not self.dyld_path:
+                    raise QlErrorMACHOFormat("Error No Dyld path")
+                self.dyld_path = os.path.join(self.ql.rootfs + self.dyld_path)
+                self.dyld_file = _lief_macho_parse(self.dyld_path, self.ql.arch.type)
+                self.proc_entry = self.loadMacho(depth + 1, True)
+                self.using_dyld = True
 
         if depth == 0:
             self.mmap_address = mmap_address
@@ -424,17 +464,14 @@ class QlLoaderMACHO(QlLoader):
 
         return self.proc_entry
         
-    def loadSegment64(self, cmd, isdyld):
+    def loadSegment64(self, seg, isdyld):
         PAGE_SIZE = 0x1000
-        if isdyld:
-            slide = self.dyld_slide
-        else:
-            slide = self.slide
-        vaddr_start = cmd.vm_address + slide
-        vaddr_end = cmd.vm_address + cmd.vm_size + slide 
-        seg_size = cmd.vm_size
-        seg_name = cmd.segment_name
-        seg_data = bytes(self.loading_file.get_segment(seg_name).content)
+        slide = self.dyld_slide if isdyld else self.slide
+        vaddr_start = seg.virtual_address + slide
+        vaddr_end   = seg.virtual_address + seg.virtual_size + slide
+        seg_size    = seg.virtual_size
+        seg_name    = seg.name
+        seg_data    = bytes(seg.content)
 
         if seg_size == 0:
             return -1
@@ -460,11 +497,11 @@ class QlLoaderMACHO(QlLoader):
         return vaddr_start
     
     def loadUnixThread(self, cmd, isdyld):
+        entry = cmd.pc
         if not isdyld:
-            self.binary_entry = cmd.entry
- 
-        self.proc_entry = cmd.entry
-        self.ql.log.debug("Binary Thread Entry: {}".format(hex(cmd.entry)))
+            self.binary_entry = entry
+        self.proc_entry = entry
+        self.ql.log.debug("Binary Thread Entry: {}".format(hex(entry)))
 
 
     def loadUuid(self):
@@ -476,10 +513,10 @@ class QlLoaderMACHO(QlLoader):
         pass
     
     def loadMain(self, cmd, isdyld=False):
-        if self.macho_file.page_zero_size:
+        if self._page_zero_size:
             if not isdyld:
-                self.binary_entry = cmd.entry_offset + self.macho_file.page_zero_size
-            self.proc_entry = cmd.entry_offset + self.macho_file.page_zero_size
+                self.binary_entry = cmd.entrypoint + self._page_zero_size
+            self.proc_entry = cmd.entrypoint + self._page_zero_size
 
     def loadDylinker(self, cmd):
         self.dyld_path = cmd.name
@@ -553,9 +590,7 @@ class QlLoaderMACHO(QlLoader):
        
         if self.using_dyld:
             ptr -= 4
-            #ql.log.info("Binary Dynamic Entry Point: {:X}".format(self.binary_entry))
-            self.push_stack_addr(self.macho_file.header_address)
-            # self.push_stack_addr(self.binary_entry)
+            self.push_stack_addr(self._page_zero_size)  # header_address == page_zero_size
 
         return self.stack_sp
 
