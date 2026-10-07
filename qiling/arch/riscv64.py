@@ -38,11 +38,14 @@ class QlArchRISCV64(QlArchRISCV):
     @cached_property
     def disassembler(self) -> Cs:
         try:
-            from capstone import CS_ARCH_RISCV, CS_MODE_RISCV64, CS_MODE_RISCVC
+            from capstone import CS_ARCH_RISCV, CS_MODE_RISCV64
         except ImportError:
             raise QlErrorNotImplemented("Capstone does not yet support riscv, upgrade to capstone 5.0")
-        else:
-            return Cs(CS_ARCH_RISCV, CS_MODE_RISCV64 + CS_MODE_RISCVC)
+        try:
+            from capstone import CS_MODE_RISCV_C as CS_MODE_RISCVC
+        except ImportError:
+            from capstone import CS_MODE_RISCVC
+        return Cs(CS_ARCH_RISCV, CS_MODE_RISCV64 + CS_MODE_RISCVC)
 
     @cached_property
     def assembler(self) -> Ks:
