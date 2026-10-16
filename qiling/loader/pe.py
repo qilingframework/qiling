@@ -80,6 +80,7 @@ class Process:
     pe_image_address: int
     stack_address: int
     stack_size: int
+    tls_templates: List[bytes]
 
     dlls: MutableMapping[str, int]
     import_address_table: MutableMapping[str, Mapping]
@@ -399,6 +400,13 @@ class Process:
             self.ql.log.debug(f'Init imports for {dll_name}')
             self.init_imports(dll, is_driver)
 
+            if not is_driver:
+                self.ql.log.debug(f'Init TLS for {dll_name}')
+                self.init_module_tls(dll)
+
+                self.ql.os.thread_manager.init_tls(self.tls_templates)
+                self.ql.os.thread_manager.update_tls_address()
+
             # calling DllMain is essential for dlls to initialize properly. however
             # DllMain of system libraries may fail due to incomplete or inaccurate
             # mock implementation. due to unicorn limitations, recovering from such
@@ -492,6 +500,35 @@ class Process:
         self.ql.mem.write(addr, data)
 
         return {"name": name, "address": address}
+
+    def init_module_tls(self, module: pefile.PE):
+        if hasattr(module, "DIRECTORY_ENTRY_TLS"):
+            # Not every module has a TLS directory entry,
+            # so we only bother with allocating a TLS block
+            # for the module if the module actually uses TLS.
+
+            tls_struct = module.DIRECTORY_ENTRY_TLS.struct
+
+            tls_data_block_size = tls_struct.EndAddressOfRawData - tls_struct.StartAddressOfRawData
+
+            # The Windows loader places a zero-initialized block immediately
+            # after the data block, with size specified by SizeOfZeroFill.
+            # So the total size of the TLS block is the size of the data block
+            # plus the size of the zero-initialized block.
+            tls_zero_block_size = tls_struct.SizeOfZeroFill
+
+            tls_data_block = bytes(self.ql.mem.read(tls_struct.StartAddressOfRawData, tls_data_block_size))
+            tls_zero_block = bytes([0] for _ in range(tls_zero_block_size))
+            tls_block = tls_data_block + tls_zero_block
+
+            module_tls_index = len(self.tls_templates)
+            self.tls_templates.append(tls_block)
+
+            tls_index_bytes = module_tls_index.to_bytes(4, byteorder='little')
+
+            # The module expects to receive its index in the TLS vector
+            # at the location specified by AddressOfIndex
+            self.ql.mem.write(tls_struct.AddressOfIndex, tls_index_bytes)
 
     def init_teb(self):
         teb_struct = make_teb(self.ql.arch.bits)
@@ -825,6 +862,7 @@ class QlLoaderPE(QlLoader, Process):
         self.ql       = ql
         self.path     = self.ql.path
         self.libcache = QlPeCache() if libcache else None
+        self.tls_templates = []
 
     def run(self):
         self.init_dlls = (
@@ -927,9 +965,12 @@ class QlLoaderPE(QlLoader, Process):
                 self.init_peb()
                 self.init_ldr_data()
                 self.init_exports(pe)
+                self.init_module_tls(pe)
 
                 # add image to ldr table
                 self.add_ldr_data_table_entry(image_name)
+
+                self.ql.os.thread_manager.init_tls(self.tls_templates)
 
             self.init_ki_user_shared_data()
 
@@ -1031,6 +1072,10 @@ class QlLoaderPE(QlLoader, Process):
             # load dlls
             for each in self.init_dlls:
                 super().load_dll(each, self.is_driver)
+
+        # set the TLS address in the TEB to the main thread's
+        # TLS vector
+        self.ql.os.thread_manager.update_tls_address()
 
         # move entry_point to ql.os
         self.ql.os.entry_point = self.entry_point
