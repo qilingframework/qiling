@@ -42,6 +42,15 @@ def hook_GetLastError(ql: Qiling, address: int, params):
     'dwErrCode' : DWORD
 })
 def hook_SetLastError(ql: Qiling, address: int, params):
+    # TODO: Make this compatible with the new TLS emulation.
+    # Under the hood, the Windows implementation uses TLS to store last error
+    # codes.
+    # 
+    # Alternatively, these hooks could be removed as the native implementations
+    # appear to work with the new TLS emulation, however any Qiling hooks that
+    # rely on setting ql.os.last_error would have to be rewritten to access the
+    # last error stored in TLS instead.
+    
     ql.os.last_error = params['dwErrCode']
 
 # UINT SetErrorMode(
