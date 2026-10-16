@@ -71,9 +71,7 @@ def hook_GetStartupInfoW(ql: Qiling, address: int, params):
 # DWORD TlsAlloc();
 @winsdkapi(cc=STDCALL, params={})
 def hook_TlsAlloc(ql: Qiling, address: int, params):
-    idx = ql.os.thread_manager.cur_thread.tls_index
-    ql.os.thread_manager.cur_thread.tls_index += 1
-    ql.os.thread_manager.cur_thread.tls[idx] = 0
+    idx = ql.os.thread_manager.tls_alloc()
 
     return idx
 
@@ -86,11 +84,10 @@ def hook_TlsAlloc(ql: Qiling, address: int, params):
 def hook_TlsFree(ql: Qiling, address: int, params):
     idx = params['dwTlsIndex']
 
-    if idx not in ql.os.thread_manager.cur_thread.tls:
+    if not ql.os.thread_manager.tls_free(idx):
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
 
-    del (ql.os.thread_manager.cur_thread.tls[idx])
     return 1
 
 # LPVOID TlsGetValue(
@@ -102,14 +99,15 @@ def hook_TlsFree(ql: Qiling, address: int, params):
 def hook_TlsGetValue(ql: Qiling, address: int, params):
     idx = params['dwTlsIndex']
 
-    if idx not in ql.os.thread_manager.cur_thread.tls:
-        ql.os.last_error = ERROR_INVALID_PARAMETER
-        return 0
+    value = ql.os.thread_manager.tls_get_value(idx)
+
+    if value is None:
+        return ERROR_INVALID_PARAMETER
 
     # api explicity clears last error on success:
     # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
     ql.os.last_error = 0
-    return ql.os.thread_manager.cur_thread.tls[idx]
+    return value
 
 # BOOL TlsSetValue(
 #   DWORD  dwTlsIndex,
@@ -121,12 +119,12 @@ def hook_TlsGetValue(ql: Qiling, address: int, params):
 })
 def hook_TlsSetValue(ql: Qiling, address: int, params):
     idx = params['dwTlsIndex']
+    value = params['lpTlsValue']
 
-    if idx not in ql.os.thread_manager.cur_thread.tls:
+    if not ql.os.thread_manager.tls_set_value(idx, value):
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
 
-    ql.os.thread_manager.cur_thread.tls[idx] = params['lpTlsValue']
     return 1
 
 # DWORD GetCurrentThreadId(
@@ -199,9 +197,8 @@ def hook_CreateThread(ql: Qiling, address: int, params):
     ql.os.handle_manager.append(new_handle)
 
     # set lpThreadId
-    # FIXME: Temporary fix for the crash
-    # if lpThreadId != 0:
-    # ql.mem.write_ptr(lpThreadId, thread_id)
+    if lpThreadId != 0:
+        ql.mem.write_ptr(lpThreadId, new_thread.id)
 
     # set thread handle
     return new_handle.id
@@ -343,4 +340,22 @@ def hook_OpenThreadToken(ql: Qiling, address: int, params):
     'lpUserTime'     : LPFILETIME
 })
 def hook_GetThreadTimes(ql: Qiling, address: int, params):
+    return 1
+
+# HRESULT SetThreadDescription(
+#   HANDLE hThread,
+#   PCWSTR lpThreadDescription
+# );
+@winsdkapi(cc=STDCALL, params={
+    'hThread'        : HANDLE,
+    'lpThreadDescription' : PCWSTR,
+})
+def hook_SetThreadDescription(ql: Qiling, address: int, params):
+    # The Rust runtime init calls this function but
+    # does not seem to depend on a full and correct implementation.
+    # 
+    # The native implementation causes issues so we simply return nonzero
+    # indicating success.
+    # 
+    # TODO: emulate this correctly, along with GetThreadDescription.
     return 1
