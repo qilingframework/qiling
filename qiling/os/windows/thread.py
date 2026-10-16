@@ -214,7 +214,7 @@ class QlWindowsThreadManagement:
         self.threads.append(thread)
 
     def do_schedule(self) -> bool:
-        need_schedule = self.cur_thread.is_stop() or (self.icount % QlWindowsThreadManagement.TIME_SLICE) == 0
+        need_schedule = self.cur_thread.is_stop() or self.cur_thread.has_waitfor() or (self.icount % QlWindowsThreadManagement.TIME_SLICE) == 0
         switched = False
 
         if need_schedule:
