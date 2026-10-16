@@ -169,10 +169,11 @@ class QlWindowsThread(QlThread):
 
         if TYPE_CHECKING:
             loader = cast('QlLoaderPE', loader)
-            
-        loader.TEB.TlsAddress = self.tls_vector_addr
 
-        self.ql.log.debug(f"Set TEB.TlsAddress={self.tls_vector_addr:#x} for thread ID {self.id}")
+        if not loader.is_driver:
+            loader.TEB.TlsAddress = self.tls_vector_addr
+
+            self.ql.log.debug(f"Set TEB.TlsAddress={self.tls_vector_addr:#x} for thread ID {self.id}")
 
 
 # Simple Thread Manager
