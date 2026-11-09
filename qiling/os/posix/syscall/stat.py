@@ -8,9 +8,12 @@ import ctypes
 import struct
 from typing import Callable
 
+from unicorn import UcError
+
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import EIO, NR_OPEN, EBADF, AT_FDCWD, AT_EMPTY_PATH
+from qiling.os.posix.const import NR_OPEN, AT_FDCWD, AT_EMPTY_PATH
+from qiling.os.posix.const_mapping import ql_errno_mapping, get_errno_class
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -1182,7 +1185,7 @@ def statFamily(ql: Qiling, path: int, ptr: int, name: str, stat_func, struct_fun
         info = stat_func(real_path)
     except OSError as e:
         ql.log.debug(f'{name}("{file_path}", {ptr:#x}) read/write fail')
-        return -e.errno
+        return -ql_errno_mapping(ql, e.errno)
     else:
         buf = struct_func(ql, info)
         ql.mem.write(ptr, buf)
@@ -1234,7 +1237,7 @@ def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
     try:
         os.chmod(hpath, mode)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         ret = 0
 
@@ -1244,18 +1247,20 @@ def ql_syscall_chmod(ql: Qiling, filename: int, mode: int):
 
 
 def ql_syscall_fchmod(ql: Qiling, fd: int, mode: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     if fd not in range(NR_OPEN):
-        return -EBADF
+        return -errno_class.EBADF.value
 
     f = ql.os.fd[fd]
 
     if f is None:
-        return -EBADF
+        return -errno_class.EBADF.value
 
     try:
         os.fchmod(f.fileno(), mode)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         ret = 0
 
@@ -1270,7 +1275,7 @@ def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags:
     try:
         stat = Stat(real_path, dirfd)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         buf = pack_stat64_struct(ql, stat)
         ql.mem.write(buf_ptr, buf)
@@ -1285,7 +1290,7 @@ def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf: int, flags: in
     try:
         stat = Stat(real_path, dirfd)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         data = pack_stat_struct(ql, stat)
         ql.mem.write(buf, data)
@@ -1296,18 +1301,20 @@ def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf: int, flags: in
 
 
 def __do_fstat(ql: Qiling, fd: int, buf: int, method: Callable) -> int:
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     if fd not in range(NR_OPEN):
-        return -EBADF
+        return -errno_class.EBADF.value
 
     f = ql.os.fd[fd]
 
     if f is None or not hasattr(f, "fstat"):
-        return -EBADF
+        return -errno_class.EBADF.value
 
     try:
         fstat = f.fstat()
-    except OSError:
-        return -EIO
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     if fstat != -1:
         data = method(ql, fstat)
@@ -1440,6 +1447,8 @@ class Statx64EB(ctypes.BigEndianStructure):
 # int statx(int dirfd, const char *restrict pathname, int flags,
 #                  unsigned int mask, struct statx *restrict statxbuf);
 def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, buf_ptr: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     is_eb = ql.arch.endian == QL_ENDIAN.EB
 
     def statx_convert_timestamp(tv_sec, tv_nsec):
@@ -1493,8 +1502,13 @@ def ql_syscall_statx(ql: Qiling, dirfd: int, path: int, flags: int, mask: int, b
 
         regreturn = 0
     
-    except Exception as e:
-        regreturn = -1
+    except OSError as ex:
+        regreturn = -ql_errno_mapping(ql, ex.errno)
+    except UcError:
+        regreturn = -errno_class.EFAULT.value
+    except NotImplementedError:
+        # dir_fd is not supported on all hosting platforms (e.g. Windows)
+        regreturn = -errno_class.EOPNOTSUPP.value
 
     return regreturn
 
@@ -1512,7 +1526,7 @@ def ql_syscall_mknodat(ql: Qiling, dirfd: int, path: int, mode: int, dev: int):
     try:
         os.mknod(real_path, mode, dev, dir_fd=dirfd)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         ret = 0
 
@@ -1531,7 +1545,7 @@ def ql_syscall_mkdir(ql: Qiling, pathname: int, mode: int):
     try:
         os.mkdir(hpath, mode)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         ret = 0
 
@@ -1550,7 +1564,7 @@ def ql_syscall_rmdir(ql: Qiling, pathname: int):
     try:
         os.rmdir(hpath)
     except OSError as ex:
-        ret = -ex.errno
+        ret = -ql_errno_mapping(ql, ex.errno)
     else:
         ret = 0
 
@@ -1565,8 +1579,8 @@ def ql_syscall_fstatfs(ql: Qiling, fd: int, buf: int):
 
     try:
         ql.mem.write(buf, data)
-    except:
-        regreturn = -1
+    except UcError:
+        regreturn = -get_errno_class(ql.arch.type, ql.os.type).EFAULT.value
 
     return regreturn
 
@@ -1576,8 +1590,8 @@ def ql_syscall_statfs(ql: Qiling, path: int, buf: int):
 
     try:
         ql.mem.write(buf, data)
-    except:
-        regreturn = -1
+    except UcError:
+        regreturn = -get_errno_class(ql.arch.type, ql.os.type).EFAULT.value
 
     return regreturn
 

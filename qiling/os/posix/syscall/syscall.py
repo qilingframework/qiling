@@ -5,6 +5,7 @@
 
 from qiling import Qiling
 from qiling.os.posix.const import *
+from qiling.os.posix.const_mapping import get_errno_class
 
 from .shm import *
 from .msg import *
@@ -19,7 +20,7 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
 
     def __call_shmat(*args: int) -> int:
         if version == 1:
-            return -EINVAL
+            return -get_errno_class(ql.arch.type, ql.os.type).EINVAL.value
 
         return ql_syscall_shmat(ql, args[0], args[3], args[1])
 
@@ -38,7 +39,7 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
     def __call_msgrcv(*args: int) -> int:
         if version == 0:
             if args[3] == 0:
-                return -EINVAL
+                return -get_errno_class(ql.arch.type, ql.os.type).EINVAL.value
 
             msgp = ql.mem.read_ptr(args[3])
             msgtyp = ql.mem.read_ptr(args[3] + ql.arch.pointersize)
@@ -59,7 +60,7 @@ def ql_syscall_ipc(ql: Qiling, call: int, first: int, second: int, third: int, p
     }
 
     if call not in ipc_call:
-        return -ENOSYS
+        return -get_errno_class(ql.arch.type, ql.os.type).ENOSYS.value
 
     return ipc_call[call](first, second, third, ptr, fifth)
 

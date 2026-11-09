@@ -10,7 +10,7 @@ from math import floor
 from qiling import Qiling
 from qiling.arch.x86_const import *
 from qiling.os.freebsd.const import *
-from qiling.os.posix.const import ENOENT
+from qiling.os.posix.const_mapping import get_errno_class
 from qiling.os.posix.syscall.unistd import ql_syscall_getcwd
 from qiling.os.posix.syscall.stat import ql_syscall_newfstatat
 
@@ -89,7 +89,7 @@ def ql_syscall___sysctl(ql: Qiling, name: int, namelen: int, old: int, oldlenp: 
 
             ql.mem.write_ptr(oldlenp, out_len, 4, signed=True)
 
-        return -ENOENT
+        return -get_errno_class(ql.arch.type, ql.os.type).ENOENT.value
 
     if vecs[0] == CTL_KERN:
         if vecs[1] == KERN_OSRELDATE:

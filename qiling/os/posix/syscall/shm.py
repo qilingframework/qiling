@@ -9,10 +9,12 @@ from qiling import Qiling
 from qiling.const import QL_ARCH
 from qiling.exception import QlMemoryMappedError
 from qiling.os.posix.const import *
+from qiling.os.posix.const_mapping import get_errno_class
 from qiling.os.posix.shm import QlShmId
 
 
 def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
 
     def __create_shm(key: int, size: int, flags: int) -> int:
         """Create a new shared memory segment for the specified key.
@@ -21,7 +23,7 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
         """
 
         if len(ql.os.shm) >= SHMMNI:
-            return -ENOSPC
+            return -errno_class.ENOSPC.value
 
         mode = flags & ((1 << 9) - 1)
 
@@ -54,13 +56,13 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
                 shmid = __create_shm(key, size, shmflg)
 
             else:
-                return -ENOENT
+                return -errno_class.ENOENT.value
 
         # a shm with the specified key exists
         else:
             # the user asked to create a new one?
             if shmflg & (IPC_CREAT | IPC_EXCL):
-                return -EEXIST
+                return -errno_class.EEXIST.value
 
             # check whether the user has permissions to access this shm
             # FIXME: should probably use ql.os.cuid instead, but we don't support it yet
@@ -68,17 +70,19 @@ def ql_syscall_shmget(ql: Qiling, key: int, size: int, shmflg: int):
                 return shmid
 
             else:
-                return -EACCES
+                return -errno_class.EACCES.value
 
     return shmid
 
 
 def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     shm = ql.os.shm.get_by_id(shmid)
 
     # a shm with the specified key does not exist
     if shm is None:
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     if shmaddr == 0:
         # system may choose any suitable page-aligned address
@@ -100,7 +104,7 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
     else:
         # shmaddr is expected to be aligned
         if shmaddr & (ql.mem.pagesize - 1):
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
         attaddr = shmaddr
 
@@ -114,11 +118,11 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
 
     # user asked to attached the seg as readable; is it allowed?
     if (perms & UC_PROT_READ) and not (shm.mode & SHM_R):
-        return -EACCES
+        return -errno_class.EACCES.value
 
     # user asked to attached the seg as writable; is it allowed?
     if (perms & UC_PROT_WRITE) and not (shm.mode & SHM_W):
-        return -EACCES
+        return -errno_class.EACCES.value
 
     # TODO: if segment is already attached, there is no need to map another memory for it.
     # if we do, data changes will not be reflected between the segment attachments. we could
@@ -129,7 +133,7 @@ def ql_syscall_shmat(ql: Qiling, shmid: int, shmaddr: int, shmflg: int):
         # attach the segment at shmaddr
         ql.mem.map(attaddr, shm.segsz, perms, '[shm]')
     except QlMemoryMappedError:
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     # track attachment
     shm.attach.append(attaddr)
@@ -143,7 +147,7 @@ def ql_syscall_shmdt(ql: Qiling, shmaddr: int):
     shm = ql.os.shm.get_by_attaddr(shmaddr)
 
     if shm is None:
-        return -EINVAL
+        return -get_errno_class(ql.arch.type, ql.os.type).EINVAL.value
 
     shm.attach.remove(shmaddr)
 

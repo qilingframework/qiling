@@ -867,6 +867,45 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    # Regression for failed syscalls reporting EPERM: a handler that fails on the
+    # host must return the matching emulated errno rather than a bare -1, which
+    # libc reads as EPERM (e.g. musl gives up searching its library paths unless
+    # open fails with ENOENT).
+    def test_linux_errno_from_host_error(self):
+        import tempfile
+        from qiling.os.posix.syscall.unistd import ql_syscall_unlink
+
+        with tempfile.TemporaryDirectory() as rootfs:
+            ql = Qiling(code=b"\xCC", archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX,
+                        rootfs=rootfs, verbose=QL_VERBOSE.OFF)
+
+            base = 0x100000
+            ql.mem.map(base, 0x1000)
+            ql.mem.write(base, b"/missing\x00")
+
+            ENOENT = 2
+            self.assertEqual(ql_syscall_unlink(ql, base), -ENOENT)
+
+            del ql
+
+    # Errno values are not the same on all architectures: MIPS uses its own
+    # numbering (ENOSYS = 89, not the generic 38). Handlers used to return the
+    # generic value to every guest.
+    def test_linux_errno_mips(self):
+        from qiling.const import QL_ENDIAN
+        from qiling.os.posix.syscall.syscall import ql_syscall_ipc
+
+        ENOSYS = {QL_ARCH.X8664: 38, QL_ARCH.MIPS: 89}
+
+        for archtype, endian in ((QL_ARCH.X8664, QL_ENDIAN.EL), (QL_ARCH.MIPS, QL_ENDIAN.EB)):
+            ql = Qiling(code=b"\x00\x00\x00\x00", archtype=archtype, ostype=QL_OS.LINUX,
+                        endian=endian, verbose=QL_VERBOSE.OFF)
+
+            # an unknown ipc call is not implemented
+            self.assertEqual(ql_syscall_ipc(ql, 0xffff, 0, 0, 0, 0, 0), -ENOSYS[archtype])
+
+            del ql
+
     def test_memory_search(self):
         ql = Qiling(code=b"\xCC", archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.DEBUG)
 

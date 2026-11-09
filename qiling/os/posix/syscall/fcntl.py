@@ -8,13 +8,15 @@ import os
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH
 from qiling.os.posix.const import *
-from qiling.os.posix.const_mapping import ql_open_flag_mapping, get_open_flags_class
+from qiling.os.posix.const_mapping import ql_open_flag_mapping, get_open_flags_class, ql_errno_mapping, get_errno_class
 from qiling.os.posix.filestruct import ql_socket
 
 from .unistd import virtual_abspath_at, get_opened_fd
 
 
 def __do_open(ql: Qiling, absvpath: str, flags: int, mode: int) -> int:
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     flags &= 0xffffffff
     mode &= 0xffffffff
 
@@ -22,7 +24,7 @@ def __do_open(ql: Qiling, absvpath: str, flags: int, mode: int) -> int:
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
-        return -EMFILE
+        return -errno_class.EMFILE.value
 
     if ql.arch.type is QL_ARCH.ARM and ql.os.type is not QL_OS.QNX:
         mode = 0
@@ -33,13 +35,13 @@ def __do_open(ql: Qiling, absvpath: str, flags: int, mode: int) -> int:
     try:
         ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(absvpath, flags, mode)
     except FileNotFoundError:
-        return -ENOENT
+        return -errno_class.ENOENT.value
     except FileExistsError:
-        return -EEXIST
+        return -errno_class.EEXIST.value
     except IsADirectoryError:
-        return -EISDIR
+        return -errno_class.EISDIR.value
     except PermissionError:
-        return -EACCES
+        return -errno_class.EACCES.value
 
     return idx
 
@@ -81,14 +83,16 @@ def ql_syscall_creat(ql: Qiling, filename: int, mode: int):
 
 
 def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -EBADF
+        return -errno_class.EBADF.value
 
     if cmd == F_DUPFD:
         if arg not in range(NR_OPEN):
-            regreturn = -EINVAL
+            regreturn = -errno_class.EINVAL.value
 
         for idx in range(arg, len(ql.os.fd)):
             if ql.os.fd[idx] is None:
@@ -96,7 +100,7 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
                 regreturn = idx
                 break
         else:
-            regreturn = -EMFILE
+            regreturn = -errno_class.EMFILE.value
 
     elif cmd == F_GETFD:
         regreturn = int(getattr(f, "close_on_exec", False))
@@ -114,24 +118,23 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
         regreturn = 0
 
     else:
-        regreturn = -EINVAL
+        regreturn = -errno_class.EINVAL.value
 
     return regreturn
 
 
 def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
-    if fd not in range(NR_OPEN):
-        return -1
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
 
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
+        return -errno_class.EBADF.value
 
     # https://linux.die.net/man/2/fcntl64
     if cmd == F_DUPFD:
         if arg not in range(NR_OPEN):
-            regreturn = -1
+            regreturn = -errno_class.EINVAL.value
 
         for idx in range(arg, len(ql.os.fd)):
             if ql.os.fd[idx] is None:
@@ -139,7 +142,7 @@ def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
                 regreturn = idx
                 break
         else:
-            regreturn = -1
+            regreturn = -errno_class.EMFILE.value
 
     elif cmd == F_GETFL:
         regreturn = 2
@@ -178,7 +181,7 @@ def ql_syscall_rename(ql: Qiling, oldname_buf: int, newname_buf: int):
         try:
             ql.os.fs_mapper.rename_mapping(old_vpath, new_vpath)
         except KeyError:
-            regreturn = -1
+            regreturn = -get_errno_class(ql.arch.type, ql.os.type).ENOENT.value
         else:
             regreturn = 0
 
@@ -193,8 +196,8 @@ def ql_syscall_rename(ql: Qiling, oldname_buf: int, newname_buf: int):
 
         try:
             os.rename(old_hpath, new_hpath)
-        except OSError:
-            regreturn = -1
+        except OSError as ex:
+            regreturn = -ql_errno_mapping(ql, ex.errno)
         else:
             regreturn = 0
 

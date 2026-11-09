@@ -4,6 +4,8 @@
 #
 
 from __future__ import annotations
+
+import errno
 from typing import TYPE_CHECKING, Dict, Mapping, Type, Union
 
 from qiling.const import QL_ARCH, QL_OS
@@ -202,7 +204,95 @@ def socket_option_mapping(value: int, archtype: QL_ARCH) -> str:
     return socket_option(value).name
 
 
+def get_errno_class(archtype: QL_ARCH, ostype: QL_OS) -> Union[Type[Enum], None]:
+    """Retrieve the appropriate errno class for given architecture and OS.
+
+    Args:
+        archtype: architecture type
+        ostype: operating system type
+
+    Returns: appropriate errno class, or `None` if the specified arch and OS combination
+    is not supported
+    """
+
+    errno_by_os: Dict[QL_OS, Dict[QL_ARCH, Type[Enum]]] = {
+        QL_OS.LINUX: {
+            QL_ARCH.X86:     linux_errno,
+            QL_ARCH.X8664:   linux_errno,
+            QL_ARCH.ARM:     linux_errno,
+            QL_ARCH.ARM64:   linux_errno,
+            QL_ARCH.MIPS:    linux_mips_errno,
+            QL_ARCH.RISCV:   linux_errno,
+            QL_ARCH.RISCV64: linux_errno,
+            QL_ARCH.PPC:     linux_errno
+        },
+
+        QL_OS.FREEBSD: {
+            QL_ARCH.X86:   freebsd_errno,
+            QL_ARCH.X8664: freebsd_errno
+        },
+
+        QL_OS.MACOS: {
+            QL_ARCH.X86:   macos_errno,
+            QL_ARCH.X8664: macos_errno,
+            QL_ARCH.ARM64: macos_errno
+        },
+
+        QL_OS.QNX: {
+            QL_ARCH.ARM:   qnx_errno,
+            QL_ARCH.ARM64: qnx_errno
+        }
+    }
+
+    cls = None
+
+    if ostype in errno_by_os:
+        errno_by_arch = errno_by_os[ostype]
+
+        if archtype in errno_by_arch:
+            cls = errno_by_arch[archtype]
+
+    return cls
+
+
+def ql_errno_mapping(ql: Qiling, err: int) -> int:
+    """Convert a hosting OS errno to the emulated OS errno.
+
+    Errors are matched by name. Hosting errors that have no equivalent on the emulated OS
+    are reported as the emulated OS `EIO`.
+
+    Args:
+        ql: qiling instance
+        err: positive hosting OS errno
+
+    Returns: positive emulated OS errno
+    """
+
+    # the host may give one errno several names; prefer the canonical one
+    name = next((n for n in ('EAGAIN', 'EDEADLK', 'EOPNOTSUPP') if getattr(errno, n, None) == err), None)
+
+    if name is None:
+        name = errno.errorcode.get(err, '').replace('WSAE', 'E', 1)
+
+    archtype = ql.arch.type
+    ostype = ql.os.type
+
+    emul_errno = get_errno_class(archtype, ostype)
+
+    if emul_errno is None:
+        raise NotImplementedError(f'errno was not defined for emulated {archtype.name} {ostype.name}')
+
+    members = emul_errno.__members__
+
+    # linux spells the missing extended attribute error ENODATA, bsd systems spell it ENOATTR
+    if name not in members:
+        name = {'ENODATA': 'ENOATTR', 'ENOATTR': 'ENODATA'}.get(name, name)
+
+    return members.get(name, members['EIO']).value
+
+
 __all__ = [
     'flags_mapping', 'get_open_flags_class', 'ql_open_flag_mapping', 'socket_type_mapping', 'socket_domain_mapping',
-    'socket_tcp_option_mapping', 'socket_level_mapping', 'socket_ip_option_mapping', 'socket_option_mapping'
+    'socket_tcp_option_mapping', 'socket_level_mapping', 'socket_ip_option_mapping', 'socket_option_mapping',
+    'get_errno_class', 'ql_errno_mapping'
 ]

@@ -13,6 +13,7 @@ from qiling.const import QL_ARCH, QL_OS
 from qiling.exception import QlMemoryMappedError
 from qiling.os.filestruct import ql_file
 from qiling.os.posix.const import *
+from qiling.os.posix.const_mapping import get_errno_class
 
 
 def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
@@ -74,6 +75,8 @@ def ql_syscall_mprotect(ql: Qiling, start: int, mlen: int, prot: int):
 
 
 def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int, fd: int, pgoffset: int, ver: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     def __select_mmap_flags(archtype: QL_ARCH, ostype: QL_OS):
         """The mmap flags definitions differ between operating systems and architectures.
         This method provides the apropriate flags set based on those properties.
@@ -130,7 +133,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
     if flags & (mmap_flags.MAP_FIXED | mmap_flags.MAP_FIXED_NOREPLACE):
         # on non-QNX systems, base must be aligned to page boundary
         if addr & (pagesize - 1) and ql.os.type != QL_OS.QNX:
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
     # if not, use the base address as a hint but always above or equal to
     # the value specified in /proc/sys/vm/mmap_min_addr (here: mmap_address)
@@ -147,7 +150,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
 
     if flags & mmap_flags.MAP_FIXED_NOREPLACE:
         if not ql.mem.is_available(lbound, mapping_size):
-            return -EEXIST
+            return -errno_class.EEXIST.value
 
     elif flags & mmap_flags.MAP_FIXED:
         ql.log.debug(f'{api_name}: unmapping memory between {lbound:#x}-{ubound:#x} to make room for fixed mapping')
@@ -165,12 +168,12 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         fd = ql.os.utils.as_signed(fd, 32)
 
         if fd not in range(NR_OPEN):
-            return -EBADF
+            return -errno_class.EBADF.value
 
         f: Optional[ql_file] = ql.os.fd[fd]
 
         if f is None:
-            return -EBADF
+            return -errno_class.EBADF.value
 
         # set mapping properties for future unmap
         f._is_map_shared = bool(flags & mmap_flags.MAP_SHARED)
@@ -194,7 +197,7 @@ def syscall_mmap_impl(ql: Qiling, addr: int, length: int, prot: int, flags: int,
         ql.mem.map(lbound, mapping_size, info=label)
     except QlMemoryMappedError:
         ql.log.debug(f'{api_name}: out of memory')
-        return -ENOMEM
+        return -errno_class.ENOMEM.value
     else:
         if data:
             ql.mem.write(addr, data)
