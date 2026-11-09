@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Type
 
 from qiling.const import QL_ARCH
 from qiling.os import struct
-from qiling.os.posix.const import NSIG
+from qiling.os.posix.const import EINVAL, NSIG
 
 # TODO: MIPS differs in too many details around signals; MIPS implementation is better extracted out
 
@@ -122,7 +122,7 @@ def ql_syscall_rt_sigaction(ql: Qiling, signum: int, act: int, oldact: int):
     SIGSTOP = 23 if ql.arch.type is QL_ARCH.MIPS else 19
 
     if signum not in range(NSIG) or signum in (SIGKILL, SIGSTOP):
-        return -1   # EINVAL
+        return -EINVAL
 
     sigaction = __make_sigaction(ql.arch)
 
