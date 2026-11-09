@@ -10,8 +10,8 @@ import socket
 from typing import TYPE_CHECKING, Tuple, Union
 
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
-from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping
-from qiling.os.posix.const import NR_OPEN, EMFILE, EBADF, EAFNOSUPPORT, EINVAL, ENOTSOCK
+from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping, get_errno_class, ql_errno_mapping
+from qiling.os.posix.const import NR_OPEN
 from qiling.os.posix.filestruct import ql_socket
 from qiling.os.posix.structs import *
 
@@ -166,19 +166,21 @@ def get_opened_socket(os: QlOsPosix, fd: int) -> Union[ql_socket, int]:
     appropriate error number is returned.
     """
 
+    errno_class = get_errno_class(os.ql.arch.type, os.type)
+
     # fd out of range?
     if fd not in range(NR_OPEN):
-        return -EBADF
+        return -errno_class.EBADF.value
 
     sock = os.fd[fd]
 
     # not an opened file?
     if sock is None:
-        return -EBADF
+        return -errno_class.EBADF.value
 
     # not a socket?
     if not isinstance(sock, ql_socket):
-        return -ENOTSOCK
+        return -errno_class.ENOTSOCK.value
 
     return sock
 
@@ -203,9 +205,11 @@ def ql_syscall_socket(ql: Qiling, domain: int, socktype: int, protocol: int):
         # May raise error: Protocol not supported
         except OSError as e:
             ql.log.debug(f'Error opening socket: {e}')
-            idx = -1
+            idx = -ql_errno_mapping(ql, e.errno)
         else:
             ql.os.fd[idx] = sock
+    else:
+        idx = -get_errno_class(ql.arch.type, ql.os.type).EMFILE.value
 
     s_domain = socket_domain_mapping(domain, ql.arch.type, ql.os.type)
     s_socktype = socket_type_mapping(socktype, ql.arch.type)
@@ -220,7 +224,7 @@ def ql_syscall_socketpair(ql: Qiling, domain: int, socktype: int, protocol: int,
     idx1 = next(unpopulated_fd, -1)
     idx2 = next(unpopulated_fd, -1)
 
-    regreturn = -EMFILE
+    regreturn = -get_errno_class(ql.arch.type, ql.os.type).EMFILE.value
 
     if (idx1 != -1) and (idx2 != -1):
         # ql_socket.socketpair should use host platform based socket type
@@ -235,7 +239,7 @@ def ql_syscall_socketpair(ql: Qiling, domain: int, socktype: int, protocol: int,
         # May raise error: Protocol not supported
         except OSError as e:
             ql.log.debug(f'{e}: {domain=}, {socktype=}, {protocol=}, {sv=}')
-            regreturn = -1
+            regreturn = -ql_errno_mapping(ql, e.errno)
 
         else:
             ql.os.fd[idx1] = sock1
@@ -255,6 +259,8 @@ def ql_syscall_socketpair(ql: Qiling, domain: int, socktype: int, protocol: int,
 
 
 def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     sock = get_opened_socket(ql.os, sockfd)
 
     if isinstance(sock, int):
@@ -269,7 +275,7 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
     sockaddr_obj = sockaddr.from_buffer(data)
 
     if sock.family != sockaddr_obj.sa_family:
-        return -1
+        return -errno_class.EAFNOSUPPORT.value
 
     if sock.family == AF_UNIX:
         hpath, vpath = ql_unix_socket_path(ql, data[2:])
@@ -299,12 +305,12 @@ def ql_syscall_connect(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         dest = (host, port)
 
     else:
-        return -EAFNOSUPPORT
+        return -errno_class.EAFNOSUPPORT.value
 
     try:
         sock.connect(dest)
-    except (ConnectionError, FileNotFoundError) as ex:
-        return -ex.errno
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     return 0
 
@@ -328,12 +334,12 @@ def ql_syscall_getsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
     optlen = min(ql.mem.read_ptr(optlen_addr, 4, signed=True), 1024)
 
     if optlen < 0:
-        return -EINVAL
+        return -get_errno_class(ql.arch.type, ql.os.type).EINVAL.value
 
     try:
         optval = sock.getsockopt(hsock_level, hsock_opt, optlen)
     except (ConnectionError, OSError) as ex:
-        return -ex.errno
+        return -ql_errno_mapping(ql, ex.errno)
 
     ql.mem.write(optval_addr, optval)
 
@@ -365,7 +371,7 @@ def ql_syscall_setsockopt(ql: Qiling, sockfd: int, level: int, optname: int, opt
         try:
             sock.setsockopt(hsock_level, hsock_opt, optval)
         except (ConnectionError, OSError) as ex:
-            return -ex.errno
+            return -ql_errno_mapping(ql, ex.errno)
 
     return 0
 
@@ -378,8 +384,8 @@ def ql_syscall_shutdown(ql: Qiling, sockfd: int, how: int):
 
     try:
         sock.shutdown(how)
-    except ConnectionError:
-        return -1
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     return 0
 
@@ -439,12 +445,12 @@ def ql_syscall_bind(ql: Qiling, sockfd: int, addr: int, addrlen: int):
         dest = (host, port)
 
     else:
-        return -EAFNOSUPPORT
+        return -get_errno_class(ql.arch.type, ql.os.type).EAFNOSUPPORT.value
 
     try:
         sock.bind(dest)
-    except (OSError, ConnectionError, FileNotFoundError) as ex:
-        return -ex.errno
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     return 0
 
@@ -581,13 +587,15 @@ def ql_syscall_listen(ql: Qiling, sockfd: int, backlog: int):
 
     try:
         sock.listen(backlog)
-    except ConnectionError as ex:
-        return -ex.errno
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     return 0
 
 
 def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     sock = get_opened_socket(ql.os, sockfd)
 
     if isinstance(sock, int):
@@ -595,16 +603,16 @@ def ql_syscall_accept(ql: Qiling, sockfd: int, addr: int, addrlenptr: int):
 
     try:
         conn, address = sock.accept()
-    except ConnectionError:
-        return -1
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     if (conn is None) or (address is None):
-        return -1
+        return -errno_class.EAGAIN.value
 
     idx = next((i for i in range(NR_OPEN) if ql.os.fd[i] is None), -1)
 
     if idx == -1:
-        return -EMFILE
+        return -errno_class.EMFILE.value
 
     ql.os.fd[idx] = conn
 
@@ -710,8 +718,8 @@ def ql_syscall_recvmsg(ql: Qiling, sockfd: int, msg_addr: int, flags: int):
     try:
         # TODO: handle the addr
         data, ancdata, mflags, addr = sock.recvmsg(msg.msg_namelen, msg.msg_controllen, flags)
-    except ConnectionError:
-        return -1
+    except OSError as ex:
+        return -ql_errno_mapping(ql, ex.errno)
 
     iovec = make_iovec(abits, endian)
     iovec_addr = msg.msg_iov

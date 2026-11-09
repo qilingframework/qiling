@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, KeysView, NamedTuple
 
 from qiling.os import struct
 from qiling.os.posix.const import *
+from qiling.os.posix.const_mapping import get_errno_class
 from qiling.os.filestruct import PersistentQlFile, ql_file
 
 
@@ -114,28 +115,30 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     """Modify an existing epoll.
     """
 
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     # not clear from man page, but to be safe don't support 'undefined' ops.
     if op not in (EPOLL_CTL_ADD, EPOLL_CTL_DEL, EPOLL_CTL_MOD):
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     if epfd == fd: 
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     if epfd not in range(NR_OPEN):
-        return -EBADF
+        return -errno_class.EBADF.value
 
     epoll_parent_obj = ql.os.fd[epfd]
 
     if not isinstance(epoll_parent_obj, QlEpollObj):
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     epoll_obj = epoll_parent_obj.epoll_instance
 
     if epoll_obj is None:
-        return -EBADF
+        return -errno_class.EBADF.value
 
     if epoll_obj.fileno() == fd:
-        return -ELOOP
+        return -errno_class.ELOOP.value
 
 	# Qiling doesn't check process capabilities right now, so this case isn't explicitly handled yet
 	# EPOLLWAKEUP (since Linux 3.5)
@@ -144,7 +147,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     fd_obj = ql.os.fd[fd]
 
     if fd_obj is None:
-        return -EBADF
+        return -errno_class.EBADF.value
 
     # TODO: not sure if qiling supports a way to determine if the target file descriptor is a
     # directory. Here, check against PersistentQlFile is to ensure that polling stdin, stdout,
@@ -153,13 +156,13 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     # The target file fd does not support epoll. This error can occur if fd refers to, for
     # example, a regular file or a directory.
     if isinstance(fd_obj, ql_file) and not isinstance(fd_obj, PersistentQlFile):
-        return -EPERM
+        return -errno_class.EPERM.value
 
 
 
     # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
     if isinstance(fd_obj, QlEpollObj) and (op & EPOLLEXCLUSIVE):
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     # Necessary to iterate over all possible qiling fds to determine if we have a chain of more
     # than five epolls monitoring each other This may be removed in the future if the QlOsLinux
@@ -169,15 +172,15 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
     try:
         check_epoll_depth(ql.os.fd)
     except RecursionError:
-        return -ELOOP
+        return -errno_class.ELOOP.value
 
     if op == EPOLL_CTL_ADD:
         # can't add an fd that's already being waited on
         if fd in epoll_parent_obj:
-            return -EEXIST
+            return -errno_class.EEXIST.value
 
         if not event:
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
         # dereference the event pointer to get structure fields
         epoll_event_cls = __make_epoll_event(ql.arch)
@@ -185,7 +188,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
         # EPOLLEXCLUSIVE was specified in event and fd refers to an epoll instance
         if isinstance(fd_obj, QlEpollObj) and (epoll_event.events & EPOLLEXCLUSIVE):
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
         epoll_parent_obj[fd] = QlEpollEntry(
             epoll_event.events,
@@ -194,17 +197,17 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
     elif op == EPOLL_CTL_DEL:
         if fd not in epoll_parent_obj:
-            return -ENOENT
+            return -errno_class.ENOENT.value
 
         # remove from fds list and do so in the underlying epoll instance
         del epoll_parent_obj[fd]
 
     elif op == EPOLL_CTL_MOD:
         if fd not in epoll_parent_obj:
-            return -ENOENT
+            return -errno_class.ENOENT.value
 
         if not event:
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
         # dereference the event pointer to get structure fields
         epoll_event_cls = __make_epoll_event(ql.arch)
@@ -212,7 +215,7 @@ def ql_syscall_epoll_ctl(ql: Qiling, epfd: int, op: int, fd: int, event: int):
 
         # EPOLLEXCLUSIVE cannot be set on MOD operation, only on ADD
         if epoll_event.events & EPOLLEXCLUSIVE:
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
         epoll_parent_obj[fd] = QlEpollEntry(
             epoll_event.events,
@@ -226,25 +229,27 @@ def ql_syscall_epoll_wait(ql: Qiling, epfd: int, epoll_events: int, maxevents: i
     """Wait on an existing epoll for specific events.
     """
 
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     if maxevents <= 0:
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     # default value is 0xffffffff, but this fails when passing to epoll.poll()
     if timeout == 0xFFFFFFFF:
         timeout = None
 
     if epfd not in range(NR_OPEN):
-        return -EBADF
+        return -errno_class.EBADF.value
 
     epoll_parent_obj = ql.os.fd[epfd]
 
     if not isinstance(epoll_parent_obj, QlEpollObj):
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     epoll_obj = epoll_parent_obj.epoll_instance
 
     if epoll_obj is None:
-        return -EBADF
+        return -errno_class.EBADF.value
 
     ready_fds = epoll_obj.poll(timeout, maxevents)
 
@@ -282,13 +287,13 @@ def __epoll_create(ql: Qiling, sizehint: int, flags: int) -> int:
 
 def ql_syscall_epoll_create1(ql: Qiling, flags: int):
     if flags != select.EPOLL_CLOEXEC and flags != 0:
-        return -EINVAL
+        return -get_errno_class(ql.arch.type, ql.os.type).EINVAL.value
 
     return __epoll_create(ql, -1, flags)
 
 
 def ql_syscall_epoll_create(ql: Qiling, size: int):
     if size < 0:
-        return -EINVAL
+        return -get_errno_class(ql.arch.type, ql.os.type).EINVAL.value
 
     return __epoll_create(ql, size, 0)

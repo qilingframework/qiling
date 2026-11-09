@@ -5,10 +5,15 @@
 
 import struct
 
+from unicorn import UcError
+
 from qiling import Qiling
 from qiling.os.posix.filestruct import ql_socket
+from qiling.os.posix.const_mapping import ql_errno_mapping, get_errno_class
 
 def ql_syscall_ioctl(ql: Qiling, fd: int, cmd: int, arg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     TCGETS = 0x5401
     TIOCGWINSZ = 0x5413
     TIOCSWINSZ = 0x5414
@@ -94,7 +99,7 @@ def ql_syscall_ioctl(ql: Qiling, fd: int, cmd: int, arg: int):
             data = ql.os.fd[fd].ioctl(cmd, bytes(data))
         except OSError as ex:
             ql.log.debug(f'the underlying ioctl raised an exception: {ex.strerror}')
-            regreturn = -1
+            regreturn = -ql_errno_mapping(ql, ex.errno)
         else:
             ql.mem.write(arg, data)
             regreturn = 0
@@ -111,8 +116,10 @@ def ql_syscall_ioctl(ql: Qiling, fd: int, cmd: int, arg: int):
                 elif cmd == TIOCGWINSZ:
                     data = struct.pack("HHHH", *info)
                     ql.mem.write(arg, data)
-        except:
-            regreturn = -1
+        except (KeyError, ValueError, NotImplementedError):
+            regreturn = -errno_class.ENOTTY.value
+        except UcError:
+            regreturn = -errno_class.EFAULT.value
         else:
             regreturn = 0
 

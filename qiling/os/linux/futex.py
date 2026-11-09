@@ -9,6 +9,8 @@ import gevent
 from gevent.event import Event
 from queue import Queue
 
+from qiling.os.posix.const_mapping import get_errno_class
+
 class QlLinuxFutexManagement:
 
     FUTEX_BITSET_MATCH_ANY = 0xffffffff
@@ -21,14 +23,13 @@ class QlLinuxFutexManagement:
         return self._wait_list
 
     def futex_wait(self, ql, uaddr, t, val, bitset=FUTEX_BITSET_MATCH_ANY):
-        EAGAIN = 11
         def _sched_wait_event(cur_thread):
             ql.log.debug(f"Wait for notifications.")
             event.wait()
         uaddr_value = ql.unpack32(ql.mem.read(uaddr, 4))
         if uaddr_value != val:
             ql.log.debug(f"uaddr: {hex(uaddr_value)} != {hex(val)}")
-            return -EAGAIN
+            return -get_errno_class(ql.arch.type, ql.os.type).EAGAIN.value
         ql.emu_stop()
         if uaddr not in self.wait_list.keys():
             self.wait_list[uaddr] = Queue()

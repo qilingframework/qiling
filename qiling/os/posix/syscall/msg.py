@@ -2,6 +2,7 @@ from typing import Optional
 from qiling import Qiling
 from qiling.os.posix.const import *
 from qiling.os.posix.msq import QlMsqId, QlMsgBuf
+from qiling.os.posix.const_mapping import get_errno_class
 
 
 def __find_msg(msq: QlMsqId, msgtyp: int, msgflg: int) -> Optional[QlMsgBuf]:
@@ -40,12 +41,14 @@ def __perms(ql: Qiling, msq: QlMsqId, flag: int) -> int:
 
     # is there some bit set in requested_mode but not in granted_mode?
     if request_mode & ~granted_mode & 0o007:
-        return -EACCES
+        return -get_errno_class(ql.arch.type, ql.os.type).EACCES.value
 
     return 0
 
 
 def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     def __create_msq(key: int, flags: int) -> int:
         """Create a new message queue for the specified key.
 
@@ -53,7 +56,7 @@ def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
         """
 
         if len(ql.os.msq) >= MSGMNI:
-            return -ENOSPC
+            return -errno_class.ENOSPC.value
 
         mode = flags & ((1 << 9) - 1)
 
@@ -77,29 +80,31 @@ def ql_syscall_msgget(ql: Qiling, key: int, msgflg: int):
                 msqid = __create_msq(key, msgflg)
 
             else:
-                return -ENOENT
+                return -errno_class.ENOENT.value
 
         # a message queue with the specified key exists
         else:
             # the user asked to create a new one?
             if msgflg & (IPC_CREAT | IPC_EXCL):
-                return -EEXIST
+                return -errno_class.EEXIST.value
 
             if __perms(ql, msq, msgflg):
-                return -EACCES
+                return -errno_class.EACCES.value
 
     return msqid
 
 
 def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     msq = ql.os.msq.get_by_id(msqid)
 
     if msq is None:
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     # Check if the user has write permissions for the message queue
     if __perms(ql, msq, 0o222):  # S_IWUGO
-        return -EACCES
+        return -errno_class.EACCES.value
 
     msg_type = ql.mem.read_ptr(msgp)
     msg_text = ql.mem.read(msgp + ql.arch.pointersize, msgsz)
@@ -109,7 +114,7 @@ def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int
             break
 
         if msgflg & IPC_NOWAIT:
-            return -EAGAIN
+            return -errno_class.EAGAIN.value
 
     msq.queue.append(QlMsgBuf(msg_type, bytes(msg_text)))
 
@@ -117,18 +122,20 @@ def ql_syscall_msgsnd(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgflg: int
 
 
 def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int, msgflg: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     msq = ql.os.msq.get_by_id(msqid)
 
     if msq is None:
-        return -EINVAL
+        return -errno_class.EINVAL.value
 
     if msgflg & MSG_COPY:
         if msgflg & MSG_EXCEPT or not (msgflg & IPC_NOWAIT):
-            return -EINVAL
+            return -errno_class.EINVAL.value
 
     # Check if the user has read permissions for the message queue
     if __perms(ql, msq, 0o444):  # S_IRUGO
-        return -EACCES
+        return -errno_class.EACCES.value
 
     while True:
         msg = __find_msg(msq, msgtyp, msgflg)
@@ -137,17 +144,17 @@ def ql_syscall_msgrcv(ql: Qiling, msqid: int, msgp: int, msgsz: int, msgtyp: int
             break
 
         if msgflg & MSG_COPY:
-            return -ENOMSG
+            return -errno_class.ENOMSG.value
 
         if msgflg & IPC_NOWAIT:
-            return -ENOMSG
+            return -errno_class.ENOMSG.value
 
     if not (msgflg & MSG_COPY):
         msq.queue.remove(msg)
 
     if msgsz < len(msg.mtext):
         if not (msgflg & MSG_NOERROR):
-            return -E2BIG
+            return -errno_class.E2BIG.value
         else:
             sz = msgsz
     else:

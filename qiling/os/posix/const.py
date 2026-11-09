@@ -762,270 +762,641 @@ FD_CLOEXEC = 1
 AT_FDCWD = -100
 AT_EMPTY_PATH = 0x1000
 
-# error code
-EPERM           = 1
-ENOENT          = 2
-ESRCH           = 3
-EINTR           = 4
-EIO             = 5
-ENXIO           = 6
-E2BIG           = 7
-ENOEXEC         = 8
-EBADF           = 9
-ECHILD          = 10
-EAGAIN          = 11
-EWOULDBLOCK     = 11
-ENOMEM          = 12
-EACCES          = 13
-EFAULT          = 14
-ENOTBLK         = 15
-EBUSY           = 16
-EEXIST          = 17
-EXDEV           = 18
-ENODEV          = 19
-ENOTDIR         = 20
-EISDIR          = 21
-EINVAL          = 22
-ENFILE          = 23
-EMFILE          = 24
-ENOTTY          = 25
-ETXTBSY         = 26
-EFBIG           = 27
-ENOSPC          = 28
-ESPIPE          = 29
-EROFS           = 30
-EMLINK          = 31
-EPIPE           = 32
-EDOM            = 33
-ERANGE          = 34
-EDEADLK         = 35
-ENAMETOOLONG    = 36
-ENOLCK          = 37
-ENOSYS          = 38
-ENOTEMPTY       = 39
-ELOOP           = 40
-ENOMSG          = 42
-EIDRM           = 43
-ECHRNG          = 44
-EL2NSYNC        = 45
-EL3HLT          = 46
-EL3RST          = 47
-ELNRNG          = 48
-EUNATCH         = 49
-ENOCSI          = 50
-EL2HLT          = 51
-EBADE           = 52
-EBADR           = 53
-EXFULL          = 54
-ENOANO          = 55
-EBADRQC         = 56
-EBADSLT         = 57
-EBFONT          = 59
-ENOSTR          = 60
-ENODATA         = 61
-ETIME           = 62
-ENOSR           = 63
-ENONET          = 64
-ENOPKG          = 65
-EREMOTE         = 66
-ENOLINK         = 67
-EADV            = 68
-ESRMNT          = 69
-ECOMM           = 70
-EPROTO          = 71
-EMULTIHOP       = 72
-EDOTDOT         = 73
-EBADMSG         = 74
-EOVERFLOW       = 75
-ENOTUNIQ        = 76
-EBADFD          = 77
-EREMCHG         = 78
-ELIBACC         = 79
-ELIBBAD         = 80
-ELIBSCN         = 81
-ELIBMAX         = 82
-ELIBEXEC        = 83
-EILSEQ          = 84
-ERESTART        = 85
-ESTRPIPE        = 86
-EUSERS          = 87
-ENOTSOCK        = 88
-EDESTADDRREQ    = 89
-EMSGSIZE        = 90
-EPROTOTYPE      = 91
-ENOPROTOOPT     = 92
-EPROTONOSUPPORT = 93
-ESOCKTNOSUPPORT = 94
-EOPNOTSUPP      = 95
-EPFNOSUPPORT    = 96
-EAFNOSUPPORT    = 97
-EADDRINUSE      = 98
-EADDRNOTAVAIL   = 99
-ENETDOWN        = 100
-ENETUNREACH     = 101
-ENETRESET       = 102
-ECONNABORTED    = 103
-ECONNRESET      = 104
-ENOBUFS         = 105
-EISCONN         = 106
-ENOTCONN        = 107
-ESHUTDOWN       = 108
-ETOOMANYREFS    = 109
-ETIMEDOUT       = 110
-ECONNREFUSED    = 111
-EHOSTDOWN       = 112
-EHOSTUNREACH    = 113
-EALREADY        = 114
-EINPROGRESS     = 115
-ESTALE          = 116
-EUCLEAN         = 117
-ENOTNAM         = 118
-ENAVAIL         = 119
-EISNAM          = 120
-EREMOTEIO       = 121
-EDQUOT          = 122
-ENOMEDIUM       = 123
-EMEDIUMTYPE     = 124
-ECANCELED       = 125
-ENOKEY          = 126
-EKEYEXPIRED     = 127
-EKEYREVOKED     = 128
-EKEYREJECTED    = 129
-EOWNERDEAD      = 130
-ENOTRECOVERABLE = 131
+
+# see: https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/errno.h
+class linux_errno(Enum):
+    EPERM           = 1
+    ENOENT          = 2
+    ESRCH           = 3
+    EINTR           = 4
+    EIO             = 5
+    ENXIO           = 6
+    E2BIG           = 7
+    ENOEXEC         = 8
+    EBADF           = 9
+    ECHILD          = 10
+    EAGAIN          = 11
+    EWOULDBLOCK     = 11
+    ENOMEM          = 12
+    EACCES          = 13
+    EFAULT          = 14
+    ENOTBLK         = 15
+    EBUSY           = 16
+    EEXIST          = 17
+    EXDEV           = 18
+    ENODEV          = 19
+    ENOTDIR         = 20
+    EISDIR          = 21
+    EINVAL          = 22
+    ENFILE          = 23
+    EMFILE          = 24
+    ENOTTY          = 25
+    ETXTBSY         = 26
+    EFBIG           = 27
+    ENOSPC          = 28
+    ESPIPE          = 29
+    EROFS           = 30
+    EMLINK          = 31
+    EPIPE           = 32
+    EDOM            = 33
+    ERANGE          = 34
+    EDEADLK         = 35
+    EDEADLOCK       = 35
+    ENAMETOOLONG    = 36
+    ENOLCK          = 37
+    ENOSYS          = 38
+    ENOTEMPTY       = 39
+    ELOOP           = 40
+    ENOMSG          = 42
+    EIDRM           = 43
+    ECHRNG          = 44
+    EL2NSYNC        = 45
+    EL3HLT          = 46
+    EL3RST          = 47
+    ELNRNG          = 48
+    EUNATCH         = 49
+    ENOCSI          = 50
+    EL2HLT          = 51
+    EBADE           = 52
+    EBADR           = 53
+    EXFULL          = 54
+    ENOANO          = 55
+    EBADRQC         = 56
+    EBADSLT         = 57
+    EBFONT          = 59
+    ENOSTR          = 60
+    ENODATA         = 61
+    ETIME           = 62
+    ENOSR           = 63
+    ENONET          = 64
+    ENOPKG          = 65
+    EREMOTE         = 66
+    ENOLINK         = 67
+    EADV            = 68
+    ESRMNT          = 69
+    ECOMM           = 70
+    EPROTO          = 71
+    EMULTIHOP       = 72
+    EDOTDOT         = 73
+    EBADMSG         = 74
+    EFSBADCRC       = 74
+    EOVERFLOW       = 75
+    ENOTUNIQ        = 76
+    EBADFD          = 77
+    EREMCHG         = 78
+    ELIBACC         = 79
+    ELIBBAD         = 80
+    ELIBSCN         = 81
+    ELIBMAX         = 82
+    ELIBEXEC        = 83
+    EILSEQ          = 84
+    ERESTART        = 85
+    ESTRPIPE        = 86
+    EUSERS          = 87
+    ENOTSOCK        = 88
+    EDESTADDRREQ    = 89
+    EMSGSIZE        = 90
+    EPROTOTYPE      = 91
+    ENOPROTOOPT     = 92
+    EPROTONOSUPPORT = 93
+    ESOCKTNOSUPPORT = 94
+    EOPNOTSUPP      = 95
+    ENOTSUP         = 95
+    EPFNOSUPPORT    = 96
+    EAFNOSUPPORT    = 97
+    EADDRINUSE      = 98
+    EADDRNOTAVAIL   = 99
+    ENETDOWN        = 100
+    ENETUNREACH     = 101
+    ENETRESET       = 102
+    ECONNABORTED    = 103
+    ECONNRESET      = 104
+    ENOBUFS         = 105
+    EISCONN         = 106
+    ENOTCONN        = 107
+    ESHUTDOWN       = 108
+    ETOOMANYREFS    = 109
+    ETIMEDOUT       = 110
+    ECONNREFUSED    = 111
+    EHOSTDOWN       = 112
+    EHOSTUNREACH    = 113
+    EALREADY        = 114
+    EINPROGRESS     = 115
+    ESTALE          = 116
+    EUCLEAN         = 117
+    EFSCORRUPTED    = 117
+    ENOTNAM         = 118
+    ENAVAIL         = 119
+    EISNAM          = 120
+    EREMOTEIO       = 121
+    EDQUOT          = 122
+    ENOMEDIUM       = 123
+    EMEDIUMTYPE     = 124
+    ECANCELED       = 125
+    ENOKEY          = 126
+    EKEYEXPIRED     = 127
+    EKEYREVOKED     = 128
+    EKEYREJECTED    = 129
+    EOWNERDEAD      = 130
+    ENOTRECOVERABLE = 131
+    ERFKILL         = 132
+    EHWPOISON       = 133
+    EFTYPE          = 134
 
 
-errors = {
-    1: 'EPERM',
-    2: 'ENOENT',
-    3: 'ESRCH',
-    4: 'EINTR',
-    5: 'EIO',
-    6: 'ENXIO',
-    7: 'E2BIG',
-    8: 'ENOEXEC',
-    9: 'EBADF',
-    10: 'ECHILD',
-    11: 'EAGAIN/EWOULDBLOCK',
-    12: 'ENOMEM',
-    13: 'EACCES',
-    14: 'EFAULT',
-    15: 'ENOTBLK',
-    16: 'EBUSY',
-    17: 'EEXIST',
-    18: 'EXDEV',
-    19: 'ENODEV',
-    20: 'ENOTDIR',
-    21: 'EISDIR',
-    22: 'EINVAL',
-    23: 'ENFILE',
-    24: 'EMFILE',
-    25: 'ENOTTY',
-    26: 'ETXTBSY',
-    27: 'EFBIG',
-    28: 'ENOSPC',
-    29: 'ESPIPE',
-    30: 'EROFS',
-    31: 'EMLINK',
-    32: 'EPIPE',
-    33: 'EDOM',
-    34: 'ERANGE',
-    35: 'EDEADLK',
-    36: 'ENAMETOOLONG',
-    37: 'ENOLCK',
-    38: 'ENOSYS',
-    39: 'ENOTEMPTY',
-    40: 'ELOOP',
-    42: 'ENOMSG',
-    43: 'EIDRM',
-    44: 'ECHRNG',
-    45: 'EL2NSYNC',
-    46: 'EL3HLT',
-    47: 'EL3RST',
-    48: 'ELNRNG',
-    49: 'EUNATCH',
-    50: 'ENOCSI',
-    51: 'EL2HLT',
-    52: 'EBADE',
-    53: 'EBADR',
-    54: 'EXFULL',
-    55: 'ENOANO',
-    56: 'EBADRQC',
-    57: 'EBADSLT',
-    59: 'EBFONT',
-    60: 'ENOSTR',
-    61: 'ENODATA',
-    62: 'ETIME',
-    63: 'ENOSR',
-    64: 'ENONET',
-    65: 'ENOPKG',
-    66: 'EREMOTE',
-    67: 'ENOLINK',
-    68: 'EADV',
-    69: 'ESRMNT',
-    70: 'ECOMM',
-    71: 'EPROTO',
-    72: 'EMULTIHOP',
-    73: 'EDOTDOT',
-    74: 'EBADMSG',
-    75: 'EOVERFLOW',
-    76: 'ENOTUNIQ',
-    77: 'EBADFD',
-    78: 'EREMCHG',
-    79: 'ELIBACC',
-    80: 'ELIBBAD',
-    81: 'ELIBSCN',
-    82: 'ELIBMAX',
-    83: 'ELIBEXEC',
-    84: 'EILSEQ',
-    85: 'ERESTART',
-    86: 'ESTRPIPE',
-    87: 'EUSERS',
-    88: 'ENOTSOCK',
-    89: 'EDESTADDRREQ',
-    90: 'EMSGSIZE',
-    91: 'EPROTOTYPE',
-    92: 'ENOPROTOOPT',
-    93: 'EPROTONOSUPPORT',
-    94: 'ESOCKTNOSUPPORT',
-    95: 'EOPNOTSUPP',
-    96: 'EPFNOSUPPORT',
-    97: 'EAFNOSUPPORT',
-    98: 'EADDRINUSE',
-    99: 'EADDRNOTAVAIL',
-    100: 'ENETDOWN',
-    101: 'ENETUNREACH',
-    102: 'ENETRESET',
-    103: 'ECONNABORTED',
-    104: 'ECONNRESET',
-    105: 'ENOBUFS',
-    106: 'EISCONN',
-    107: 'ENOTCONN',
-    108: 'ESHUTDOWN',
-    109: 'ETOOMANYREFS',
-    110: 'ETIMEDOUT',
-    111: 'ECONNREFUSED',
-    112: 'EHOSTDOWN',
-    113: 'EHOSTUNREACH',
-    114: 'EALREADY',
-    115: 'EINPROGRESS',
-    116: 'ESTALE',
-    117: 'EUCLEAN',
-    118: 'ENOTNAM',
-    119: 'ENAVAIL',
-    120: 'EISNAM',
-    121: 'EREMOTEIO',
-    122: 'EDQUOT',
-    123: 'ENOMEDIUM',
-    124: 'EMEDIUMTYPE',
-    125: 'ECANCELED',
-    126: 'ENOKEY',
-    127: 'EKEYEXPIRED',
-    128: 'EKEYREVOKED',
-    129: 'EKEYREJECTED',
-    130: 'EOWNERDEAD',
-    131: 'ENOTRECOVERABLE',
-}
+# see: https://github.com/torvalds/linux/blob/master/arch/mips/include/uapi/asm/errno.h
+class linux_mips_errno(Enum):
+    EPERM           = 1
+    ENOENT          = 2
+    ESRCH           = 3
+    EINTR           = 4
+    EIO             = 5
+    ENXIO           = 6
+    E2BIG           = 7
+    ENOEXEC         = 8
+    EBADF           = 9
+    ECHILD          = 10
+    EAGAIN          = 11
+    EWOULDBLOCK     = 11
+    ENOMEM          = 12
+    EACCES          = 13
+    EFAULT          = 14
+    ENOTBLK         = 15
+    EBUSY           = 16
+    EEXIST          = 17
+    EXDEV           = 18
+    ENODEV          = 19
+    ENOTDIR         = 20
+    EISDIR          = 21
+    EINVAL          = 22
+    ENFILE          = 23
+    EMFILE          = 24
+    ENOTTY          = 25
+    ETXTBSY         = 26
+    EFBIG           = 27
+    ENOSPC          = 28
+    ESPIPE          = 29
+    EROFS           = 30
+    EMLINK          = 31
+    EPIPE           = 32
+    EDOM            = 33
+    ERANGE          = 34
+    ENOMSG          = 35
+    EIDRM           = 36
+    ECHRNG          = 37
+    EL2NSYNC        = 38
+    EL3HLT          = 39
+    EL3RST          = 40
+    ELNRNG          = 41
+    EUNATCH         = 42
+    ENOCSI          = 43
+    EL2HLT          = 44
+    EDEADLK         = 45
+    ENOLCK          = 46
+    EBADE           = 50
+    EBADR           = 51
+    EXFULL          = 52
+    ENOANO          = 53
+    EBADRQC         = 54
+    EBADSLT         = 55
+    EDEADLOCK       = 56
+    EBFONT          = 59
+    ENOSTR          = 60
+    ENODATA         = 61
+    ETIME           = 62
+    ENOSR           = 63
+    ENONET          = 64
+    ENOPKG          = 65
+    EREMOTE         = 66
+    ENOLINK         = 67
+    EADV            = 68
+    ESRMNT          = 69
+    ECOMM           = 70
+    EPROTO          = 71
+    EDOTDOT         = 73
+    EMULTIHOP       = 74
+    EBADMSG         = 77
+    EFSBADCRC       = 77
+    ENAMETOOLONG    = 78
+    EOVERFLOW       = 79
+    ENOTUNIQ        = 80
+    EBADFD          = 81
+    EREMCHG         = 82
+    ELIBACC         = 83
+    ELIBBAD         = 84
+    ELIBSCN         = 85
+    ELIBMAX         = 86
+    ELIBEXEC        = 87
+    EILSEQ          = 88
+    ENOSYS          = 89
+    ELOOP           = 90
+    ERESTART        = 91
+    ESTRPIPE        = 92
+    ENOTEMPTY       = 93
+    EUSERS          = 94
+    ENOTSOCK        = 95
+    EDESTADDRREQ    = 96
+    EMSGSIZE        = 97
+    EPROTOTYPE      = 98
+    ENOPROTOOPT     = 99
+    EPROTONOSUPPORT = 120
+    ESOCKTNOSUPPORT = 121
+    EOPNOTSUPP      = 122
+    ENOTSUP         = 122
+    EPFNOSUPPORT    = 123
+    EAFNOSUPPORT    = 124
+    EADDRINUSE      = 125
+    EADDRNOTAVAIL   = 126
+    ENETDOWN        = 127
+    ENETUNREACH     = 128
+    ENETRESET       = 129
+    ECONNABORTED    = 130
+    ECONNRESET      = 131
+    ENOBUFS         = 132
+    EISCONN         = 133
+    ENOTCONN        = 134
+    EUCLEAN         = 135
+    EFSCORRUPTED    = 135
+    ENOTNAM         = 137
+    ENAVAIL         = 138
+    EISNAM          = 139
+    EREMOTEIO       = 140
+    EINIT           = 141
+    EREMDEV         = 142
+    ESHUTDOWN       = 143
+    ETOOMANYREFS    = 144
+    ETIMEDOUT       = 145
+    ECONNREFUSED    = 146
+    EHOSTDOWN       = 147
+    EHOSTUNREACH    = 148
+    EALREADY        = 149
+    EINPROGRESS     = 150
+    ESTALE          = 151
+    ECANCELED       = 158
+    ENOMEDIUM       = 159
+    EMEDIUMTYPE     = 160
+    ENOKEY          = 161
+    EKEYEXPIRED     = 162
+    EKEYREVOKED     = 163
+    EKEYREJECTED    = 164
+    EOWNERDEAD      = 165
+    ENOTRECOVERABLE = 166
+    ERFKILL         = 167
+    EHWPOISON       = 168
+    EFTYPE          = 169
+    EDQUOT          = 1133
+
+
+# see: https://github.com/apple/darwin-xnu/blob/main/bsd/sys/errno.h
+class macos_errno(Enum):
+    EPERM           = 1
+    ENOENT          = 2
+    ESRCH           = 3
+    EINTR           = 4
+    EIO             = 5
+    ENXIO           = 6
+    E2BIG           = 7
+    ENOEXEC         = 8
+    EBADF           = 9
+    ECHILD          = 10
+    EDEADLK         = 11
+    ENOMEM          = 12
+    EACCES          = 13
+    EFAULT          = 14
+    ENOTBLK         = 15
+    EBUSY           = 16
+    EEXIST          = 17
+    EXDEV           = 18
+    ENODEV          = 19
+    ENOTDIR         = 20
+    EISDIR          = 21
+    EINVAL          = 22
+    ENFILE          = 23
+    EMFILE          = 24
+    ENOTTY          = 25
+    ETXTBSY         = 26
+    EFBIG           = 27
+    ENOSPC          = 28
+    ESPIPE          = 29
+    EROFS           = 30
+    EMLINK          = 31
+    EPIPE           = 32
+    EDOM            = 33
+    ERANGE          = 34
+    EAGAIN          = 35
+    EWOULDBLOCK     = 35
+    EINPROGRESS     = 36
+    EALREADY        = 37
+    ENOTSOCK        = 38
+    EDESTADDRREQ    = 39
+    EMSGSIZE        = 40
+    EPROTOTYPE      = 41
+    ENOPROTOOPT     = 42
+    EPROTONOSUPPORT = 43
+    ESOCKTNOSUPPORT = 44
+    ENOTSUP         = 45
+    EPFNOSUPPORT    = 46
+    EAFNOSUPPORT    = 47
+    EADDRINUSE      = 48
+    EADDRNOTAVAIL   = 49
+    ENETDOWN        = 50
+    ENETUNREACH     = 51
+    ENETRESET       = 52
+    ECONNABORTED    = 53
+    ECONNRESET      = 54
+    ENOBUFS         = 55
+    EISCONN         = 56
+    ENOTCONN        = 57
+    ESHUTDOWN       = 58
+    ETOOMANYREFS    = 59
+    ETIMEDOUT       = 60
+    ECONNREFUSED    = 61
+    ELOOP           = 62
+    ENAMETOOLONG    = 63
+    EHOSTDOWN       = 64
+    EHOSTUNREACH    = 65
+    ENOTEMPTY       = 66
+    EPROCLIM        = 67
+    EUSERS          = 68
+    EDQUOT          = 69
+    ESTALE          = 70
+    EREMOTE         = 71
+    EBADRPC         = 72
+    ERPCMISMATCH    = 73
+    EPROGUNAVAIL    = 74
+    EPROGMISMATCH   = 75
+    EPROCUNAVAIL    = 76
+    ENOLCK          = 77
+    ENOSYS          = 78
+    EFTYPE          = 79
+    EAUTH           = 80
+    ENEEDAUTH       = 81
+    EPWROFF         = 82
+    EDEVERR         = 83
+    EOVERFLOW       = 84
+    EBADEXEC        = 85
+    EBADARCH        = 86
+    ESHLIBVERS      = 87
+    EBADMACHO       = 88
+    ECANCELED       = 89
+    EIDRM           = 90
+    ENOMSG          = 91
+    EILSEQ          = 92
+    ENOATTR         = 93
+    EBADMSG         = 94
+    EMULTIHOP       = 95
+    ENODATA         = 96
+    ENOLINK         = 97
+    ENOSR           = 98
+    ENOSTR          = 99
+    EPROTO          = 100
+    ETIME           = 101
+    EOPNOTSUPP      = 102
+    ENOPOLICY       = 103
+    ENOTRECOVERABLE = 104
+    EOWNERDEAD      = 105
+    EQFULL          = 106
+
+
+# see: https://github.com/freebsd/freebsd-src/blob/main/sys/sys/errno.h
+class freebsd_errno(Enum):
+    EPERM           = 1
+    ENOENT          = 2
+    ESRCH           = 3
+    EINTR           = 4
+    EIO             = 5
+    ENXIO           = 6
+    E2BIG           = 7
+    ENOEXEC         = 8
+    EBADF           = 9
+    ECHILD          = 10
+    EDEADLK         = 11
+    ENOMEM          = 12
+    EACCES          = 13
+    EFAULT          = 14
+    ENOTBLK         = 15
+    EBUSY           = 16
+    EEXIST          = 17
+    EXDEV           = 18
+    ENODEV          = 19
+    ENOTDIR         = 20
+    EISDIR          = 21
+    EINVAL          = 22
+    ENFILE          = 23
+    EMFILE          = 24
+    ENOTTY          = 25
+    ETXTBSY         = 26
+    EFBIG           = 27
+    ENOSPC          = 28
+    ESPIPE          = 29
+    EROFS           = 30
+    EMLINK          = 31
+    EPIPE           = 32
+    EDOM            = 33
+    ERANGE          = 34
+    EAGAIN          = 35
+    EWOULDBLOCK     = 35
+    EINPROGRESS     = 36
+    EALREADY        = 37
+    ENOTSOCK        = 38
+    EDESTADDRREQ    = 39
+    EMSGSIZE        = 40
+    EPROTOTYPE      = 41
+    ENOPROTOOPT     = 42
+    EPROTONOSUPPORT = 43
+    ESOCKTNOSUPPORT = 44
+    EOPNOTSUPP      = 45
+    ENOTSUP         = 45
+    EPFNOSUPPORT    = 46
+    EAFNOSUPPORT    = 47
+    EADDRINUSE      = 48
+    EADDRNOTAVAIL   = 49
+    ENETDOWN        = 50
+    ENETUNREACH     = 51
+    ENETRESET       = 52
+    ECONNABORTED    = 53
+    ECONNRESET      = 54
+    ENOBUFS         = 55
+    EISCONN         = 56
+    ENOTCONN        = 57
+    ESHUTDOWN       = 58
+    ETOOMANYREFS    = 59
+    ETIMEDOUT       = 60
+    ECONNREFUSED    = 61
+    ELOOP           = 62
+    ENAMETOOLONG    = 63
+    EHOSTDOWN       = 64
+    EHOSTUNREACH    = 65
+    ENOTEMPTY       = 66
+    EPROCLIM        = 67
+    EUSERS          = 68
+    EDQUOT          = 69
+    ESTALE          = 70
+    EREMOTE         = 71
+    EBADRPC         = 72
+    ERPCMISMATCH    = 73
+    EPROGUNAVAIL    = 74
+    EPROGMISMATCH   = 75
+    EPROCUNAVAIL    = 76
+    ENOLCK          = 77
+    ENOSYS          = 78
+    EFTYPE          = 79
+    EAUTH           = 80
+    ENEEDAUTH       = 81
+    EIDRM           = 82
+    ENOMSG          = 83
+    EOVERFLOW       = 84
+    ECANCELED       = 85
+    EILSEQ          = 86
+    ENOATTR         = 87
+    EDOOFUS         = 88
+    EBADMSG         = 89
+    EMULTIHOP       = 90
+    ENOLINK         = 91
+    EPROTO          = 92
+    ENOTCAPABLE     = 93
+    ECAPMODE        = 94
+    ENOTRECOVERABLE = 95
+    EOWNERDEAD      = 96
+    EINTEGRITY      = 97
+
+
+# see: https://github.com/vocho/openqnx/blob/master/trunk/lib/c/public/errno.h
+class qnx_errno(Enum):
+    EPERM           = 1
+    ENOENT          = 2
+    ESRCH           = 3
+    EINTR           = 4
+    EIO             = 5
+    ENXIO           = 6
+    E2BIG           = 7
+    ENOEXEC         = 8
+    EBADF           = 9
+    ECHILD          = 10
+    EAGAIN          = 11
+    EWOULDBLOCK     = 11
+    ENOMEM          = 12
+    EACCES          = 13
+    EFAULT          = 14
+    ENOTBLK         = 15
+    EBUSY           = 16
+    EALREADY        = 16
+    EEXIST          = 17
+    EXDEV           = 18
+    ENODEV          = 19
+    ENOTDIR         = 20
+    EISDIR          = 21
+    EINVAL          = 22
+    ENFILE          = 23
+    EMFILE          = 24
+    ENOTTY          = 25
+    ETXTBSY         = 26
+    EFBIG           = 27
+    ENOSPC          = 28
+    ESPIPE          = 29
+    EROFS           = 30
+    EMLINK          = 31
+    EPIPE           = 32
+    EDOM            = 33
+    ERANGE          = 34
+    ENOMSG          = 35
+    EIDRM           = 36
+    ECHRNG          = 37
+    EL2NSYNC        = 38
+    EL3HLT          = 39
+    EL3RST          = 40
+    ELNRNG          = 41
+    EUNATCH         = 42
+    ENOCSI          = 43
+    EL2HLT          = 44
+    EDEADLK         = 45
+    ENOLCK          = 46
+    ECANCELED       = 47
+    ENOTSUP         = 48
+    EDQUOT          = 49
+    EBADE           = 50
+    EBADR           = 51
+    EXFULL          = 52
+    ENOANO          = 53
+    EBADRQC         = 54
+    EBADSLT         = 55
+    EDEADLOCK       = 56
+    EBFONT          = 57
+    EOWNERDEAD      = 58
+    ENOSTR          = 60
+    ENODATA         = 61
+    ETIME           = 62
+    ENOSR           = 63
+    ENONET          = 64
+    ENOPKG          = 65
+    EREMOTE         = 66
+    ENOLINK         = 67
+    EADV            = 68
+    ESRMNT          = 69
+    ECOMM           = 70
+    EPROTO          = 71
+    EMULTIHOP       = 74
+    EBADMSG         = 77
+    ENAMETOOLONG    = 78
+    EOVERFLOW       = 79
+    ENOTUNIQ        = 80
+    EBADFD          = 81
+    EREMCHG         = 82
+    ELIBACC         = 83
+    ELIBBAD         = 84
+    ELIBSCN         = 85
+    ELIBMAX         = 86
+    ELIBEXEC        = 87
+    EILSEQ          = 88
+    ENOSYS          = 89
+    ELOOP           = 90
+    ERESTART        = 91
+    ESTRPIPE        = 92
+    ENOTEMPTY       = 93
+    EUSERS          = 94
+    EOPNOTSUPP      = 103
+    EFPOS           = 110
+    ESTALE          = 122
+    EINPROGRESS     = 236
+    ENOTSOCK        = 238
+    EDESTADDRREQ    = 239
+    EMSGSIZE        = 240
+    EPROTOTYPE      = 241
+    ENOPROTOOPT     = 242
+    EPROTONOSUPPORT = 243
+    ESOCKTNOSUPPORT = 244
+    EPFNOSUPPORT    = 246
+    EAFNOSUPPORT    = 247
+    EADDRINUSE      = 248
+    EADDRNOTAVAIL   = 249
+    ENETDOWN        = 250
+    ENETUNREACH     = 251
+    ENETRESET       = 252
+    ECONNABORTED    = 253
+    ECONNRESET      = 254
+    ENOBUFS         = 255
+    EISCONN         = 256
+    ENOTCONN        = 257
+    ESHUTDOWN       = 258
+    ETOOMANYREFS    = 259
+    ETIMEDOUT       = 260
+    ECONNREFUSED    = 261
+    EHOSTDOWN       = 264
+    EHOSTUNREACH    = 265
+    EBADRPC         = 272
+    ERPCMISMATCH    = 273
+    EPROGUNAVAIL    = 274
+    EPROGMISMATCH   = 275
+    EPROCUNAVAIL    = 276
+    ENOREMOTE       = 300
+    ENONDP          = 301
+    EBADFSYS        = 302
+    EMORE           = 309
+    ECTRLTERM       = 310
+    ENOLIC          = 311
+    ESRVRFAULT      = 312
+    EENDIAN         = 313
+
 
 # shm syscall
 IPC_PRIVATE = 0

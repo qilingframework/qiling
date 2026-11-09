@@ -10,7 +10,8 @@ from qiling import Qiling
 from qiling.const import QL_ARCH, QL_INTERCEPT
 from qiling.exception import QlErrorSyscallNotFound
 from qiling.os.os import QlOs
-from qiling.os.posix.const import NR_OPEN, NSIG, errors
+from qiling.os.posix.const import NR_OPEN, NSIG
+from qiling.os.posix.const_mapping import get_errno_class
 from qiling.os.posix.msq import QlMsq
 from qiling.os.posix.shm import QlShm
 from qiling.os.posix.syscall.abi import QlSyscallABI, arm, intel, mips, ppc, riscv
@@ -79,6 +80,9 @@ class QlOsPosix(QlOs):
 
         # select syscall mapping function based on emulated OS and architecture
         self.syscall_mapper = self.__get_syscall_mapper(self.ql.arch.type)
+
+        # emulated errno names, used to annotate failed syscalls in the log
+        self._errno_names = {e.value: e.name for e in get_errno_class(self.ql.arch.type, self.type)}
 
         self._fd = QlFileDes()
 
@@ -152,8 +156,7 @@ class QlOsPosix(QlOs):
         else:
             self.function_hook.add_function_hook(target, handler, intercept)
 
-    @staticmethod
-    def getNameFromErrorCode(ret: int) -> str:
+    def getNameFromErrorCode(self, ret: int) -> str:
         """Return the hex representation of a return value and if possible
         add the corresponding error name to it.
 
@@ -165,7 +168,10 @@ class QlOsPosix(QlOs):
         if type(ret) is not int:
             return '?'
 
-        return f'{ret:#x}{f" ({errors[-ret]})" if -ret in errors else f""}'
+        name = self._errno_names.get(-ret)
+        name = f' ({name})' if name else ''
+
+        return f'{ret:#x}{name}'
 
     def load_syscall(self):
         syscall_id = self.syscall_abi.get_id()
@@ -246,7 +252,7 @@ class QlOsPosix(QlOs):
 
                 args.append((name, f'{value:#x}'))
 
-            sret = QlOsPosix.getNameFromErrorCode(retval)
+            sret = self.getNameFromErrorCode(retval)
             self.utils.print_function(self.ql.arch.regs.arch_pc, syscall_basename, args, sret, False)
 
             # record syscall statistics

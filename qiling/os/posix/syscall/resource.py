@@ -8,6 +8,8 @@ try:
 except ImportError:
     # The library 'resource' does not exist on windows, so provide a dummy shim
     class DummyResource:
+        RLIM_INFINITY = -1
+
         def getrlimit(self, resource):
             return (-1, -1)
         def setrlimit(self, resource, rlim):
@@ -16,7 +18,10 @@ except ImportError:
 
 import os
 
+from unicorn import UcError
+
 from qiling import Qiling
+from qiling.os.posix.const_mapping import ql_errno_mapping, get_errno_class
 
 def __getrlimit_common(ql: Qiling, res: int, rlim: int) -> int:
     RLIMIT_STACK = 3
@@ -51,24 +56,43 @@ def ql_syscall_setrlimit(ql: Qiling, res: int, rlim: int):
     return 0
 
 def ql_syscall_prlimit64(ql: Qiling, pid: int, res: int, new_limit: int, old_limit: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
     # setrlimit() and getrlimit()
     if pid == 0 and new_limit == 0:
         try:
             rlim = resource.getrlimit(res)
+        except (ValueError, OverflowError):
+            return -errno_class.EINVAL.value
+        except OSError as ex:
+            return -ql_errno_mapping(ql, ex.errno)
 
-            ql.mem.write_ptr(old_limit + 0 * ql.arch.pointersize, rlim[0], signed=True)
-            ql.mem.write_ptr(old_limit + 1 * ql.arch.pointersize, rlim[1], signed=True)
+        # struct rlimit64 holds two 64-bit fields; the guest expects all ones for unlimited
+        rlim = [-1 if v == resource.RLIM_INFINITY else v for v in rlim]
 
-            return 0
-        except:
-            return -1
+        try:
+            ql.mem.write_ptr(old_limit + 0, rlim[0], 8, signed=True)
+            ql.mem.write_ptr(old_limit + 8, rlim[1], 8, signed=True)
+        except UcError:
+            return -errno_class.EFAULT.value
+
+        return 0
 
     # set other process which pid != 0
     return -1
 
 def ql_syscall_getpriority(ql: Qiling, which: int, who: int):
+    errno_class = get_errno_class(ql.arch.type, ql.os.type)
+
+    # not available on all hosting platforms (e.g. Windows)
+    if not hasattr(os, 'getpriority'):
+        return -errno_class.EOPNOTSUPP.value
+
     try:
         regreturn = os.getpriority(which, who)
-    except:
-        regreturn = -1
+    except OverflowError:
+        regreturn = -errno_class.EINVAL.value
+    except OSError as ex:
+        regreturn = -ql_errno_mapping(ql, ex.errno)
+
     return regreturn
