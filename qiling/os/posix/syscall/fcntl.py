@@ -120,13 +120,10 @@ def ql_syscall_fcntl(ql: Qiling, fd: int, cmd: int, arg: int):
 
 
 def ql_syscall_fcntl64(ql: Qiling, fd: int, cmd: int, arg: int):
-    if fd not in range(NR_OPEN):
-        return -1
-
-    f = ql.os.fd[fd]
+    f = get_opened_fd(ql.os, fd)
 
     if f is None:
-        return -1
+        return -EBADF
 
     # https://linux.die.net/man/2/fcntl64
     if cmd == F_DUPFD:
