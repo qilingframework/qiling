@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Type
 
 from qiling.const import QL_ARCH
 from qiling.os import struct
-from qiling.os.posix.const import NSIG
+from qiling.os.posix.const import EINVAL, NSIG
 
 # TODO: MIPS differs in too many details around signals; MIPS implementation is better extracted out
 
@@ -161,7 +161,7 @@ def __sigprocmask(ql: Qiling, how: int, newset: int, oldset: int):
             ql.os.blocked_signals = set_mask
 
         else:
-            return -1  # EINVAL
+            return -EINVAL
 
         # silently drop attempts to block SIGKILL and SIGSTOP
         ql.os.blocked_signals &= ~((1 << SIGKILL) | (1 << SIGSTOP))
