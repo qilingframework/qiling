@@ -153,7 +153,7 @@ def ql_syscall_capset(ql: Qiling, hdrp: int, datap: int):
 
 def ql_syscall_kill(ql: Qiling, pid: int, sig: int):
     if sig not in range(NSIG):
-        return -1   # EINVAL
+        return -EINVAL
 
     if pid > 0 and pid != ql.os.pid:
         return -1   # ESRCH
