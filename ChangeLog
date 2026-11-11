@@ -1,5 +1,9 @@
 This file details the changelog of Qiling Framework.
 
+## Unreleased
+
+* Initialize the ELF shellcode loader entry point so Qdb can attach without a manual address override (#1608).
+
 ------------------------------------
 [Version 1.4.6]: August 4th, 2023
 

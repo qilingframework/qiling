@@ -41,6 +41,8 @@ Fixture C/assembly belongs to its behavioral OS owner; preparation to tooling.
   and metadata consumed by patches, reports and debuggers (`QlLoader`).
 - ELF maps load segments/interpreter and creates guest stack/auxv;
   ELF driver loading uses a separate relocation/import path (`elf.py`).
+  In shellcode mode, loader and OS entry points identify the mapped code
+  start; `Qiling.entry_point` remains the optional `run(begin=...)` override.
 - PE maps DLLs and records `import_symbols` consumed by Windows dispatch.
   Optional disk caches use pickle (`QlPeCache`); cache contents are trusted
   host artifacts, not safe arbitrary guest inputs.

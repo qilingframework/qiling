@@ -77,7 +77,7 @@ class QlLoaderELF(QlLoader):
             self.ql.mem.write(shellcode_base, self.ql.code)
 
             self.ql.arch.regs.arch_sp = shellcode_base
-            self.ql.os.entry_point = shellcode_base
+            self.ql.os.entry_point = self.entry_point = shellcode_base
             self.load_address = shellcode_base
 
             return
