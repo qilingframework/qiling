@@ -5,13 +5,33 @@
 
 import sys
 import unittest
+from unittest.mock import patch
 
 sys.path.append("..")
 from qiling import Qiling
-from qiling.const import QL_VERBOSE
+from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
+from qiling.debugger.qdb.qdb import QlQdb
 
 
 class DebuggerTest(unittest.TestCase):
+
+    def test_qdb_linux_shellcode_entry_point(self):
+        for archtype in (QL_ARCH.X86, QL_ARCH.X8664):
+            with self.subTest(archtype=archtype):
+                code = b'\x90\x90'
+                ql = Qiling(code=code, archtype=archtype, ostype=QL_OS.LINUX,
+                            verbose=QL_VERBOSE.OFF, console=False)
+
+                self.assertIsNone(ql.entry_point)
+
+                with patch.object(QlQdb, 'cmdloop') as cmdloop, patch.object(QlQdb, 'do_context'):
+                    debugger = QlQdb(ql)
+
+                self.assertEqual(ql.loader.entry_point, ql.loader.load_address)
+                self.assertEqual(ql.loader.entry_point, ql.os.entry_point)
+                self.assertEqual(ql.mem.read(ql.loader.entry_point, len(code)), code)
+                self.assertEqual(debugger.cur_addr, ql.loader.entry_point)
+                cmdloop.assert_called_once_with()
 
     def __test_common(self, vpath: str, rootfs: str, script: str) -> None:
         """Load a common setup for all test cases.
