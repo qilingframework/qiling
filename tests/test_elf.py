@@ -905,6 +905,19 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
+    def test_shellcode_mmap_address(self):
+        # a code-only instance has no ELF image to derive the mmap floor from;
+        # the loader still has to expose the profile value for the mmap syscall
+        from qiling.os.posix.syscall.mman import ql_syscall_mmap
+
+        ql = Qiling(code=b"\xCC", archtype=QL_ARCH.X8664, ostype=QL_OS.LINUX, verbose=QL_VERBOSE.OFF)
+        self.assertEqual(ql.loader.mmap_address, ql.os.profile.getint('OS64', 'mmap_address'))
+
+        addr = ql_syscall_mmap(ql, 0, 0x1000, 0x3, 0x22, -1, 0)
+        self.assertGreater(addr, 0)
+
+        del ql
+
     def test_elf_linux_x8664_path_traversion(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/path_traverse_static"], "../examples/rootfs/x8664_linux", verbose=QL_VERBOSE.DEBUG)
 
