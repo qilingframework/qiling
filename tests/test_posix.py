@@ -8,6 +8,7 @@ import unittest
 from test_elf import *
 from test_riscv import *
 from test_qltool import *
+from test_socket import *
 
 if __name__ == "__main__":
     unittest.main()
