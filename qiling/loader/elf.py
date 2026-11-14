@@ -70,6 +70,8 @@ class QlLoaderELF(QlLoader):
         super().__init__(ql)
 
     def run(self):
+        self.profile = self.ql.os.profile[f'OS{self.ql.arch.bits}']
+
         if self.ql.code:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.code_ram_size, info="[shellcode_stack]")
 
@@ -79,10 +81,9 @@ class QlLoaderELF(QlLoader):
             self.ql.arch.regs.arch_sp = shellcode_base
             self.ql.os.entry_point = shellcode_base
             self.load_address = shellcode_base
+            self.mmap_address = self.profile.getint('mmap_address')
 
             return
-
-        self.profile = self.ql.os.profile[f'OS{self.ql.arch.bits}']
 
         # setup program stack
         stack_address = self.profile.getint('stack_address')
