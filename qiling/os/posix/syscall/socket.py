@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Tuple, Union
 
 from qiling.const import QL_ARCH, QL_OS, QL_VERBOSE
 from qiling.os.posix.const_mapping import socket_type_mapping, socket_level_mapping, socket_domain_mapping, socket_ip_option_mapping, socket_tcp_option_mapping, socket_option_mapping
-from qiling.os.posix.const import NR_OPEN, EMFILE, EBADF, EAFNOSUPPORT, EINVAL, ENOTSOCK
+from qiling.os.posix.const import NR_OPEN, EAGAIN, EMFILE, EBADF, EAFNOSUPPORT, EINVAL, ENOTSOCK
 from qiling.os.posix.filestruct import ql_socket
 from qiling.os.posix.structs import *
 
@@ -668,7 +668,10 @@ def ql_syscall_recv(ql: Qiling, sockfd: int, buf: int, length: int, flags: int):
     if isinstance(sock, int):
         return sock
 
-    content = sock.recv(length, flags)
+    try:
+        content = sock.recv(length, flags)
+    except BlockingIOError:
+        return -EAGAIN
 
     if content:
         ql.log.debug("recv() CONTENT:")
