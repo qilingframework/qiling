@@ -43,6 +43,16 @@ class DiskError(IntEnum):
 def parse_dap(dapbs):
     return struct.unpack("<BBHHHQ", dapbs)
 
+def get_dos_disk_id(idx):
+    # https://en.wikipedia.org/wiki/Master_boot_record#BIOS_to_MBR_interface
+    fixed_disk_letters = "CDEFGHIJKLMNOPQRSTUVWXYZ"
+    floppy_letters = "ABCDEFGH"
+    if idx < 0x80 and idx < len(floppy_letters):
+        return floppy_letters[idx] + ":"
+    elif idx >= 0x80 and idx < 0x80 + len(fixed_disk_letters):
+        return fixed_disk_letters[idx-0x80] + ":"
+    else:
+        return f"INVALID{idx:#x}" + ":"
 
 def __leaf_00(ql: Qiling):
     ql.os.clear_cf()
@@ -50,9 +60,10 @@ def __leaf_00(ql: Qiling):
 
 def __leaf_02(ql: Qiling):
     idx = ql.arch.regs.dl
+    disk_id = get_dos_disk_id(idx)
 
-    if not ql.os.fs_mapper.has_mapping(idx):
-        ql.log.warning(f'Warning: No such disk: {idx:#x}')
+    if not ql.os.fs_mapper.has_mapping(disk_id):
+        ql.log.warning(f'Warning: No such disk: {disk_id}')
         ql.arch.regs.ah = DiskError.BadCommand.value
         ql.os.set_cf()
         return
@@ -62,7 +73,7 @@ def __leaf_02(ql: Qiling):
     sector = ql.arch.regs.cx & 63
     cnt = ql.arch.regs.al
 
-    disk = ql.os.fs_mapper.open(idx, None)
+    disk = ql.os.fs_mapper.open(disk_id, None)
     content = disk.read_chs(cylinder, head, sector, cnt)
 
     ql.mem.write(utils.linaddr(ql.arch.regs.es, ql.arch.regs.bx), content)
@@ -73,14 +84,15 @@ def __leaf_02(ql: Qiling):
 # @see: https://stanislavs.org/helppc/int_13-8.html
 def __leaf_08(ql: Qiling):
     idx = ql.arch.regs.dl
+    disk_id = get_dos_disk_id(idx)
 
-    if not ql.os.fs_mapper.has_mapping(idx):
-        ql.log.warning(f'Warning: No such disk: {idx:#x}')
+    if not ql.os.fs_mapper.has_mapping(disk_id):
+        ql.log.warning(f'Warning: No such disk: {disk_id}')
         ql.arch.regs.ah = DiskError.BadCommand.value
         ql.os.set_cf()
         return
 
-    disk = ql.os.fs_mapper.open(idx, None)
+    disk = ql.os.fs_mapper.open(disk_id, None)
     ql.arch.regs.dl = ql.os.fs_mapper.mapping_count()
     ql.arch.regs.dh = disk.n_heads - 1
     ql.arch.regs.bl = 0x4
@@ -108,18 +120,19 @@ def __leaf_41(ql: Qiling):
 
 def __leaf_42(ql: Qiling):
     idx = ql.arch.regs.dl
+    disk_id = get_dos_disk_id(idx)
 
-    if not ql.os.fs_mapper.has_mapping(idx):
-        ql.log.warning(f'Warning: No such disk: {idx:#x}')
+    if not ql.os.fs_mapper.has_mapping(disk_id):
+        ql.log.warning(f'Warning: No such disk: {disk_id}')
         ql.arch.regs.ah = DiskError.BadCommand.value
         ql.os.set_cf()
         return
 
     dapbs = ql.mem.read(utils.linaddr(ql.arch.regs.ds, ql.arch.regs.si), 16)
     _, _, cnt, offset, segment, lba = parse_dap(dapbs)
-    ql.log.info(f'Reading {cnt} sectors from disk {idx:#x} with LBA {lba}')
+    ql.log.info(f'Reading {cnt} sectors from disk {disk_id} with LBA {lba}')
 
-    disk = ql.os.fs_mapper.open(idx, None)
+    disk = ql.os.fs_mapper.open(disk_id, None)
     content = disk.read_sectors(lba, cnt)
     ql.mem.write(utils.linaddr(segment, offset), content)
 
@@ -128,18 +141,19 @@ def __leaf_42(ql: Qiling):
 
 def __leaf_43(ql: Qiling):
     idx = ql.arch.regs.dl
+    disk_id = get_dos_disk_id(idx)
 
-    if not ql.os.fs_mapper.has_mapping(idx):
-        ql.log.info(f"Warning: No such disk: {hex(idx)}")
+    if not ql.os.fs_mapper.has_mapping(disk_id):
+        ql.log.info(f"Warning: No such disk: {disk_id}")
         ql.arch.regs.ah = DiskError.BadCommand.value
         ql.os.set_cf()
         return
 
     dapbs = ql.mem.read(utils.linaddr(ql.arch.regs.ds, ql.arch.regs.si), 16)
     _, _, cnt, offset, segment, lba = parse_dap(dapbs)
-    ql.log.info(f'Writing {cnt} sectors to disk {idx:#x} with LBA {lba}')
+    ql.log.info(f'Writing {cnt} sectors to disk {disk_id} with LBA {lba}')
 
-    disk = ql.os.fs_mapper.open(idx, None)
+    disk = ql.os.fs_mapper.open(disk_id, None)
     buffer = ql.mem.read(utils.linaddr(segment, offset), cnt * disk.sector_size)
     disk.write_sectors(lba, cnt, buffer)
 
