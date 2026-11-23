@@ -316,7 +316,7 @@ class QlLoaderELF(QlLoader):
         # add a nullptr sentinel
         elf_table.extend(self.ql.pack(0))
 
-        new_stack = randstraddr = __push_str(new_stack, 'a' * 16)
+        new_stack = randstraddr = __push_bytes(new_stack, os.urandom(16))
         new_stack = cpustraddr  = __push_str(new_stack, 'i686')
         new_stack = execfn      = __push_str(new_stack, argv[0])
 
