@@ -801,7 +801,18 @@ def ql_syscall_truncate(ql: Qiling, path: int, length: int):
 def ql_syscall_ftruncate(ql: Qiling, fd: int, length: int):
     f = get_opened_fd(ql.os, fd)
 
-    regreturn = -EBADF if f is None else __do_truncate(ql, f.name, length)
+    if f is None:
+        regreturn = -EBADF
+    else:
+        try:
+            # ftruncate(2) applies access-mode checks to the open descriptor.
+            os.ftruncate(f.fileno(), length)
+        except OSError as ex:
+            regreturn = -(ex.errno or EINVAL)
+        except (AttributeError, TypeError, ValueError):
+            regreturn = -EINVAL
+        else:
+            regreturn = 0
 
     ql.log.debug(f'ftruncate({fd}, {length:#x}) = {regreturn}')
 
