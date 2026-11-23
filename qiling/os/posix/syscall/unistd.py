@@ -390,8 +390,9 @@ def ql_syscall_pread64(ql: Qiling, fd: int, buf: int, length: int, offt: int):
 
         data = f.read(length)
         f.seek(pos)
-    except OSError:
-        regreturn = -1
+    except OSError as e:
+        # Linux syscall errors are returned as negative errno values.
+        regreturn = -e.errno if e.errno is not None else -1
     else:
         ql.mem.write(buf, data)
 

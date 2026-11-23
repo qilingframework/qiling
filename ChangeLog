@@ -1,5 +1,9 @@
 This file details the changelog of Qiling Framework.
 
+[Unreleased]
+
+- Preserve the host errno for `pread64` failures.
+
 ------------------------------------
 [Version 1.4.6]: August 4th, 2023
 
