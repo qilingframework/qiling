@@ -1,6 +1,10 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Unreleased]
+
+- Fix invalid static clock IDs in Linux `clock_nanosleep`.
+
 [Version 1.4.6]: August 4th, 2023
 
 ## What's Changed

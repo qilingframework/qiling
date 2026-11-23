@@ -8,6 +8,8 @@ import time
 import gevent
 
 from qiling import Qiling
+from ....const import QL_OS
+from ..const import EINVAL
 
 def ql_syscall_time(ql: Qiling):
     return int(time.time())
@@ -50,6 +52,12 @@ def ql_syscall_nanosleep(ql: Qiling, req: int, rem: int):
     return __sleep_common(ql, req, rem)
 
 def ql_syscall_clock_nanosleep(ql: Qiling, clockid: int, flags: int, req: int, rem: int):
+    if ql.os.type is QL_OS.LINUX:
+        # Linux clockid_t is signed 32-bit; the static table has a hole at 10.
+        static_clockid = clockid & 0xffffffff
+        if static_clockid < 0x80000000 and (static_clockid == 10 or static_clockid > 11):
+            return -EINVAL
+
     return __sleep_common(ql, req, rem)
 
 def ql_syscall_setitimer(ql: Qiling, which: int, new_value: int, old_value: int):
