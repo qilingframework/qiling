@@ -1,6 +1,12 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Unreleased]
+
+## Bug fixes
+- Preserve guest file descriptor access mode in ftruncate.
+
+------------------------------------
 [Version 1.4.6]: August 4th, 2023
 
 ## What's Changed
