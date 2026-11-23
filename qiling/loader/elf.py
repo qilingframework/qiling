@@ -335,6 +335,12 @@ class QlLoaderELF(QlLoader):
 
         # determine hwcap value by arch properties; if not found default to 0
         hwcap = hwcap_values.get((self.ql.arch.type, self.ql.arch.endian, self.ql.arch.bits), 0)
+        if self.ql.os.type == QL_OS.LINUX and self.ql.arch.type == QL_ARCH.RISCV64:
+            # Linux RISC-V HWCAP bits for I/M/A/F/D/C have the mask 0x112d.
+            hwcap = self.ql.arch.regs.misa & 0x112d
+            # Linux does not advertise F on systems that lack D.
+            if not hwcap & 0x8:
+                hwcap &= ~0x20
 
         # setup aux vector
         auxv_entries = [
