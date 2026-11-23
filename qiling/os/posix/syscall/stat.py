@@ -1560,6 +1560,12 @@ def ql_syscall_rmdir(ql: Qiling, pathname: int):
 
 
 def ql_syscall_fstatfs(ql: Qiling, fd: int, buf: int):
+    # The guest syscall ABI passes fstatfs descriptors as 32-bit integers.
+    fd &= 0xFFFFFFFF
+
+    if fd not in range(NR_OPEN) or ql.os.fd[fd] is None:
+        return -EBADF
+
     data = b"0" * (12 * 8)  # for now, just return 0s
     regreturn = 0
 
