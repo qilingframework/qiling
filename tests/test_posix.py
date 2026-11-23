@@ -8,6 +8,7 @@ import unittest
 from test_elf import *
 from test_riscv import *
 from test_qltool import *
+from test_syscall_clock_nanosleep import *
 
 if __name__ == "__main__":
     unittest.main()
