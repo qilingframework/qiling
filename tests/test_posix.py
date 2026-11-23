@@ -6,6 +6,7 @@
 import unittest
 
 from test_elf import *
+from test_fstatfs import *
 from test_riscv import *
 from test_qltool import *
 
