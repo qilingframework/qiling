@@ -1,6 +1,10 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Unreleased]
+- Bound shared mmap writeback by the mapped range and backing file size.
+
+------------------------------------
 [Version 1.4.6]: August 4th, 2023
 
 ## What's Changed

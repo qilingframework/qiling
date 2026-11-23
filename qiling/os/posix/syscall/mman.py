@@ -38,10 +38,13 @@ def ql_syscall_munmap(ql: Qiling, addr: int, length: int):
                 # flushing memory contents to file is required only if mapping is shared / not private
                 if fd._is_map_shared:
                     ql.log.debug(f'munmap: flushing "{fname}"')
-                    content = ql.mem.read(addr, length)
-
-                    fd.lseek(fd._mapped_offset)
-                    fd.write(content)
+                    file_size = fd.fstat().st_size
+                    mapped_length = max(0, ubound - addr)
+                    writeback_length = min(length, mapped_length, max(0, file_size - fd._mapped_offset))
+                    if writeback_length:
+                        content = ql.mem.read(addr, writeback_length)
+                        fd.lseek(fd._mapped_offset)
+                        fd.write(content)
 
         # unmap the enclosing memory pages.
         # munmap allows the length to exceed the mapped range. in such case, unmap by original ubound
