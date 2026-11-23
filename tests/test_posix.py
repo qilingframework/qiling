@@ -9,5 +9,7 @@ from test_elf import *
 from test_riscv import *
 from test_qltool import *
 
+from test_syscall_munmap_shared_eof import *
+
 if __name__ == "__main__":
     unittest.main()
