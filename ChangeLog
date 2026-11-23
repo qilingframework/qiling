@@ -1,6 +1,10 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Unreleased]
+- Report supported RV64 ISA extensions in Linux AT_HWCAP.
+
+------------------------------------
 [Version 1.4.6]: August 4th, 2023
 
 ## What's Changed
