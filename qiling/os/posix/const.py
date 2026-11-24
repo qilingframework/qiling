@@ -759,8 +759,14 @@ F_SETLKW = 7
 
 FD_CLOEXEC = 1
 
+# https://github.com/torvalds/linux/blob/v6.6/include/uapi/linux/fcntl.h
 AT_FDCWD = -100
+AT_SYMLINK_NOFOLLOW = 0x100
+AT_NO_AUTOMOUNT = 0x800
 AT_EMPTY_PATH = 0x1000
+AT_STATX_SYNC_TYPE = 0x6000
+AT_STATX_FORCE_SYNC = 0x2000
+AT_STATX_DONT_SYNC = 0x4000
 
 # error code
 EPERM           = 1
