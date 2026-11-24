@@ -10,7 +10,17 @@ from typing import Callable
 
 from qiling import Qiling
 from qiling.const import QL_OS, QL_ARCH, QL_ENDIAN
-from qiling.os.posix.const import EIO, NR_OPEN, EBADF, AT_FDCWD, AT_EMPTY_PATH
+from qiling.os.posix.const import (
+    EIO,
+    NR_OPEN,
+    EBADF,
+    EINVAL,
+    AT_FDCWD,
+    AT_SYMLINK_NOFOLLOW,
+    AT_NO_AUTOMOUNT,
+    AT_EMPTY_PATH,
+    AT_STATX_SYNC_TYPE,
+)
 from qiling.os.posix.stat import Stat, Lstat
 
 # Caveat: Never use types like ctypes.c_long whose size differs across platforms.
@@ -1280,6 +1290,15 @@ def ql_syscall_fstatat64(ql: Qiling, dirfd: int, path: int, buf_ptr: int, flags:
     return ret
 
 def ql_syscall_newfstatat(ql: Qiling, dirfd: int, path: int, buf: int, flags: int):
+    # Linux declares flag as int, even on 64-bit guests:
+    # https://github.com/torvalds/linux/blob/v6.6/fs/stat.c#L2639-L2641
+    flags &= 0xffffffff
+    valid_flags = (
+        AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT | AT_EMPTY_PATH | AT_STATX_SYNC_TYPE
+    )
+    if flags & ~valid_flags:
+        return -EINVAL
+
     dirfd, real_path = transform_path(ql, dirfd, path, flags)
 
     try:
