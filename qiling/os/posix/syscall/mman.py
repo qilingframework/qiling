@@ -63,6 +63,15 @@ def ql_syscall_madvise(ql: Qiling, addr: int, length: int, advice: int):
 
 
 def ql_syscall_mprotect(ql: Qiling, start: int, mlen: int, prot: int):
+    # max_mem_addr is inclusive; mprotect uses an exclusive range end.
+    if (
+        ql.os.type == QL_OS.LINUX
+        and mlen > 0
+        and start % ql.mem.pagesize == 0
+        and start + mlen > ql.mem.max_mem_addr + 1
+    ):
+        return -ENOMEM
+
     try:
         ql.mem.protect(start, mlen, prot)
     except Exception as e:
