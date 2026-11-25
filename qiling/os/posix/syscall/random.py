@@ -6,9 +6,19 @@
 import os
 
 from qiling import Qiling
-from qiling.os.posix.const import EFAULT
+from qiling.os.posix.const import EFAULT, EINVAL
+
+GRND_NONBLOCK = 0x1
+GRND_RANDOM = 0x2
+GRND_INSECURE = 0x4
+
 
 def ql_syscall_getrandom(ql: Qiling, buf: int, buflen: int, flags: int):
+    if flags & ~(GRND_NONBLOCK | GRND_RANDOM | GRND_INSECURE) or (
+        flags & (GRND_RANDOM | GRND_INSECURE)
+    ) == (GRND_RANDOM | GRND_INSECURE):
+        return -EINVAL
+
     if buflen == 0:
         return 0
 
