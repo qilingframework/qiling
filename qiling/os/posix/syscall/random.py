@@ -9,6 +9,9 @@ from qiling import Qiling
 from qiling.os.posix.const import EFAULT
 
 def ql_syscall_getrandom(ql: Qiling, buf: int, buflen: int, flags: int):
+    if buflen == 0:
+        return 0
+
     if not ql.mem.is_mapped(buf, buflen):
         return -EFAULT
 
