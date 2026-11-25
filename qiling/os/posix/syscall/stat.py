@@ -1158,7 +1158,15 @@ def __common_pack_stat_struct(stat, info) -> bytes:
         if isinstance(val, ctypes.Array):
             stat.__setattr__(field, (0,) * len(val))
         else:
-            stat.__setattr__(field, int(info[field]))
+            value = int(info[field])
+            if isinstance(
+                stat, (LinuxARMStat, LinuxARMEBStat, LinuxARMStat64)
+            ) and field in (
+                "st_atime_ns", "st_mtime_ns", "st_ctime_ns"
+            ):
+                # ARM Linux stat structures store nanoseconds within each second.
+                value %= 1_000_000_000
+            stat.__setattr__(field, value)
 
     return bytes(stat)
 
